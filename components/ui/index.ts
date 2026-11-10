@@ -23,7 +23,7 @@ export { PageHeader } from "./page-header";
 export { PillNav, type PillItem } from "./pill-nav";
 export { ProgressBar } from "./progress-bar";
 export { Radio } from "./radio";
-export { Select } from "./select";
+export { Autocomplete, type AutocompleteOption } from "./autocomplete";
 export { Stat } from "./stat";
 export { Table } from "./table";
 export { Tabs, type TabItem } from "./tabs";

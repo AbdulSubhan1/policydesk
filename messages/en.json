@@ -23,7 +23,9 @@
     "back": "Back",
     "english": "English",
     "arabic": "Arabic",
-    "perYear": "{amount} a year"
+    "perYear": "{amount} a year",
+    "select": "Select…",
+    "noMatches": "No matches"
   },
   "nav": {
     "main": "Main",
@@ -214,7 +216,10 @@
     "duplicateName": "That name is already taken",
     "reviewNoteRequired": "Add a note that explains the decision",
     "ownKyc": "Someone else has to review KYC you submitted",
-    "notFound": "This record does not exist or you can't see it"
+    "notFound": "This record does not exist or you can't see it",
+    "generalTitle": "That didn't work",
+    "generalBody": "Something was missing or no longer allowed. Check your choices and try again.",
+    "tryAgain": "Try again"
   },
   "login": {
     "title": "Sign in",
@@ -372,7 +377,8 @@
       "upload": "Upload",
       "uploading": "Uploading…",
       "view": "View",
-      "delete": "Delete"
+      "delete": "Delete",
+      "documentTypePlaceholder": "Pick a document type…"
     },
     "policy": {
       "notReady": "Not ready to book yet",
@@ -543,5 +549,42 @@
     "icons": "Icons",
     "sampleHeading": "Policy schedule for Ahmed Rahman",
     "sampleBody": "Comprehensive car cover with agency repair, renewing on 24 November."
+  },
+  "placeholders": {
+    "customerName": "e.g. Ahmed Rahman",
+    "email": "name@example.com",
+    "phone": "+971 50 123 4567",
+    "product": "Search products…",
+    "source": "How did they reach us?",
+    "notes": "What is the customer looking for?",
+    "plan": "Search plans or insurers…",
+    "premium": "e.g. 1200",
+    "idNumber": "e.g. 784-1990-1234567-1",
+    "nationality": "Search countries…",
+    "occupation": "Search occupations…",
+    "sourceOfFunds": "Pick a source…",
+    "documentType": "Pick a document type…",
+    "insurerName": "e.g. Northwind Assurance",
+    "contactEmail": "partners@insurer.com",
+    "planNameEn": "e.g. Gold Comprehensive",
+    "planNameAr": "مثال: الذهبية الشاملة",
+    "benefits": "Roadside assistance, Agency repair",
+    "docNameEn": "e.g. Emirates ID",
+    "docNameAr": "مثال: الهوية الإماراتية",
+    "docDescEn": "What staff should collect",
+    "docDescAr": "ما الذي يجب جمعه",
+    "roleDescription": "Who gets this role and why",
+    "reference": "e.g. TXN-12345",
+    "stage": "Pick a stage…",
+    "status": "Pick a status…",
+    "advisor": "Pick an advisor…",
+    "coordinator": "Pick a coordinator…",
+    "role": "Pick a role…",
+    "department": "No department",
+    "insurer": "Pick an insurer…",
+    "cover": "Pick a cover…",
+    "payment": "Pick an outcome…",
+    "method": "Pick a method…",
+    "note": "Write a short note…"
   }
 }

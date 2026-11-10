@@ -42,9 +42,11 @@ These rules are strict. They apply to every person and every AI model working in
 
 ## 4. UI library (strict)
 
-- Pages and feature components build UI **only** from `@/components/ui`. ESLint blocks raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<a>`, `<img>` and `<svg>` outside `components/ui`. Use `Button`, `Input`, `Select`, `Textarea`, `Hidden`, `Checkbox`, `Radio`, `ButtonLink`, `next/link` and `Icon`.
+- Pages and feature components build UI **only** from `@/components/ui`. ESLint blocks raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<a>`, `<img>` and `<svg>` outside `components/ui`. Use `Button`, `Input`, `Autocomplete`, `Textarea`, `Hidden`, `Checkbox`, `Radio`, `ButtonLink`, `next/link` and `Icon`.
 - **No inline styles.** `style={...}` is a lint error everywhere. Use Tailwind classes.
 - **No class overrides on library components.** `className` on a library component may only set layout (margin, width, grid placement). For a different look, add a variant in `components/ui/styles.ts`.
+- **Dropdowns:** `Autocomplete` is the only dropdown. It searches, groups and has a placeholder. Build its options with the helpers in `lib/options.ts`. Inside React Hook Form use `FormAutocomplete`.
+- **Placeholders:** every empty input and dropdown has a placeholder from `messages` (`placeholders.*`).
 - **One component per file.** File name is the kebab-case component name.
 - New component checklist:
   1. Add `components/ui/<name>.tsx` with a `data-ui="<Name>"` attribute on its root.

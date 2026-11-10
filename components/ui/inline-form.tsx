@@ -5,7 +5,10 @@ export function InlineForm({ className, ...props }: React.FormHTMLAttributes<HTM
   return (
     <form
       data-ui="InlineForm"
-      className={cn("flex min-w-0 flex-wrap items-center gap-2 [&>select]:flex-1 [&>select]:basis-40", className)}
+      className={cn(
+        "flex min-w-0 flex-wrap items-center gap-2 [&>[data-ui=Autocomplete]]:flex-1 [&>[data-ui=Autocomplete]]:basis-40",
+        className,
+      )}
       {...props}
     />
   );

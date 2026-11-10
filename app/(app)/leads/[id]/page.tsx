@@ -17,11 +17,12 @@ import {
   Hidden,
   InlineForm,
   PageHeader,
-  Select,
+  Autocomplete,
   Tabs,
 } from "@/components/ui";
 import { EDITABLE_LEAD_STAGES } from "@/constants/statuses";
 import { shortDate } from "@/lib/format";
+import { keyedOptions } from "@/lib/options";
 import { can, scopeOf } from "@/lib/rbac";
 import { reassignAdvisor, updateLeadStage } from "@/server/actions/leads";
 import { requireUser } from "@/server/auth";
@@ -163,26 +164,24 @@ export default async function LeadPage({
               {can(user, "leads:edit") && !closed && (
                 <InlineForm key={lead.stage} action={updateLeadStage}>
                   <Hidden name="leadId" value={lead.id} />
-                  <Select name="stage" defaultValue={lead.stage} aria-label={t("leads.stage")}>
-                    {EDITABLE_LEAD_STAGES.map((s) => (
-                      <option key={s} value={s}>
-                        {t(`status.${s}`)}
-                      </option>
-                    ))}
-                  </Select>
+                  <Autocomplete
+                    name="stage"
+                    defaultValue={lead.stage}
+                    aria-label={t("leads.stage")}
+                    options={keyedOptions(t, "status", EDITABLE_LEAD_STAGES)}
+                  />
                   <Button size="sm">{t("lead.setStage")}</Button>
                 </InlineForm>
               )}
               {advisors.length > 0 && (
                 <InlineForm key={`advisor-${lead.advisorId}`} action={reassignAdvisor}>
                   <Hidden name="leadId" value={lead.id} />
-                  <Select name="advisorId" defaultValue={lead.advisorId ?? ""} aria-label={t("leads.advisor")}>
-                    {advisors.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name}
-                      </option>
-                    ))}
-                  </Select>
+                  <Autocomplete
+                    name="advisorId"
+                    defaultValue={lead.advisorId ?? ""}
+                    aria-label={t("leads.advisor")}
+                    options={advisors.map((a) => ({ value: String(a.id), label: a.name }))}
+                  />
                   <Button size="sm">{t("lead.reassign")}</Button>
                 </InlineForm>
               )}

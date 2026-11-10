@@ -44,7 +44,7 @@ export function LoginForm({
 
       <form onSubmit={onSubmit} className="grid gap-3" noValidate>
         <Field label={t("email")} error={errorOf("email")}>
-          <Input type="email" autoComplete="email" {...form.register("email")} />
+          <Input type="email" autoComplete="email" placeholder="name@policydesk.dev" {...form.register("email")} />
         </Field>
         <Field label={t("password")} error={errorOf("password")}>
           <Input type="password" autoComplete="current-password" {...form.register("password")} />

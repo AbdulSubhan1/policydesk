@@ -23,7 +23,9 @@
     "back": "رجوع",
     "english": "الإنجليزية",
     "arabic": "العربية",
-    "perYear": "{amount} سنويًا"
+    "perYear": "{amount} سنويًا",
+    "select": "اختر…",
+    "noMatches": "لا توجد نتائج"
   },
   "nav": {
     "main": "الرئيسية",
@@ -214,7 +216,10 @@
     "duplicateName": "هذا الاسم مستخدم بالفعل",
     "reviewNoteRequired": "أضف ملاحظة توضح القرار",
     "ownKyc": "يجب أن يراجع شخص آخر بيانات اعرف عميلك التي قدّمتها",
-    "notFound": "هذا السجل غير موجود أو لا يمكنك رؤيته"
+    "notFound": "هذا السجل غير موجود أو لا يمكنك رؤيته",
+    "generalTitle": "لم تنجح العملية",
+    "generalBody": "هناك شيء ناقص أو لم يعد مسموحًا. تحقق من اختياراتك وحاول مرة أخرى.",
+    "tryAgain": "حاول مرة أخرى"
   },
   "login": {
     "title": "تسجيل الدخول",
@@ -372,7 +377,8 @@
       "upload": "رفع",
       "uploading": "جارٍ الرفع…",
       "view": "عرض",
-      "delete": "حذف"
+      "delete": "حذف",
+      "documentTypePlaceholder": "اختر نوع المستند…"
     },
     "policy": {
       "notReady": "غير جاهزة للحجز بعد",
@@ -543,5 +549,42 @@
     "icons": "الأيقونات",
     "sampleHeading": "جدول وثيقة أحمد رحمن",
     "sampleBody": "تغطية شاملة للسيارة مع إصلاح لدى الوكالة، تتجدد في ٢٤ نوفمبر."
+  },
+  "placeholders": {
+    "customerName": "مثال: أحمد رحمن",
+    "email": "name@example.com",
+    "phone": "+971 50 123 4567",
+    "product": "ابحث عن منتج…",
+    "source": "كيف وصلوا إلينا؟",
+    "notes": "ما الذي يبحث عنه العميل؟",
+    "plan": "ابحث عن خطة أو شركة تأمين…",
+    "premium": "مثال: 1200",
+    "idNumber": "مثال: 784-1990-1234567-1",
+    "nationality": "ابحث عن دولة…",
+    "occupation": "ابحث عن مهنة…",
+    "sourceOfFunds": "اختر مصدرًا…",
+    "documentType": "اختر نوع المستند…",
+    "insurerName": "مثال: نورثويند للتأمين",
+    "contactEmail": "partners@insurer.com",
+    "planNameEn": "e.g. Gold Comprehensive",
+    "planNameAr": "مثال: الذهبية الشاملة",
+    "benefits": "المساعدة على الطريق، الإصلاح لدى الوكالة",
+    "docNameEn": "e.g. Emirates ID",
+    "docNameAr": "مثال: الهوية الإماراتية",
+    "docDescEn": "What staff should collect",
+    "docDescAr": "ما الذي يجب جمعه",
+    "roleDescription": "من يحصل على هذا الدور ولماذا",
+    "reference": "مثال: TXN-12345",
+    "stage": "اختر مرحلة…",
+    "status": "اختر حالة…",
+    "advisor": "اختر مستشارًا…",
+    "coordinator": "اختر منسقًا…",
+    "role": "اختر دورًا…",
+    "department": "بدون قسم",
+    "insurer": "اختر شركة تأمين…",
+    "cover": "اختر تغطية…",
+    "payment": "اختر النتيجة…",
+    "method": "اختر طريقة…",
+    "note": "اكتب ملاحظة قصيرة…"
   }
 }

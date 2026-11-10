@@ -37,12 +37,15 @@ export const UI_REGISTRY: RegistryEntry[] = [
     example: '<Input type="email" {...form.register("email")} />',
   },
   {
-    name: "Select",
-    file: "select.tsx",
+    name: "Autocomplete",
+    file: "autocomplete.tsx",
     group: "Forms",
-    description: "Native select with the shared control style.",
-    props: "...select attributes",
-    example: '<Select name="stage">…</Select>',
+    description:
+      "The only dropdown. Type to search, groups, hints, keyboard support and a placeholder. Inside React Hook Form use FormAutocomplete.",
+    props:
+      "options: { value; label; group?; hint? }[]; name?; value?; defaultValue?; onChange?; placeholder?; invalid?; disabled?",
+    example:
+      '<Autocomplete name="stage" defaultValue={lead.stage} options={keyedOptions(t, "status", EDITABLE_LEAD_STAGES)} />',
   },
   {
     name: "Textarea",

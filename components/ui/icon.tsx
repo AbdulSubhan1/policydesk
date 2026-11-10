@@ -19,6 +19,7 @@ const PATHS = {
   book: "M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5zM4 20.5A2.5 2.5 0 016.5 18H20v3H6.5A2.5 2.5 0 014 20.5zM8 7h8M8 11h6",
   check: "M5 12.5l4.5 4.5L19 7.5",
   chevronStart: "M15 5l-7 7 7 7",
+  chevronDown: "M6 9l6 6 6-6",
 } as const;
 
 export type IconName = keyof typeof PATHS;

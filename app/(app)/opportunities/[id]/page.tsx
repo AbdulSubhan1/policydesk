@@ -13,10 +13,11 @@ import {
   Hidden,
   InlineForm,
   PageHeader,
-  Select,
+  Autocomplete,
 } from "@/components/ui";
 import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
 import { shortDate } from "@/lib/format";
+import { keyedOptions } from "@/lib/options";
 import { can, scopeOf } from "@/lib/rbac";
 import { assignCoordinator, convertToLead, updateOpportunityStatus } from "@/server/actions/opportunities";
 import { requireUser } from "@/server/auth";
@@ -85,13 +86,12 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
               <CardBody>
                 <InlineForm key={opp.status} action={updateOpportunityStatus}>
                   <Hidden name="id" value={opp.id} />
-                  <Select name="status" defaultValue={opp.status} aria-label={t("opportunities.status")}>
-                    {EDITABLE_OPPORTUNITY_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {t(`status.${s}`)}
-                      </option>
-                    ))}
-                  </Select>
+                  <Autocomplete
+                    name="status"
+                    defaultValue={opp.status}
+                    aria-label={t("opportunities.status")}
+                    options={keyedOptions(t, "status", EDITABLE_OPPORTUNITY_STATUSES)}
+                  />
                   <Button>{t("opportunities.setStatus")}</Button>
                 </InlineForm>
               </CardBody>
@@ -104,18 +104,15 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
               <CardBody>
                 <InlineForm key={`c-${opp.coordinatorId}`} action={assignCoordinator}>
                   <Hidden name="id" value={opp.id} />
-                  <Select
+                  <Autocomplete
                     name="coordinatorId"
                     defaultValue={opp.coordinatorId ?? ""}
                     aria-label={t("opportunities.coordinator")}
-                  >
-                    <option value="">{t("common.unassigned")}</option>
-                    {coordinators.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </Select>
+                    options={[
+                      { value: "", label: t("common.unassigned") },
+                      ...coordinators.map((c) => ({ value: String(c.id), label: c.name })),
+                    ]}
+                  />
                   <Button>{t("opportunities.assign")}</Button>
                 </InlineForm>
               </CardBody>
@@ -140,13 +137,11 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
                   >
                     <Hidden name="id" value={opp.id} />
                     <Field label={t("opportunities.advisor")}>
-                      <Select name="advisorId" required>
-                        {advisors.map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.name}
-                          </option>
-                        ))}
-                      </Select>
+                      <Autocomplete
+                        name="advisorId"
+                        options={advisors.map((a) => ({ value: String(a.id), label: a.name }))}
+                        placeholder={t("placeholders.advisor")}
+                      />
                     </Field>
                     <Button variant="primary">{t("opportunities.convert")}</Button>
                   </form>

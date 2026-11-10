@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import {
+  Autocomplete,
   Badge,
   Button,
   ButtonLink,
@@ -23,7 +24,6 @@ import {
   PillNav,
   ProgressBar,
   Radio,
-  Select,
   Stat,
   Table,
   Tabs,
@@ -71,16 +71,40 @@ export function Preview({ name }: { name: string }) {
       </div>
     ),
     ButtonLink: <ButtonLink href="/design-system">Link styled as a button</ButtonLink>,
-    Input: <Input placeholder="name@example.com" />,
-    Select: (
-      <Select defaultValue="quoted">
-        {LEAD_STAGES.map((s) => (
-          <option key={s}>{s}</option>
-        ))}
-      </Select>
+    Input: (
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Input placeholder="name@example.com" />
+        <Input type="file" />
+      </div>
+    ),
+    Autocomplete: (
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Autocomplete
+          aria-label="Product"
+          placeholder="Search products…"
+          options={[
+            { value: "car", label: "Car", group: "Motor & Marine" },
+            { value: "bike", label: "Bike", group: "Motor & Marine" },
+            { value: "yacht", label: "Yacht", group: "Motor & Marine" },
+            { value: "health", label: "Health", group: "Health" },
+            { value: "travel", label: "Travel", group: "Home & Travel", hint: "Single trip or annual" },
+          ]}
+        />
+        <Autocomplete
+          aria-label="Stage"
+          defaultValue="quoted"
+          options={LEAD_STAGES.map((s) => ({ value: s, label: s }))}
+        />
+      </div>
     ),
     Textarea: <Textarea rows={2} placeholder="Notes" />,
-    Checkbox: <Checkbox label="Change lead stage" hint="leads:edit" defaultChecked />,
+    Checkbox: (
+      <div className="grid gap-3">
+        <Checkbox label="Change lead stage" hint="leads:edit" defaultChecked />
+        <Checkbox label="Cancel policies" />
+        <Checkbox label="Locked permission" disabled defaultChecked />
+      </div>
+    ),
     Radio: (
       <span className="flex gap-3">
         <Radio name="demo-radio" aria-label="Optional" defaultChecked />
@@ -101,9 +125,11 @@ export function Preview({ name }: { name: string }) {
     FormError: <FormError message="errors.invalidLogin" />,
     InlineForm: (
       <InlineForm>
-        <Select defaultValue="quoted">
-          <option>quoted</option>
-        </Select>
+        <Autocomplete
+          aria-label="Stage"
+          defaultValue="quoted"
+          options={LEAD_STAGES.map((s) => ({ value: s, label: s }))}
+        />
         <Button size="sm" type="button">
           Set stage
         </Button>

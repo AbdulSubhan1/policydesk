@@ -9,10 +9,11 @@ import {
   Field,
   Hidden,
   Input,
-  Select,
+  Autocomplete,
 } from "@/components/ui";
 import { PAYMENT_METHODS } from "@/constants/statuses";
 import { money, shortDate } from "@/lib/format";
+import { keyedOptions } from "@/lib/options";
 import { can } from "@/lib/rbac";
 import { cancelPolicy, issuePolicy, recordPayment, startRenewal } from "@/server/actions/policies";
 import { getDocuments, getKyc, getLeadContext, getPolicy, getQuotes } from "@/server/queries/lead-details";
@@ -104,25 +105,25 @@ export async function PolicyTab({ leadId }: { leadId: number }) {
         >
           <Hidden name="policyId" value={policy.id} />
           <Field label={t("lead.policy.recordPayment")}>
-            <Select name="paymentStatus">
-              {(policy.paymentStatus === "paid" ? ["refunded"] : ["paid", "failed"]).map((s) => (
-                <option key={s} value={s}>
-                  {t(`status.${s}`)}
-                </option>
-              ))}
-            </Select>
+            <Autocomplete
+              name="paymentStatus"
+              defaultValue={policy.paymentStatus === "paid" ? "refunded" : "paid"}
+              options={keyedOptions(t, "status", policy.paymentStatus === "paid" ? ["refunded"] : ["paid", "failed"])}
+            />
           </Field>
           <Field label={t("lead.policy.method")}>
-            <Select name="paymentMethod" defaultValue={policy.paymentMethod ?? "card"}>
-              {PAYMENT_METHODS.map((m) => (
-                <option key={m} value={m}>
-                  {t(`paymentMethods.${m}`)}
-                </option>
-              ))}
-            </Select>
+            <Autocomplete
+              name="paymentMethod"
+              defaultValue={policy.paymentMethod ?? "card"}
+              options={keyedOptions(t, "paymentMethods", PAYMENT_METHODS)}
+            />
           </Field>
           <Field label={t("lead.policy.reference")}>
-            <Input name="paymentReference" defaultValue={policy.paymentReference ?? ""} />
+            <Input
+              name="paymentReference"
+              defaultValue={policy.paymentReference ?? ""}
+              placeholder={t("placeholders.reference")}
+            />
           </Field>
           <Button>{t("lead.policy.savePayment")}</Button>
         </form>

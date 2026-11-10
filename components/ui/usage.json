@@ -4,6 +4,7 @@
     "app/(app)/admin/plans/page.tsx",
     "app/(app)/admin/roles/page.tsx",
     "app/(app)/admin/users/page.tsx",
+    "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
@@ -43,15 +44,11 @@
     "components/forms/upload-form.tsx",
     "components/leads/policy-tab.tsx"
   ],
-  "Select": [
+  "Autocomplete": [
     "app/(app)/admin/users/page.tsx",
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
-    "components/forms/kyc-form.tsx",
-    "components/forms/opportunity-form.tsx",
-    "components/forms/plan-form.tsx",
-    "components/forms/quote-form.tsx",
-    "components/forms/upload-form.tsx",
+    "components/forms/form-autocomplete.tsx",
     "components/leads/policy-tab.tsx"
   ],
   "Textarea": [
@@ -114,6 +111,7 @@
     "app/(app)/admin/users/page.tsx",
     "app/(app)/audit/page.tsx",
     "app/(app)/design-system/page.tsx",
+    "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/leads/page.tsx",
@@ -263,6 +261,7 @@
     "components/leads/quotes-tab.tsx"
   ],
   "EmptyState": [
+    "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
     "components/dashboard/renewals-card.tsx",
     "components/leads/activity-feed.tsx",

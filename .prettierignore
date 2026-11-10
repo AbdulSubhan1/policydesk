@@ -3,3 +3,5 @@ node_modules
 drizzle
 package-lock.json
 components/ui/usage.json
+playwright-report
+test-results

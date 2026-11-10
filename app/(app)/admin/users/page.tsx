@@ -8,7 +8,7 @@ import {
   Hidden,
   InlineForm,
   PageHeader,
-  Select,
+  Autocomplete,
   Table,
   Td,
   Th,
@@ -77,25 +77,21 @@ export default async function UsersPage() {
                     ) : (
                       <InlineForm key={`${u.roleId}-${u.departmentId}`} action={updateUser}>
                         <Hidden name="userId" value={u.id} />
-                        <Select name="roleId" defaultValue={u.roleId} aria-label={t("users.roleDepartment")}>
-                          {roleRows.map((r) => (
-                            <option key={r.id} value={r.id}>
-                              {r.name}
-                            </option>
-                          ))}
-                        </Select>
-                        <Select
+                        <Autocomplete
+                          name="roleId"
+                          defaultValue={u.roleId}
+                          aria-label={t("users.roleDepartment")}
+                          options={roleRows.map((r) => ({ value: String(r.id), label: r.name }))}
+                        />
+                        <Autocomplete
                           name="departmentId"
                           defaultValue={u.departmentId ?? ""}
                           aria-label={t("users.roleDepartment")}
-                        >
-                          <option value="">{t("users.noDepartment")}</option>
-                          {deptRows.map((d) => (
-                            <option key={d.id} value={d.id}>
-                              {t(`departments.${d.key}`)}
-                            </option>
-                          ))}
-                        </Select>
+                          options={[
+                            { value: "", label: t("users.noDepartment") },
+                            ...deptRows.map((d) => ({ value: String(d.id), label: t(`departments.${d.key}`) })),
+                          ]}
+                        />
                         <Button size="sm">{t("common.save")}</Button>
                       </InlineForm>
                     )}

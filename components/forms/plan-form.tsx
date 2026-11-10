@@ -1,10 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Field, FormError, Input, Select } from "@/components/ui";
-import { DEPARTMENTS, PRODUCT_COVERS, type Product } from "@/constants/products";
+import { Button, Field, FormError, Input } from "@/components/ui";
+import { PRODUCT_COVERS, type Product } from "@/constants/products";
+import { coverOptions, productOptions } from "@/lib/options";
 import { planSchema } from "@/schemas/plan";
 import { createPlan } from "@/server/actions/plans";
+import { FormAutocomplete } from "./form-autocomplete";
 import { useActionForm } from "./use-action-form";
 
 /** Adds a plan from an insurer. The plan name is entered in both languages. */
@@ -12,70 +14,68 @@ export function PlanForm({ insurers, product }: { insurers: { id: number; name: 
   const t = useTranslations();
   const { form, pending, onSubmit, errorOf, rootError } = useActionForm(planSchema, createPlan, {
     defaultValues: {
-      insurerId: insurers[0]?.id,
+      insurerId: undefined,
       product,
-      cover: PRODUCT_COVERS[product][0],
+      cover: undefined,
       nameEn: "",
       nameAr: "",
-      basePremium: 0,
+      basePremium: undefined,
       excess: 0,
       benefits: "",
     },
     resetOnSuccess: true,
   });
-  const covers = PRODUCT_COVERS[form.watch("product") as Product] ?? [];
+  const chosenProduct = (form.watch("product") as Product | undefined) ?? product;
 
   return (
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-3" noValidate>
       <Field label={t("plans.insurer")} error={errorOf("insurerId")}>
-        <Select {...form.register("insurerId")}>
-          {insurers.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.name}
-            </option>
-          ))}
-        </Select>
+        <FormAutocomplete
+          control={form.control}
+          name="insurerId"
+          placeholder={t("placeholders.insurer")}
+          options={insurers.map((i) => ({ value: String(i.id), label: i.name }))}
+        />
       </Field>
       <Field label={t("plans.product")} error={errorOf("product")}>
-        <Select
-          {...form.register("product", {
-            onChange: (e) => form.setValue("cover", PRODUCT_COVERS[e.target.value as Product][0]),
-          })}
-        >
-          {DEPARTMENTS.map((d) => (
-            <optgroup key={d.key} label={t(`departments.${d.key}`)}>
-              {d.products.map((p) => (
-                <option key={p} value={p}>
-                  {t(`products.${p}`)}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </Select>
+        <FormAutocomplete
+          control={form.control}
+          name="product"
+          placeholder={t("placeholders.product")}
+          options={productOptions(t)}
+          // Covers depend on the product, so a new product clears the chosen cover
+          onPick={() => form.resetField("cover", { defaultValue: undefined })}
+        />
       </Field>
       <Field label={t("plans.cover")} error={errorOf("cover")}>
-        <Select {...form.register("cover")}>
-          {covers.map((c) => (
-            <option key={c} value={c}>
-              {t(`covers.${c}`)}
-            </option>
-          ))}
-        </Select>
+        <FormAutocomplete
+          key={chosenProduct}
+          control={form.control}
+          name="cover"
+          placeholder={t("placeholders.cover")}
+          options={coverOptions(t, PRODUCT_COVERS[chosenProduct] ? chosenProduct : product)}
+        />
       </Field>
       <Field label={t("plans.nameEn")} error={errorOf("nameEn")}>
-        <Input {...form.register("nameEn")} />
+        <Input placeholder={t("placeholders.planNameEn")} {...form.register("nameEn")} />
       </Field>
       <Field label={t("plans.nameAr")} error={errorOf("nameAr")}>
-        <Input dir="rtl" {...form.register("nameAr")} />
+        <Input dir="rtl" placeholder={t("placeholders.planNameAr")} {...form.register("nameAr")} />
       </Field>
       <Field label={t("plans.basePremium")} error={errorOf("basePremium")}>
-        <Input type="number" min={1} inputMode="numeric" {...form.register("basePremium")} />
+        <Input
+          type="number"
+          min={1}
+          inputMode="numeric"
+          placeholder={t("placeholders.premium")}
+          {...form.register("basePremium")}
+        />
       </Field>
       <Field label={t("plans.excess")} error={errorOf("excess")}>
         <Input type="number" min={0} inputMode="numeric" {...form.register("excess")} />
       </Field>
       <Field label={t("plans.benefits")} error={errorOf("benefits")} className="md:col-span-2">
-        <Input {...form.register("benefits")} />
+        <Input placeholder={t("placeholders.benefits")} {...form.register("benefits")} />
       </Field>
       <div className="grid justify-items-start gap-2 md:col-span-3">
         <FormError message={rootError} />

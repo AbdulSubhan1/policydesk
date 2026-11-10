@@ -23,6 +23,14 @@ export function sidebar(page: Page) {
   return page.getByRole("navigation", { name: "Main" });
 }
 
+/** Opens an Autocomplete found by its label, types to filter and picks the matching option. */
+export async function pick(page: Page, label: string, option: string | RegExp) {
+  const box = page.getByRole("combobox", { name: label });
+  await box.click();
+  if (typeof option === "string") await box.fill(option);
+  await page.getByRole("option", { name: option }).first().click();
+}
+
 /** A tiny valid PNG to upload as a document. */
 export const SAMPLE_PNG = {
   name: "scan.png",

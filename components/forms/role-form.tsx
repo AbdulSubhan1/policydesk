@@ -8,6 +8,7 @@ import { useActionForm } from "./use-action-form";
 
 export function RoleForm() {
   const t = useTranslations("roles");
+  const tp = useTranslations("placeholders");
   const { form, pending, onSubmit, errorOf, rootError } = useActionForm(roleSchema, createRole, {
     defaultValues: { name: "", description: "" },
     resetOnSuccess: true,
@@ -24,7 +25,7 @@ export function RoleForm() {
           <Input placeholder={t("newRolePlaceholder")} {...form.register("name")} />
         </Field>
         <Field label={t("roleDescription")} error={errorOf("description")}>
-          <Input {...form.register("description")} />
+          <Input placeholder={tp("roleDescription")} {...form.register("description")} />
         </Field>
         <Button variant="primary" disabled={pending} className="md:mt-6">
           {t("create")}

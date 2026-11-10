@@ -19,7 +19,17 @@ const NO_RAW_ELEMENTS = ["button", "input", "select", "textarea", "a", "img", "s
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-  { ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"] },
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+      "playwright-report/**",
+      "test-results/**",
+    ],
+  },
   {
     rules: {
       "no-restricted-imports": [

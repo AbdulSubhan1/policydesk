@@ -8,6 +8,7 @@ import { useActionForm } from "./use-action-form";
 
 export function InsurerForm() {
   const t = useTranslations("plans");
+  const tp = useTranslations("placeholders");
   const { form, pending, onSubmit, errorOf, rootError } = useActionForm(insurerSchema, createInsurer, {
     defaultValues: { name: "", contactEmail: "" },
     resetOnSuccess: true,
@@ -20,10 +21,10 @@ export function InsurerForm() {
       noValidate
     >
       <Field label={t("insurerName")} error={errorOf("name")}>
-        <Input {...form.register("name")} />
+        <Input placeholder={tp("insurerName")} {...form.register("name")} />
       </Field>
       <Field label={t("contactEmail")} error={errorOf("contactEmail")}>
-        <Input type="email" {...form.register("contactEmail")} />
+        <Input type="email" placeholder={tp("contactEmail")} {...form.register("contactEmail")} />
       </Field>
       <Button variant="primary" disabled={pending} className="sm:mt-6">
         {t("addInsurer")}
