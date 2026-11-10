@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { optionalText, text } from "./common";
+import { optionalText, requiredText } from "./fields";
 
 export const roleSchema = z.object({
-  name: text(2, 40),
+  name: requiredText(2, 40),
   description: optionalText(200),
 });
 

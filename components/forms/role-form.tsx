@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Card, Field, FormError, Input } from "@/components/ui";
+import { Button, Field, FormError, Input, Panel } from "@/components/ui";
 import { roleSchema } from "@/schemas/role";
 import { createRole } from "@/server/actions/roles";
 import { useActionForm } from "./use-action-form";
@@ -15,7 +15,7 @@ export function RoleForm() {
   });
 
   return (
-    <Card className="p-5">
+    <Panel>
       <form
         onSubmit={onSubmit}
         className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] md:items-start"
@@ -34,6 +34,6 @@ export function RoleForm() {
           <FormError message={rootError} />
         </div>
       </form>
-    </Card>
+    </Panel>
   );
 }

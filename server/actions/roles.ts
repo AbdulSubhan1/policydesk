@@ -3,7 +3,8 @@
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { isPermission } from "@/lib/rbac";
-import { id, type ActionResult } from "@/schemas/common";
+import type { ActionResult } from "@/schemas/action-result";
+import { id } from "@/schemas/fields";
 import { roleSchema, type RoleInput } from "@/schemas/role";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";

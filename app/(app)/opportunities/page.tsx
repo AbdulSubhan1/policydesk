@@ -1,32 +1,26 @@
 import { getTranslations } from "next-intl/server";
-import {
-  Badge,
-  ButtonLink,
-  Card,
-  CellText,
-  EmptyRow,
-  FilterTabs,
-  Forbidden,
-  PageHeader,
-  Table,
-  Td,
-  Th,
-  Tr,
-} from "@/components/ui";
+import { Badge, ButtonLink, CellText, DataTable, Forbidden, PageHeader } from "@/components/ui";
 import { OPPORTUNITY_STATUSES, type OpportunityStatus } from "@/constants/statuses";
 import { shortDate } from "@/lib/format";
+import { keyedOptions } from "@/lib/options";
+import { pageFrom } from "@/lib/pagination";
 import { can, scopeOf } from "@/lib/rbac";
+import type { SearchParams } from "@/lib/url";
 import { requireUser } from "@/server/auth";
 import { listOpportunities } from "@/server/queries/opportunities";
 
-export default async function OpportunitiesPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
+export default async function OpportunitiesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireUser();
   const scope = scopeOf(user, "opportunities");
   if (scope === "none") return <Forbidden permission="opportunities:view_own" />;
 
-  const { filter } = await searchParams;
-  const status = OPPORTUNITY_STATUSES.find((s) => s === filter) as OpportunityStatus | undefined;
-  const [rows, t] = await Promise.all([listOpportunities(user, status), getTranslations()]);
+  const params = await searchParams;
+  const status = OPPORTUNITY_STATUSES.find((s) => s === params.filter) as OpportunityStatus | undefined;
+  const page = pageFrom(params);
+  const [{ rows, total }, t] = await Promise.all([
+    listOpportunities(user, { status, q: params.q, page }),
+    getTranslations(),
+  ]);
 
   return (
     <>
@@ -41,38 +35,37 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
           )
         }
       />
-      <FilterTabs base="/opportunities" values={OPPORTUNITY_STATUSES} current={status} />
-      <Card>
-        <Table>
-          <thead>
-            <tr>
-              <Th>{t("opportunities.customer")}</Th>
-              <Th>{t("opportunities.product")}</Th>
-              <Th>{t("opportunities.status")}</Th>
-              <Th>{t("opportunities.coordinator")}</Th>
-              <Th>{t("opportunities.received")}</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && <EmptyRow colSpan={5}>{t("opportunities.empty")}</EmptyRow>}
-            {rows.map((o) => (
-              <Tr key={o.id}>
-                <Td>
-                  <CellText href={`/opportunities/${o.id}`} primary={o.customerName} secondary={o.email} />
-                </Td>
-                <Td>
-                  <CellText primary={t(`products.${o.product}`)} secondary={t(`departments.${o.departmentKey}`)} />
-                </Td>
-                <Td>
-                  <Badge status={o.status} />
-                </Td>
-                <Td className="text-ink-soft">{o.coordinatorName ?? t("common.unassigned")}</Td>
-                <Td className="whitespace-nowrap text-muted">{shortDate(o.createdAt)}</Td>
-              </Tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
+      <DataTable
+        path="/opportunities"
+        params={params}
+        rows={rows}
+        rowKey={(o) => o.id}
+        search={{ placeholder: t("opportunities.search") }}
+        filters={{ label: t("opportunities.status"), options: keyedOptions(t, "status", OPPORTUNITY_STATUSES) }}
+        pagination={{ page: page.page, pageSize: page.limit, total }}
+        empty={{ title: t("opportunities.empty"), icon: "inbox" }}
+        columns={[
+          {
+            key: "customer",
+            header: t("opportunities.customer"),
+            cell: (o) => <CellText href={`/opportunities/${o.id}`} primary={o.customerName} secondary={o.email} />,
+          },
+          {
+            key: "product",
+            header: t("opportunities.product"),
+            cell: (o) => (
+              <CellText primary={t(`products.${o.product}`)} secondary={t(`departments.${o.departmentKey}`)} />
+            ),
+          },
+          { key: "status", header: t("opportunities.status"), cell: (o) => <Badge status={o.status} /> },
+          {
+            key: "coordinator",
+            header: t("opportunities.coordinator"),
+            cell: (o) => o.coordinatorName ?? t("common.unassigned"),
+          },
+          { key: "received", header: t("opportunities.received"), nowrap: true, cell: (o) => shortDate(o.createdAt) },
+        ]}
+      />
     </>
   );
 }

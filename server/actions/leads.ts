@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { EDITABLE_LEAD_STAGES } from "@/constants/statuses";
-import { id, option } from "@/schemas/common";
+import { id, option } from "@/schemas/fields";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import { requireLead } from "@/server/guards";

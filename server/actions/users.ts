@@ -2,7 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { id } from "@/schemas/common";
+import { id } from "@/schemas/fields";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";
 import { db, schema } from "@/server/db";

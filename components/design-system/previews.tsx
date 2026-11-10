@@ -4,16 +4,12 @@ import {
   Badge,
   Button,
   ButtonLink,
-  Card,
-  CardBody,
-  CardHeader,
   CellText,
   Checkbox,
+  DataTable,
   DetailList,
-  EmptyRow,
   EmptyState,
   Field,
-  FilterTabs,
   FormError,
   Icon,
   ICON_NAMES,
@@ -21,228 +17,319 @@ import {
   Input,
   ListRow,
   PageHeader,
+  Panel,
+  PanelSection,
+  PhoneInput,
   PillNav,
   ProgressBar,
   Radio,
   Stat,
-  Table,
   Tabs,
-  Td,
   Textarea,
-  Th,
-  Tr,
 } from "@/components/ui";
 import { LEAD_STAGES } from "@/constants/statuses";
+import { money } from "@/lib/format";
+import { keyedOptions, productOptions } from "@/lib/options";
+import { withParams, type SearchParams } from "@/lib/url";
+import { ValidationDemo } from "./validation-demo";
+
+// Sample rows for the live DataTable example. Search, filter and pages work on them through the URL.
+const SAMPLE = Array.from({ length: 23 }, (_, i) => ({
+  id: i + 1,
+  customer: `${["Ahmed Rahman", "Layla Haddad", "John Smith", "Priya Patel", "Yusuf Khan"][i % 5]} ${i + 1}`,
+  product: (["car", "health", "travel", "home", "life"] as const)[i % 5],
+  stage: LEAD_STAGES[i % 3],
+  premium: 400 + i * 85,
+}));
+const PAGE = 5;
+const PATH = "/design-system";
 
 /** A live example of each library component, keyed by its registry name. */
-export function Preview({ name }: { name: string }) {
-  const t = useTranslations("designSystem");
-  const table = (
-    <Table size="sm">
-      <thead>
-        <tr>
-          <Th>Customer</Th>
-          <Th>Stage</Th>
-        </tr>
-      </thead>
-      <tbody>
-        <Tr>
-          <Td>
-            <CellText primary="Ahmed Rahman" secondary="Lead #2" />
-          </Td>
-          <Td>
-            <Badge status="won" />
-          </Td>
-        </Tr>
-        <EmptyRow colSpan={2}>No more leads.</EmptyRow>
-      </tbody>
-    </Table>
-  );
+export function Preview({ name, params }: { name: string; params: SearchParams }) {
+  const t = useTranslations();
 
-  const previews: Record<string, React.ReactNode> = {
-    Button: (
-      <div className="flex flex-wrap gap-2">
-        <Button variant="primary">Primary</Button>
-        <Button>Secondary</Button>
-        <Button variant="danger">Danger</Button>
-        <Button variant="ghost">Ghost</Button>
-        <Button size="sm">Small</Button>
-        <Button disabled>Disabled</Button>
-      </div>
-    ),
-    ButtonLink: <ButtonLink href="/design-system">Link styled as a button</ButtonLink>,
-    Input: (
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Input placeholder="name@example.com" />
-        <Input type="file" />
-      </div>
-    ),
-    Autocomplete: (
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Autocomplete
-          aria-label="Product"
-          placeholder="Search products…"
-          options={[
-            { value: "car", label: "Car", group: "Motor & Marine" },
-            { value: "bike", label: "Bike", group: "Motor & Marine" },
-            { value: "yacht", label: "Yacht", group: "Motor & Marine" },
-            { value: "health", label: "Health", group: "Health" },
-            { value: "travel", label: "Travel", group: "Home & Travel", hint: "Single trip or annual" },
+  switch (name) {
+    case "Button":
+      return (
+        <div className="flex flex-wrap gap-2">
+          <Button variant="primary">{t("lead.policy.book")}</Button>
+          <Button>{t("common.save")}</Button>
+          <Button variant="danger">{t("lead.policy.cancelPolicy")}</Button>
+          <Button variant="ghost">{t("common.disable")}</Button>
+          <Button size="sm">{t("lead.setStage")}</Button>
+          <Button disabled>{t("common.save")}</Button>
+        </div>
+      );
+    case "ButtonLink":
+      return <ButtonLink href={PATH}>{t("opportunities.openLead")}</ButtonLink>;
+    case "Input":
+      return (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label={t("opportunities.email")}>
+            <Input type="email" placeholder={t("placeholders.email")} />
+          </Field>
+          <Field label={t("lead.documents.file")}>
+            <Input type="file" />
+          </Field>
+          <Field label={t("lead.kyc.dateOfBirth")}>
+            <Input type="date" />
+          </Field>
+          <Field label={t("plans.basePremium")}>
+            <Input type="number" placeholder={t("placeholders.premium")} disabled />
+          </Field>
+        </div>
+      );
+    case "Autocomplete":
+      return (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label={t("opportunities.product")}>
+            <Autocomplete options={productOptions(t)} placeholder={t("placeholders.product")} />
+          </Field>
+          <Field label={t("leads.stage")}>
+            <Autocomplete options={keyedOptions(t, "status", LEAD_STAGES)} defaultValue="quoted" />
+          </Field>
+        </div>
+      );
+    case "PhoneInput":
+      return (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label={t("opportunities.phone")} group>
+            <PhoneInput aria-label={t("opportunities.phone")} defaultValue="+971501234567" />
+          </Field>
+          <Field label={`${t("opportunities.phone")} (PK, lockCountry)`} group>
+            <PhoneInput aria-label={t("opportunities.phone")} defaultCountry="PK" lockCountry />
+          </Field>
+        </div>
+      );
+    case "Textarea":
+      return <Textarea rows={3} placeholder={t("placeholders.notes")} />;
+    case "Checkbox":
+      return (
+        <div className="grid gap-3">
+          <Checkbox size="sm" label="size=sm" />
+          <Checkbox label={t("permissions.leads:edit")} hint="leads:edit" defaultChecked />
+          <Checkbox size="lg" label="size=lg" defaultChecked />
+          <Checkbox label={t("roles.locked")} disabled defaultChecked />
+        </div>
+      );
+    case "Radio":
+      return (
+        <div className="flex items-center gap-4">
+          <Radio name="demo-radio" size="sm" aria-label="sm" />
+          <Radio name="demo-radio" aria-label="md" defaultChecked />
+          <Radio name="demo-radio" size="lg" aria-label="lg" />
+        </div>
+      );
+    case "Field":
+      return <ValidationDemo />;
+    case "FormError":
+      return <FormError message="errors.invalidLogin" />;
+    case "Hidden":
+      return null;
+    case "InlineForm":
+      return (
+        <InlineForm>
+          <Autocomplete
+            aria-label={t("leads.stage")}
+            defaultValue="quoted"
+            options={keyedOptions(t, "status", LEAD_STAGES)}
+          />
+          <Button size="sm" type="button">
+            {t("lead.setStage")}
+          </Button>
+        </InlineForm>
+      );
+    case "PageHeader":
+      return (
+        <PageHeader
+          back={{ href: PATH, label: t("nav.leads") }}
+          title="Ahmed Rahman"
+          description={t("lead.summary", {
+            product: t("products.car"),
+            department: t("departments.motor_marine"),
+            advisor: "Aisha Khan",
+          })}
+          action={<Badge status="quoted" />}
+        />
+      );
+    case "Panel":
+      return (
+        <div className="grid gap-4">
+          <Panel title={t("lead.customerCard")} actions={<Button size="sm">{t("common.save")}</Button>}>
+            <DetailList
+              columns={2}
+              items={[
+                { label: t("opportunities.email"), value: "ahmed@example.com" },
+                { label: t("opportunities.phone"), value: "+971501234567" },
+              ]}
+            />
+          </Panel>
+          <Panel title={t("plans.insurers")} flush footer={<span className="text-sm text-muted">footer</span>}>
+            <ul>
+              <ListRow action={<Badge status="active" />}>
+                <CellText primary="Northwind Assurance" secondary={t("plans.planCount", { count: 12 })} />
+              </ListRow>
+            </ul>
+          </Panel>
+        </div>
+      );
+    case "PanelSection":
+      return (
+        <Panel title={t("lead.tabs.quotes")} flush>
+          <PanelSection>{t("lead.quotes.empty")}</PanelSection>
+          <PanelSection muted>{t("lead.quotes.noPlans")}</PanelSection>
+        </Panel>
+      );
+    case "DetailList":
+      return (
+        <DetailList
+          columns={3}
+          items={[
+            { label: t("lead.kyc.idNumber"), value: "784-1990-1234567-1" },
+            { label: t("lead.kyc.nationality"), value: "Pakistan" },
+            { label: t("lead.policy.reference"), value: "" },
           ]}
         />
-        <Autocomplete
-          aria-label="Stage"
-          defaultValue="quoted"
-          options={LEAD_STAGES.map((s) => ({ value: s, label: s }))}
-        />
-      </div>
-    ),
-    Textarea: <Textarea rows={2} placeholder="Notes" />,
-    Checkbox: (
-      <div className="grid gap-3">
-        <Checkbox label="Change lead stage" hint="leads:edit" defaultChecked />
-        <Checkbox label="Cancel policies" />
-        <Checkbox label="Locked permission" disabled defaultChecked />
-      </div>
-    ),
-    Radio: (
-      <span className="flex gap-3">
-        <Radio name="demo-radio" aria-label="Optional" defaultChecked />
-        <Radio name="demo-radio" aria-label="Required" />
-      </span>
-    ),
-    Hidden: <p className="text-sm text-muted">Renders nothing visible.</p>,
-    Field: (
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Email" hint="We never share it">
-          <Input />
-        </Field>
-        <Field label="Phone" error="validation.phone">
-          <Input defaultValue="12" />
-        </Field>
-      </div>
-    ),
-    FormError: <FormError message="errors.invalidLogin" />,
-    InlineForm: (
-      <InlineForm>
-        <Autocomplete
-          aria-label="Stage"
-          defaultValue="quoted"
-          options={LEAD_STAGES.map((s) => ({ value: s, label: s }))}
-        />
-        <Button size="sm" type="button">
-          Set stage
-        </Button>
-      </InlineForm>
-    ),
-    Card: (
-      <Card>
-        <CardBody>{t("sampleBody")}</CardBody>
-      </Card>
-    ),
-    CardHeader: (
-      <Card>
-        <CardHeader title={t("sampleHeading")} description={t("sampleBody")} action={<Badge status="active" />} />
-      </Card>
-    ),
-    CardBody: (
-      <Card>
-        <CardBody>{t("sampleBody")}</CardBody>
-      </Card>
-    ),
-    PageHeader: (
-      <PageHeader
-        back={{ href: "/design-system", label: "Back" }}
-        title={t("sampleHeading")}
-        description={t("sampleBody")}
-      />
-    ),
-    DetailList: (
-      <DetailList
-        columns={3}
-        items={[
-          { label: "Policy", value: "PD-2026-00034" },
-          { label: "Premium", value: "$1,110" },
-          { label: "Reference", value: "" },
-        ]}
-      />
-    ),
-    Badge: (
-      <div className="flex flex-wrap gap-1.5">
-        {["new", "qualified", "kyc", "approved", "rejected", "lost", "renewal"].map((s) => (
-          <Badge key={s} status={s} />
-        ))}
-      </div>
-    ),
-    Stat: (
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Open leads" value="12" href="/leads" />
-        <Stat label="Win rate" value="67%" />
-      </div>
-    ),
-    ProgressBar: (
-      <div className="grid gap-2">
-        <ProgressBar value={2} total={10} />
-        <ProgressBar value={7} total={10} />
-      </div>
-    ),
-    Icon: (
-      <div className="flex flex-wrap gap-3 text-ink-soft">
-        {ICON_NAMES.map((n) => (
-          <span key={n} className="grid justify-items-center gap-1 text-xs text-muted">
-            <Icon name={n} size={22} />
-            {n}
-          </span>
-        ))}
-      </div>
-    ),
-    Table: table,
-    Th: table,
-    Tr: table,
-    Td: table,
-    CellText: (
-      <CellText href="/design-system" primary="A very long customer name that will truncate" secondary="Second line" />
-    ),
-    EmptyRow: table,
-    EmptyState: (
-      <EmptyState title="Nothing to renew right now">Come back when a policy is close to its end date.</EmptyState>
-    ),
-    Forbidden: <p className="text-sm text-muted">Full-page message; see any page your role cannot open.</p>,
-    ListRow: (
-      <Card>
-        <ul>
-          <ListRow action={<Button size="sm">Disable</Button>}>
-            <CellText primary="Northwind Assurance" secondary="12 plans" />
-          </ListRow>
-          <ListRow muted action={<Button size="sm">Enable</Button>}>
-            <CellText primary="Crescent Cover" secondary="Inactive" />
-          </ListRow>
-        </ul>
-      </Card>
-    ),
-    PillNav: (
-      <PillNav
-        label="Products"
-        items={[
-          { href: "/design-system", label: "Car", active: true },
-          { href: "/design-system?x=1", label: "Health", active: false },
-        ]}
-      />
-    ),
-    FilterTabs: <FilterTabs base="/design-system" values={["new", "contacted", "qualified"]} />,
-    Tabs: (
-      <Card>
-        <Tabs
-          label="Sections"
-          current="quotes"
-          tabs={[
-            { id: "quotes", label: "Quotes", href: "/design-system", count: 2 },
-            { id: "kyc", label: "KYC", href: "/design-system?tab=kyc" },
+      );
+    case "DataTable": {
+      const q = params.q?.toLowerCase();
+      const rows = SAMPLE.filter(
+        (r) => (!params.filter || r.stage === params.filter) && (!q || r.customer.toLowerCase().includes(q)),
+      );
+      const page = Math.max(1, Number(params.page) || 1);
+      return (
+        <DataTable
+          path={PATH}
+          params={params}
+          rows={rows.slice((page - 1) * PAGE, page * PAGE)}
+          rowKey={(r) => r.id}
+          minWidth="sm"
+          search={{ placeholder: t("leads.search") }}
+          filters={{ label: t("leads.stage"), options: keyedOptions(t, "status", LEAD_STAGES.slice(0, 3)) }}
+          pagination={{ page, pageSize: PAGE, total: rows.length }}
+          empty={{
+            title: t("leads.empty"),
+            icon: "search",
+            action: <ButtonLink href={PATH}>{t("common.all")}</ButtonLink>,
+          }}
+          columns={[
+            {
+              key: "customer",
+              header: t("leads.customer"),
+              cell: (r) => <CellText primary={r.customer} secondary={t("leads.leadNumber", { id: r.id })} />,
+            },
+            { key: "product", header: t("leads.product"), cell: (r) => t(`products.${r.product}`) },
+            { key: "stage", header: t("leads.stage"), cell: (r) => <Badge status={r.stage} /> },
+            {
+              key: "premium",
+              header: t("policies.premium"),
+              align: "end",
+              nowrap: true,
+              cell: (r) => money(r.premium),
+            },
           ]}
         />
-      </Card>
-    ),
-  };
-
-  return previews[name] ?? null;
+      );
+    }
+    case "Badge":
+      return (
+        <div className="flex flex-wrap gap-1.5">
+          {["new", "qualified", "kyc", "approved", "rejected", "lost", "renewal", "high"].map((s) => (
+            <Badge key={s} status={s} />
+          ))}
+        </div>
+      );
+    case "Stat":
+      return (
+        <div className="grid grid-cols-2 gap-3">
+          <Stat label={t("dashboard.openLeads")} value="12" href={PATH} />
+          <Stat label={t("dashboard.winRate")} value="67%" />
+        </div>
+      );
+    case "ProgressBar":
+      return (
+        <div className="grid gap-2">
+          <ProgressBar value={2} total={10} />
+          <ProgressBar value={7} total={10} />
+        </div>
+      );
+    case "CellText":
+      return (
+        <CellText
+          href={PATH}
+          primary="Muhammad Abdullah Al-Rashidi Insurance Brokers LLC"
+          secondary="ahmed.rahman.longemail@example.com"
+        />
+      );
+    case "ListRow":
+      return (
+        <Panel flush>
+          <ul>
+            <ListRow action={<Button size="sm">{t("common.disable")}</Button>}>
+              <CellText primary="Northwind Assurance" secondary={t("plans.planCount", { count: 12 })} />
+            </ListRow>
+            <ListRow muted action={<Button size="sm">{t("common.enable")}</Button>}>
+              <CellText primary="Crescent Cover" secondary={t("common.inactive")} />
+            </ListRow>
+          </ul>
+        </Panel>
+      );
+    case "Icon":
+      return (
+        <div className="flex flex-wrap gap-4 text-ink-soft">
+          {ICON_NAMES.map((n) => (
+            <span key={n} className="grid justify-items-center gap-1 text-xs text-muted">
+              <Icon name={n} size={22} />
+              {n}
+            </span>
+          ))}
+        </div>
+      );
+    case "PillNav":
+      return (
+        <PillNav
+          label={t("plans.product")}
+          items={(["car", "health", "travel"] as const).map((p) => ({
+            href: withParams(PATH, params, { product: p }),
+            label: t(`products.${p}`),
+            active: (params.product ?? "car") === p,
+          }))}
+        />
+      );
+    case "Tabs": {
+      const tab = params.tab === "kyc" || params.tab === "policy" ? params.tab : "quotes";
+      return (
+        <Panel flush>
+          <Tabs
+            label={t("lead.tabs.quotes")}
+            current={tab}
+            tabs={[
+              {
+                id: "quotes",
+                label: t("lead.tabs.quotes"),
+                href: withParams(PATH, params, { tab: "quotes" }),
+                count: 2,
+              },
+              { id: "kyc", label: t("lead.tabs.kyc"), href: withParams(PATH, params, { tab: "kyc" }) },
+              { id: "policy", label: t("lead.tabs.policy"), href: withParams(PATH, params, { tab: "policy" }) },
+            ]}
+          />
+          <PanelSection>{t(`lead.tabs.${tab}`)}</PanelSection>
+        </Panel>
+      );
+    }
+    case "EmptyState":
+      return (
+        <Panel flush>
+          <EmptyState
+            icon="shield"
+            title={t("dashboard.noRenewals")}
+            description={t("dashboard.renewalsHint", { days: 45 })}
+            action={<ButtonLink href={PATH}>{t("nav.policies")}</ButtonLink>}
+          />
+        </Panel>
+      );
+    default:
+      return null;
+  }
 }

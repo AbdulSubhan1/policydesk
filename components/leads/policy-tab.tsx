@@ -3,11 +3,11 @@ import {
   Badge,
   Button,
   ButtonLink,
-  CardBody,
   DetailList,
   EmptyState,
   Field,
   Hidden,
+  PanelSection,
   Input,
   Autocomplete,
 } from "@/components/ui";
@@ -39,17 +39,21 @@ export async function PolicyTab({ leadId }: { leadId: number }) {
 
     if (!accepted || blockers.length > 0) {
       return (
-        <EmptyState title={t("lead.policy.notReady")}>
-          <ul className="mt-2 grid gap-1 text-start">
-            {blockers.map((b) => (
-              <li key={b}>{b}</li>
-            ))}
-          </ul>
-        </EmptyState>
+        <EmptyState
+          icon="shield"
+          title={t("lead.policy.notReady")}
+          description={
+            <ul className="mt-2 grid gap-1 text-start">
+              {blockers.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+          }
+        />
       );
     }
     return (
-      <CardBody className="flex flex-wrap items-center justify-between gap-3">
+      <PanelSection className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink-soft">
           {t("lead.policy.ready", { insurer: accepted.insurer, amount: money(accepted.premium) })}
         </p>
@@ -59,14 +63,14 @@ export async function PolicyTab({ leadId }: { leadId: number }) {
             <Button variant="primary">{t("lead.policy.book")}</Button>
           </form>
         )}
-      </CardBody>
+      </PanelSection>
     );
   }
 
   const canPay = can(user, "payments:record") && policy.status !== "cancelled" && policy.paymentStatus !== "refunded";
 
   return (
-    <CardBody className="grid gap-5">
+    <PanelSection className="grid gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-mono text-sm font-medium">{policy.policyNumber}</p>
@@ -148,6 +152,6 @@ export async function PolicyTab({ leadId }: { leadId: number }) {
           </form>
         )}
       </div>
-    </CardBody>
+    </PanelSection>
   );
 }

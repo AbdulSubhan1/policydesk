@@ -1,8 +1,8 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
-import { RENEWAL_WINDOW_DAYS } from "@/constants/config";
+import { and, eq, sql } from "drizzle-orm";
 import type { LeadStage, OpportunityStatus } from "@/constants/statuses";
 import type { SessionUser } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
+import { renewalDue } from "./policies";
 import { leadScope, opportunityScope } from "./scope";
 
 const { opportunities, leads, policies, kycRecords } = schema;
@@ -42,14 +42,7 @@ export async function dashboardStats(user: SessionUser) {
       .from(policies)
       .innerJoin(leads, eq(policies.leadId, leads.id))
       .innerJoin(opportunities, eq(leads.opportunityId, opportunities.id))
-      .where(
-        and(
-          lScope,
-          eq(policies.status, "active"),
-          isNull(policies.renewedByLeadId),
-          sql`${policies.endDate} between current_date and current_date + ${RENEWAL_WINDOW_DAYS}::int`,
-        ),
-      )
+      .where(and(lScope, renewalDue, sql`${policies.endDate} >= current_date`))
       .orderBy(policies.endDate)
       .limit(6),
   ]);

@@ -3,7 +3,8 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { QUOTE_DECISIONS } from "@/constants/statuses";
-import { id, option, type ActionResult } from "@/schemas/common";
+import type { ActionResult } from "@/schemas/action-result";
+import { id, option } from "@/schemas/fields";
 import { quoteSchema, type QuoteInput } from "@/schemas/quote";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";

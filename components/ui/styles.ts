@@ -8,7 +8,7 @@ export const surface = "min-w-0 rounded-lg border border-line bg-white";
 
 /** Text inputs, autocompletes and textareas. */
 export const control =
-  "h-10 w-full min-w-0 rounded-lg border border-line bg-white px-3 text-sm text-ink shadow-xs shadow-ink/5 outline-none transition-colors placeholder:text-muted/70 hover:border-ink/25 focus:border-brand focus:ring-3 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-paper disabled:text-muted aria-invalid:border-risk aria-invalid:focus:ring-risk/15";
+  "h-10 w-full min-w-0 rounded-lg border border-line bg-white px-3 text-sm text-ink shadow-xs shadow-ink/5 outline-none transition-colors placeholder:text-muted/70 hover:border-ink/25 focus:border-brand focus:ring-3 focus:ring-brand/15 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-paper disabled:text-muted aria-invalid:border-risk aria-invalid:focus:ring-risk/15";
 
 export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "inverse" | "option";
 export type ButtonSize = "sm" | "md";

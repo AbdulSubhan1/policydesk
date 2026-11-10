@@ -27,3 +27,14 @@ export async function missingRequiredDocuments(leadId: number, product: Product)
   const have = new Set(uploaded.map((d) => d.documentTypeId));
   return config.filter((d) => d.required && !have.has(d.id));
 }
+
+/** The central list of document types, enabled or not. */
+export function listDocumentTypes() {
+  return db.select().from(documentTypes).orderBy(documentTypes.id);
+}
+
+/** How each document type is used by a product: "none", "optional" or "required". */
+export async function productChecklist(product: Product) {
+  const rows = await db.select().from(productDocuments).where(eq(productDocuments.product, product));
+  return new Map(rows.map((r) => [r.documentTypeId, r.required ? "required" : "optional"] as const));
+}

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { PAYMENT_METHODS } from "@/constants/statuses";
-import { id, option, optionalText } from "@/schemas/common";
+import { id, option, optionalText } from "@/schemas/fields";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import { requirePolicy, requireQuote } from "@/server/guards";

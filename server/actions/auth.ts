@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LOCALE_COOKIE } from "@/constants/i18n";
 import { isLocale } from "@/lib/i18n";
-import type { ActionResult } from "@/schemas/common";
+import type { ActionResult } from "@/schemas/action-result";
 import { loginSchema, type LoginInput } from "@/schemas/login";
 import { createSession, destroySession } from "@/server/auth";
 import { db, schema } from "@/server/db";

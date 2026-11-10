@@ -1,31 +1,24 @@
-import { eq } from "drizzle-orm";
 import { getLocale, getTranslations } from "next-intl/server";
 import { DocumentTypeForm } from "@/components/forms/document-type-form";
 import {
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   CellText,
+  DataTable,
   Forbidden,
   Hidden,
   ListRow,
   PageHeader,
+  Panel,
   PillNav,
   Radio,
-  Table,
-  Td,
-  Th,
-  Tr,
 } from "@/components/ui";
 import { PRODUCTS, type Product } from "@/constants/products";
 import { localized } from "@/lib/i18n";
 import { can } from "@/lib/rbac";
 import { saveProductDocuments, toggleDocumentType } from "@/server/actions/document-settings";
 import { requireUser } from "@/server/auth";
-import { db, schema } from "@/server/db";
+import { listDocumentTypes, productChecklist } from "@/server/queries/documents";
 
-const { documentTypes, productDocuments } = schema;
 const LEVELS = ["none", "optional", "required"] as const;
 
 export default async function DocumentSettingsPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
@@ -34,26 +27,25 @@ export default async function DocumentSettingsPage({ searchParams }: { searchPar
 
   const requested = (await searchParams).product;
   const product: Product = PRODUCTS.find((p) => p === requested) ?? "car";
-  const [types, config, t, locale] = await Promise.all([
-    db.select().from(documentTypes).orderBy(documentTypes.id),
-    db.select().from(productDocuments).where(eq(productDocuments.product, product)),
+  const [types, checklist, t, locale] = await Promise.all([
+    listDocumentTypes(),
+    productChecklist(product),
     getTranslations(),
     getLocale(),
   ]);
-  const level = new Map(config.map((c) => [c.documentTypeId, c.required ? "required" : "optional"]));
   const levelLabel = {
     none: t("documentSettings.notUsed"),
     optional: t("documentSettings.optional"),
     required: t("documentSettings.required"),
   };
+  const formId = `checklist-${product}`;
 
   return (
     <>
       <PageHeader title={t("documentSettings.title")} description={t("documentSettings.description")} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <Card className="self-start">
-          <CardHeader title={t("documentSettings.types")} />
+        <Panel title={t("documentSettings.types")} flush footer={<DocumentTypeForm />} className="self-start">
           <ul>
             {types.map((type) => (
               <ListRow
@@ -72,10 +64,7 @@ export default async function DocumentSettingsPage({ searchParams }: { searchPar
               </ListRow>
             ))}
           </ul>
-          <CardBody className="border-t border-line bg-paper/50">
-            <DocumentTypeForm />
-          </CardBody>
-        </Card>
+        </Panel>
 
         <div className="min-w-0">
           <PillNav
@@ -86,46 +75,47 @@ export default async function DocumentSettingsPage({ searchParams }: { searchPar
               active: p === product,
             }))}
           />
-          <Card>
-            <form key={product} action={saveProductDocuments}>
+          <Panel
+            title={t("documentSettings.checklist", { product: t(`products.${product}`) })}
+            flush
+            actions={
+              <Button variant="primary" form={formId}>
+                {t("common.save")}
+              </Button>
+            }
+          >
+            <form id={formId} key={product} action={saveProductDocuments}>
               <Hidden name="product" value={product} />
-              <CardHeader
-                title={t("documentSettings.checklist", { product: t(`products.${product}`) })}
-                action={<Button variant="primary">{t("common.save")}</Button>}
+              <DataTable
+                embedded
+                path="/admin/documents"
+                rows={types.filter((type) => type.active)}
+                rowKey={(type) => type.id}
+                minWidth="sm"
+                empty={{ title: t("documentSettings.types"), icon: "fileSettings" }}
+                columns={[
+                  {
+                    key: "document",
+                    header: t("documentSettings.document"),
+                    cell: (type) => localized(type.name, locale),
+                  },
+                  ...LEVELS.map((level) => ({
+                    key: level,
+                    header: levelLabel[level],
+                    align: "center" as const,
+                    cell: (type: (typeof types)[number]) => (
+                      <Radio
+                        name={`doc-${type.id}`}
+                        value={level}
+                        defaultChecked={(checklist.get(type.id) ?? "none") === level}
+                        aria-label={`${localized(type.name, locale)}: ${levelLabel[level]}`}
+                      />
+                    ),
+                  })),
+                ]}
               />
-              <Table size="sm">
-                <thead>
-                  <tr>
-                    <Th>{t("documentSettings.document")}</Th>
-                    {LEVELS.map((l) => (
-                      <Th key={l} className="text-center">
-                        {levelLabel[l]}
-                      </Th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {types
-                    .filter((type) => type.active)
-                    .map((type) => (
-                      <Tr key={type.id}>
-                        <Td>{localized(type.name, locale)}</Td>
-                        {LEVELS.map((l) => (
-                          <Td key={l} className="text-center">
-                            <Radio
-                              name={`doc-${type.id}`}
-                              value={l}
-                              defaultChecked={(level.get(type.id) ?? "none") === l}
-                              aria-label={`${localized(type.name, locale)}: ${levelLabel[l]}`}
-                            />
-                          </Td>
-                        ))}
-                      </Tr>
-                    ))}
-                </tbody>
-              </Table>
             </form>
-          </Card>
+          </Panel>
         </div>
       </div>
     </>

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { LoginForm } from "@/components/forms/login-form";
 import { LocaleSwitch } from "@/components/layout/locale-switch";
-import { Card } from "@/components/ui";
+import { Panel } from "@/components/ui";
 import { DEMO_PASSWORD } from "@/constants/config";
 
 // The seeded demo users, one per role (see scripts/setup-db.ts)
@@ -33,7 +33,7 @@ export default async function LoginPage() {
       </section>
 
       <section className="flex items-center justify-center px-4 py-10 md:px-10">
-        <Card className="w-full max-w-md p-6">
+        <Panel className="w-full max-w-md">
           <h2 className="text-lg font-semibold">{t("login.demoTitle")}</h2>
           <p className="mt-1 mb-5 text-sm text-muted">{t("login.demoBody", { password: DEMO_PASSWORD })}</p>
           <LoginForm
@@ -44,7 +44,7 @@ export default async function LoginPage() {
               hint: t(`login.roles.${a.role}Hint`),
             }))}
           />
-        </Card>
+        </Panel>
       </section>
     </main>
   );

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { optionalText, text } from "./common";
+import { optionalText, requiredText } from "./fields";
 
 export const documentTypeSchema = z.object({
-  nameEn: text(2, 60),
+  nameEn: requiredText(2, 60),
   nameAr: optionalText(60),
   descriptionEn: optionalText(200),
   descriptionAr: optionalText(200),

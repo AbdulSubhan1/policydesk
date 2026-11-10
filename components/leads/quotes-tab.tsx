@@ -1,11 +1,13 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { QuoteForm } from "@/components/forms/quote-form";
-import { Badge, Button, CardBody, CellText, EmptyRow, Hidden, Table, Td, Th, Tr } from "@/components/ui";
+import { Badge, Button, CellText, DataTable, Hidden, PanelSection, type Column } from "@/components/ui";
 import { money } from "@/lib/format";
 import { localized } from "@/lib/i18n";
 import { can } from "@/lib/rbac";
 import { setQuoteStatus } from "@/server/actions/quotes";
 import { getLeadContext, getPlans, getQuotes } from "@/server/queries/lead-details";
+
+type Quote = Awaited<ReturnType<typeof getQuotes>>[number];
 
 export async function QuotesTab({ leadId }: { leadId: number }) {
   const [{ user, closed }, quotes, t, locale] = await Promise.all([
@@ -18,58 +20,56 @@ export async function QuotesTab({ leadId }: { leadId: number }) {
   const canQuote = can(user, "quotes:create") && !closed;
   const plans = canQuote ? await getPlans(leadId) : [];
 
+  const columns: Column<Quote>[] = [
+    {
+      key: "plan",
+      header: t("lead.quotes.insurerPlan"),
+      cell: (q) => (
+        <CellText primary={q.insurer} secondary={`${localized(q.planName, locale)}, ${t(`covers.${q.cover}`)}`} />
+      ),
+    },
+    { key: "premium", header: t("lead.quotes.premium"), align: "end", nowrap: true, cell: (q) => money(q.premium) },
+    { key: "status", header: t("lead.quotes.status"), cell: (q) => <Badge status={q.status} /> },
+  ];
+  if (canDecide) {
+    columns.push({
+      key: "decision",
+      header: t("lead.quotes.decision"),
+      align: "end",
+      cell: (q) =>
+        q.status === "sent" && (
+          <form action={setQuoteStatus} className="inline-flex gap-2">
+            <Hidden name="quoteId" value={q.id} />
+            <Button size="sm" name="status" value="accepted">
+              {t("lead.quotes.accepted")}
+            </Button>
+            <Button size="sm" variant="danger" name="status" value="rejected">
+              {t("lead.quotes.declined")}
+            </Button>
+          </form>
+        ),
+    });
+  }
+
   return (
     <>
-      <Table size="sm">
-        <thead>
-          <tr>
-            <Th>{t("lead.quotes.insurerPlan")}</Th>
-            <Th>{t("lead.quotes.premium")}</Th>
-            <Th>{t("lead.quotes.status")}</Th>
-            {canDecide && <Th className="text-end">{t("lead.quotes.decision")}</Th>}
-          </tr>
-        </thead>
-        <tbody>
-          {quotes.length === 0 && <EmptyRow colSpan={4}>{t("lead.quotes.empty")}</EmptyRow>}
-          {quotes.map((q) => (
-            <Tr key={q.id}>
-              <Td>
-                <CellText
-                  primary={q.insurer}
-                  secondary={`${localized(q.planName, locale)}, ${t(`covers.${q.cover}`)}`}
-                />
-              </Td>
-              <Td>{money(q.premium)}</Td>
-              <Td>
-                <Badge status={q.status} />
-              </Td>
-              {canDecide && (
-                <Td className="text-end">
-                  {q.status === "sent" && (
-                    <form action={setQuoteStatus} className="inline-flex gap-2">
-                      <Hidden name="quoteId" value={q.id} />
-                      <Button size="sm" name="status" value="accepted">
-                        {t("lead.quotes.accepted")}
-                      </Button>
-                      <Button size="sm" variant="danger" name="status" value="rejected">
-                        {t("lead.quotes.declined")}
-                      </Button>
-                    </form>
-                  )}
-                </Td>
-              )}
-            </Tr>
-          ))}
-        </tbody>
-      </Table>
+      <DataTable
+        embedded
+        path={`/leads/${leadId}`}
+        rows={quotes}
+        rowKey={(q) => q.id}
+        columns={columns}
+        minWidth="sm"
+        empty={{ title: t("lead.quotes.emptyTitle"), description: t("lead.quotes.empty"), icon: "clipboard" }}
+      />
       {canQuote && (
-        <CardBody className="bg-paper/50">
+        <PanelSection muted>
           {plans.length > 0 ? (
             <QuoteForm leadId={leadId} plans={plans} />
           ) : (
             <p className="text-sm text-muted">{t("lead.quotes.noPlans")}</p>
           )}
-        </CardBody>
+        </PanelSection>
       )}
     </>
   );

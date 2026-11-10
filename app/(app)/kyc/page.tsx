@@ -4,14 +4,13 @@ import { ScreeningResult } from "@/components/leads/screening-result";
 import {
   Badge,
   Button,
-  Card,
-  CardBody,
   DetailList,
   EmptyState,
   Forbidden,
   Hidden,
   Input,
   PageHeader,
+  Panel,
   PillNav,
 } from "@/components/ui";
 import { shortDate } from "@/lib/format";
@@ -42,15 +41,15 @@ export default async function KycReviewPage({ searchParams }: { searchParams: Pr
       />
 
       {rows.length === 0 && (
-        <Card>
-          <EmptyState title={t("kycReview.empty")} />
-        </Card>
+        <Panel flush>
+          <EmptyState title={t("kycReview.empty")} icon="badgeCheck" />
+        </Panel>
       )}
 
       <div className="grid gap-4">
         {rows.map(({ kyc, ...r }) => (
-          <Card key={kyc.id} className={kyc.eddRequired ? "border-risk/30" : undefined}>
-            <CardBody className="grid gap-4">
+          <Panel key={kyc.id}>
+            <div className="grid gap-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <Link href={`/leads/${r.leadId}?tab=kyc`} className="font-semibold text-ink hover:text-brand">
@@ -101,8 +100,8 @@ export default async function KycReviewPage({ searchParams }: { searchParams: Pr
                   </span>
                 </form>
               )}
-            </CardBody>
-          </Card>
+            </div>
+          </Panel>
         ))}
       </div>
       <p className="mt-6 text-xs text-muted">{t("kycReview.simulated")}</p>

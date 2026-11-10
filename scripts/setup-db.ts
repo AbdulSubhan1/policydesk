@@ -448,7 +448,7 @@ async function seed() {
       .values({
         customerName: name,
         email: `${name.toLowerCase().replace(" ", ".")}${i}@example.com`,
-        phone: `+1 555 ${String(1000 + Math.floor(rand() * 9000))}`,
+        phone: `+97150${String(1000000 + Math.floor(rand() * 8999999))}`,
         product,
         departmentId: deptId,
         status,

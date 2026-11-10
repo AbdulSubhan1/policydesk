@@ -1,19 +1,17 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import {
+  Autocomplete,
   Badge,
   Button,
   ButtonLink,
-  Card,
-  CardBody,
-  CardHeader,
   DetailList,
   Field,
   Forbidden,
   Hidden,
   InlineForm,
   PageHeader,
-  Autocomplete,
+  Panel,
 } from "@/components/ui";
 import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
 import { shortDate } from "@/lib/format";
@@ -56,98 +54,88 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <Card className="self-start">
-          <CardHeader title={t("opportunities.customer")} />
-          <CardBody>
-            <DetailList
-              items={[
-                { label: t("opportunities.email"), value: opp.email },
-                { label: t("opportunities.phone"), value: opp.phone },
-                { label: t("opportunities.coordinator"), value: row.coordinatorName ?? t("common.unassigned") },
-                { label: t("opportunities.notes"), value: opp.notes },
-              ]}
-            />
-          </CardBody>
-        </Card>
+        <Panel className="self-start" title={t("opportunities.customer")}>
+          <DetailList
+            items={[
+              { label: t("opportunities.email"), value: opp.email },
+              { label: t("opportunities.phone"), value: opp.phone },
+              { label: t("opportunities.coordinator"), value: row.coordinatorName ?? t("common.unassigned") },
+              { label: t("opportunities.notes"), value: opp.notes },
+            ]}
+          />
+        </Panel>
 
         <div className="grid content-start gap-6">
           {!open && row.leadId && (
-            <Card className="flex flex-wrap items-center justify-between gap-3 border-brand/30 bg-brand-soft px-5 py-4">
-              <p className="text-sm text-brand-strong">{t("opportunities.convertedNote")}</p>
-              <ButtonLink href={`/leads/${row.leadId}`} variant="primary">
-                {t("opportunities.openLead")}
-              </ButtonLink>
-            </Card>
+            <Panel
+              title={t("opportunities.convertedNote")}
+              actions={
+                <ButtonLink href={`/leads/${row.leadId}`} variant="primary">
+                  {t("opportunities.openLead")}
+                </ButtonLink>
+              }
+            />
           )}
 
           {open && can(user, "opportunities:edit") && (
-            <Card>
-              <CardHeader title={t("opportunities.qualifyTitle")} description={t("opportunities.qualifyBody")} />
-              <CardBody>
-                <InlineForm key={opp.status} action={updateOpportunityStatus}>
-                  <Hidden name="id" value={opp.id} />
-                  <Autocomplete
-                    name="status"
-                    defaultValue={opp.status}
-                    aria-label={t("opportunities.status")}
-                    options={keyedOptions(t, "status", EDITABLE_OPPORTUNITY_STATUSES)}
-                  />
-                  <Button>{t("opportunities.setStatus")}</Button>
-                </InlineForm>
-              </CardBody>
-            </Card>
+            <Panel title={t("opportunities.qualifyTitle")} description={t("opportunities.qualifyBody")}>
+              <InlineForm key={opp.status} action={updateOpportunityStatus}>
+                <Hidden name="id" value={opp.id} />
+                <Autocomplete
+                  name="status"
+                  defaultValue={opp.status}
+                  aria-label={t("opportunities.status")}
+                  options={keyedOptions(t, "status", EDITABLE_OPPORTUNITY_STATUSES)}
+                />
+                <Button>{t("opportunities.setStatus")}</Button>
+              </InlineForm>
+            </Panel>
           )}
 
           {coordinators.length > 0 && (
-            <Card>
-              <CardHeader title={t("opportunities.coordinatorTitle")} />
-              <CardBody>
-                <InlineForm key={`c-${opp.coordinatorId}`} action={assignCoordinator}>
-                  <Hidden name="id" value={opp.id} />
-                  <Autocomplete
-                    name="coordinatorId"
-                    defaultValue={opp.coordinatorId ?? ""}
-                    aria-label={t("opportunities.coordinator")}
-                    options={[
-                      { value: "", label: t("common.unassigned") },
-                      ...coordinators.map((c) => ({ value: String(c.id), label: c.name })),
-                    ]}
-                  />
-                  <Button>{t("opportunities.assign")}</Button>
-                </InlineForm>
-              </CardBody>
-            </Card>
+            <Panel title={t("opportunities.coordinatorTitle")}>
+              <InlineForm key={`c-${opp.coordinatorId}`} action={assignCoordinator}>
+                <Hidden name="id" value={opp.id} />
+                <Autocomplete
+                  name="coordinatorId"
+                  defaultValue={opp.coordinatorId ?? ""}
+                  aria-label={t("opportunities.coordinator")}
+                  options={[
+                    { value: "", label: t("common.unassigned") },
+                    ...coordinators.map((c) => ({ value: String(c.id), label: c.name })),
+                  ]}
+                />
+                <Button>{t("opportunities.assign")}</Button>
+              </InlineForm>
+            </Panel>
           )}
 
           {open && can(user, "opportunities:convert") && (
-            <Card>
-              <CardHeader
-                title={t("opportunities.convertTitle")}
-                description={
-                  opp.status === "qualified"
-                    ? t("opportunities.convertBody", { department })
-                    : t("opportunities.convertNeedsQualified")
-                }
-              />
+            <Panel
+              title={t("opportunities.convertTitle")}
+              description={
+                opp.status === "qualified"
+                  ? t("opportunities.convertBody", { department })
+                  : t("opportunities.convertNeedsQualified")
+              }
+            >
               {opp.status === "qualified" && (
-                <CardBody>
-                  <form
-                    action={convertToLead}
-                    className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
-                  >
-                    <Hidden name="id" value={opp.id} />
-                    <Field label={t("opportunities.advisor")}>
-                      <Autocomplete
-                        name="advisorId"
-                        options={advisors.map((a) => ({ value: String(a.id), label: a.name }))}
-                        placeholder={t("placeholders.advisor")}
-                      />
-                    </Field>
-                    <Button variant="primary">{t("opportunities.convert")}</Button>
-                  </form>
-                </CardBody>
+                <form
+                  action={convertToLead}
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+                >
+                  <Hidden name="id" value={opp.id} />
+                  <Field label={t("opportunities.advisor")}>
+                    <Autocomplete
+                      name="advisorId"
+                      options={advisors.map((a) => ({ value: String(a.id), label: a.name }))}
+                      placeholder={t("placeholders.advisor")}
+                    />
+                  </Field>
+                  <Button variant="primary">{t("opportunities.convert")}</Button>
+                </form>
               )}
-            </Card>
+            </Panel>
           )}
         </div>
       </div>

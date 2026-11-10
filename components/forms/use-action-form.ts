@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { useForm, type DefaultValues, type FieldValues, type Path } from "react-hook-form";
 import type { z } from "zod";
-import type { ActionResult } from "@/schemas/common";
+import type { ActionResult } from "@/schemas/action-result";
 
 /**
  * React Hook Form wired to a Zod schema and a server action.

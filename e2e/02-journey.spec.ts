@@ -62,7 +62,7 @@ test.describe.serial("opportunity to paid policy", () => {
   test("compliance approves the KYC", async ({ page }) => {
     await loginAs(page, "compliance");
     await page.goto("/kyc");
-    const card = page.locator('[data-ui="Card"]', { has: page.getByRole("link", { name: customer }) });
+    const card = page.locator('[data-ui="Panel"]', { has: page.getByRole("link", { name: customer }) });
     await card.getByLabel("Note").fill("ID and documents verified");
     await card.getByRole("button", { name: "Approve" }).click();
     await expect(page.getByRole("link", { name: customer })).toHaveCount(0);

@@ -7,17 +7,15 @@ import { PolicyTab } from "@/components/leads/policy-tab";
 import { ProgressRail } from "@/components/leads/progress-rail";
 import { QuotesTab } from "@/components/leads/quotes-tab";
 import {
+  Autocomplete,
   Badge,
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   DetailList,
   Forbidden,
   Hidden,
   InlineForm,
   PageHeader,
-  Autocomplete,
+  Panel,
   Tabs,
 } from "@/components/ui";
 import { EDITABLE_LEAD_STAGES } from "@/constants/statuses";
@@ -126,7 +124,7 @@ export default async function LeadPage({
       <ProgressRail steps={steps} />
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <Card className="self-start">
+        <Panel className="self-start" flush>
           <Tabs
             label={t("lead.tabs.quotes")}
             current={tab}
@@ -138,12 +136,11 @@ export default async function LeadPage({
             ]}
           />
           <Section leadId={leadId} />
-        </Card>
+        </Panel>
 
         <div className="grid content-start gap-6">
-          <Card>
-            <CardHeader title={t("lead.customerCard")} />
-            <CardBody className="grid gap-4">
+          <Panel title={t("lead.customerCard")}>
+            <div className="grid gap-4">
               <DetailList
                 items={[
                   { label: t("opportunities.email"), value: opportunity.email },
@@ -185,13 +182,12 @@ export default async function LeadPage({
                   <Button size="sm">{t("lead.reassign")}</Button>
                 </InlineForm>
               )}
-            </CardBody>
-          </Card>
+            </div>
+          </Panel>
 
-          <Card>
-            <CardHeader title={t("lead.activity")} />
+          <Panel title={t("lead.activity")} flush>
             <ActivityFeed leadId={leadId} />
-          </Card>
+          </Panel>
         </div>
       </div>
     </>

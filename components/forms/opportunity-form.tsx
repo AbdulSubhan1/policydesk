@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Card, Field, FormError, Input, Textarea } from "@/components/ui";
+import { Controller } from "react-hook-form";
+import { Button, Field, FormError, Input, Panel, PhoneInput, Textarea } from "@/components/ui";
 import { OPPORTUNITY_SOURCES } from "@/constants/statuses";
 import { keyedOptions, productOptions } from "@/lib/options";
 import { opportunitySchema } from "@/schemas/opportunity";
@@ -16,7 +17,7 @@ export function OpportunityForm() {
   });
 
   return (
-    <Card className="p-5 md:p-6">
+    <Panel>
       <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2" noValidate>
         <Field label={t("opportunities.customerName")} error={errorOf("customerName")}>
           <Input autoComplete="name" placeholder={t("placeholders.customerName")} {...form.register("customerName")} />
@@ -24,8 +25,14 @@ export function OpportunityForm() {
         <Field label={t("opportunities.email")} error={errorOf("email")}>
           <Input type="email" autoComplete="email" placeholder={t("placeholders.email")} {...form.register("email")} />
         </Field>
-        <Field label={t("opportunities.phone")} error={errorOf("phone")}>
-          <Input type="tel" autoComplete="tel" placeholder={t("placeholders.phone")} {...form.register("phone")} />
+        <Field label={t("opportunities.phone")} error={errorOf("phone")} group>
+          <Controller
+            control={form.control}
+            name="phone"
+            render={({ field, fieldState }) => (
+              <PhoneInput {...field} aria-label={t("opportunities.phone")} invalid={fieldState.invalid} />
+            )}
+          />
         </Field>
         <Field label={t("opportunities.product")} error={errorOf("product")}>
           <FormAutocomplete
@@ -53,6 +60,6 @@ export function OpportunityForm() {
           </Button>
         </div>
       </form>
-    </Card>
+    </Panel>
   );
 }

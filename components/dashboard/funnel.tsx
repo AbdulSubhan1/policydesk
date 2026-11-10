@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card, CardHeader, ProgressBar } from "@/components/ui";
+import { Panel, ProgressBar } from "@/components/ui";
 
 /** Counts per status with a bar each; every row links to the filtered list. */
 export function Funnel({
@@ -17,9 +17,8 @@ export function Funnel({
   const t = useTranslations();
   const total = steps.reduce((sum, s) => sum + (counts[s] ?? 0), 0);
   return (
-    <Card>
-      <CardHeader title={title} description={t("dashboard.inTotal", { count: total })} />
-      <ul className="grid gap-3 px-5 py-4">
+    <Panel title={title} description={t("dashboard.inTotal", { count: total })}>
+      <ul className="grid gap-3">
         {steps.map((s) => (
           <li key={s}>
             <Link
@@ -33,6 +32,6 @@ export function Funnel({
           </li>
         ))}
       </ul>
-    </Card>
+    </Panel>
   );
 }

@@ -3,7 +3,8 @@
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { PRODUCTS } from "@/constants/products";
-import { id, option, type ActionResult } from "@/schemas/common";
+import type { ActionResult } from "@/schemas/action-result";
+import { id, option } from "@/schemas/fields";
 import { documentTypeSchema, type DocumentTypeInput } from "@/schemas/document-type";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";

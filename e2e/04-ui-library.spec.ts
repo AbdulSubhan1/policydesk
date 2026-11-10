@@ -22,10 +22,10 @@ test.describe("UI library", () => {
     await expect(box).toHaveAttribute("placeholder", "Search products…");
 
     await box.click();
-    await expect(page.getByRole("option")).toHaveCount(5);
-    await box.fill("tr");
+    await expect(page.getByRole("option")).toHaveCount(11);
+    await box.fill("yac");
     await expect(page.getByRole("option")).toHaveCount(1);
-    await expect(page.getByRole("option", { name: /Travel/ })).toBeVisible();
+    await expect(page.getByRole("option", { name: /Yacht/ })).toBeVisible();
 
     await box.fill("");
     await box.press("ArrowDown");
@@ -40,9 +40,38 @@ test.describe("UI library", () => {
   });
 
   test("Checkbox toggles and stays accessible", async ({ page }) => {
-    const box = page.locator("#Checkbox").getByRole("checkbox", { name: "Cancel policies" });
+    const box = page.locator("#Checkbox").getByRole("checkbox", { name: "size=sm" });
     await expect(box).not.toBeChecked();
-    await page.locator("#Checkbox").getByText("Cancel policies").click();
+    await page.locator("#Checkbox").getByText("size=sm").click();
     await expect(box).toBeChecked();
+  });
+
+  test("DataTable searches, filters and pages through the URL", async ({ page }) => {
+    const table = page.locator("#DataTable");
+    await expect(table.getByText("1–5 of 23")).toBeVisible();
+    await table.getByRole("link", { name: "Next page" }).click();
+    await expect(page.locator("#DataTable").getByText("6–10 of 23")).toBeVisible();
+    await page.locator("#DataTable").getByRole("link", { name: "Quoted" }).click();
+    await expect(page).toHaveURL(/filter=quoted/);
+    await expect(page.locator("#DataTable").getByText(/of 8$/)).toBeVisible();
+    await page.locator("#DataTable").getByRole("searchbox").fill("Layla");
+    await page.locator("#DataTable").getByRole("searchbox").press("Enter");
+    await expect(page).toHaveURL(/q=Layla/);
+  });
+
+  test("PhoneInput keeps a locked country and builds an E.164 number", async ({ page }) => {
+    const locked = page.locator("#PhoneInput").getByRole("group").nth(1);
+    await expect(locked.getByRole("combobox")).toBeDisabled();
+    await locked.getByRole("textbox").fill("3001234567");
+    await expect(locked.getByRole("textbox")).toHaveValue("3001234567");
+  });
+
+  test("shared validation rules show translated errors", async ({ page }) => {
+    const form = page.locator("#Field");
+    await form.getByLabel("Full name").fill("Ahmed");
+    await form.getByLabel("Email").fill("not-an-email");
+    await form.getByRole("button", { name: "Check the rules" }).click();
+    await expect(form.getByText("Enter a first and last name")).toBeVisible();
+    await expect(form.getByText("Enter a valid email")).toBeVisible();
   });
 });

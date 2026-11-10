@@ -24,7 +24,7 @@ These rules are strict. They apply to every person and every AI model working in
 - A value is defined once and imported everywhere else. Statuses: `constants/statuses.ts`. Products, covers, departments: `constants/products.ts`. Permissions: `constants/permissions.ts`. Limits and cookie names: `constants/config.ts`. Sidebar: `constants/navigation.ts`.
 - Colours, fonts and radii exist only as tokens in `app/globals.css` (`@theme`). Use the token classes (`bg-brand`, `text-muted`), never hex values.
 - Shared class recipes live in `components/ui/styles.ts`.
-- Each validation rule is one Zod schema in `schemas/`. The form and the server action both use it.
+- Field rules (email, phone, first/last/full name, required text, amount, date) live once in `schemas/fields.ts`. Form schemas in `schemas/` are built only from them, and the form and the server action both use the same schema.
 - If you copy a block of code a second time, extract it.
 
 ## 3. Next.js rules
@@ -45,7 +45,9 @@ These rules are strict. They apply to every person and every AI model working in
 - Pages and feature components build UI **only** from `@/components/ui`. ESLint blocks raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<a>`, `<img>` and `<svg>` outside `components/ui`. Use `Button`, `Input`, `Autocomplete`, `Textarea`, `Hidden`, `Checkbox`, `Radio`, `ButtonLink`, `next/link` and `Icon`.
 - **No inline styles.** `style={...}` is a lint error everywhere. Use Tailwind classes.
 - **No class overrides on library components.** `className` on a library component may only set layout (margin, width, grid placement). For a different look, add a variant in `components/ui/styles.ts`.
+- **Building blocks:** a page is a `PageHeader` plus `Panel`s (and `PanelSection`s inside flush panels). Every list is a `DataTable`: columns config, search, filters, pagination and empty state are built in, server-side through the URL. Never build a table, card or pagination by hand.
 - **Dropdowns:** `Autocomplete` is the only dropdown. It searches, groups and has a placeholder. Build its options with the helpers in `lib/options.ts`. Inside React Hook Form use `FormAutocomplete`.
+- **Phone numbers:** use `PhoneInput` (stored as E.164) and validate with `phone`.
 - **Placeholders:** every empty input and dropdown has a placeholder from `messages` (`placeholders.*`).
 - **One component per file.** File name is the kebab-case component name.
 - New component checklist:
@@ -56,7 +58,7 @@ These rules are strict. They apply to every person and every AI model working in
   5. Run `npm run ui:usage`.
 - **Icons:** add the path to `components/ui/icon.tsx`. Icon packages are blocked.
 - **No UI or styling libraries:** MUI, Radix, shadcn, lucide, clsx and tailwind-merge are blocked by lint.
-- **Layout:** mobile-first. Base classes are for phones; add `sm:`, `md:` and `lg:` for larger screens. Every flex or grid child that holds text gets `min-w-0`. Long text uses `truncate` or `[overflow-wrap:anywhere]`. Wide tables use `<Table size>`, which scrolls instead of overflowing. Responsive grids start with `grid-cols-1` (`minmax(0, 1fr)`), so a wide child cannot stretch the page on phones.
+- **Layout:** mobile-first. Base classes are for phones; add `sm:`, `md:` and `lg:` for larger screens. Every flex or grid child that holds text gets `min-w-0`. Long text uses `truncate` or `[overflow-wrap:anywhere]`. Every list is a `DataTable`, which scrolls sideways instead of overflowing. Responsive grids start with `grid-cols-1` (`minmax(0, 1fr)`), so a wide child cannot stretch the page on phones.
 - **RTL-safe classes only:** `ms-`, `me-`, `ps-`, `pe-`, `text-start`, `text-end`, `start-`, `end-`. Never `ml-`, `mr-`, `pl-`, `pr-`, `text-left` or `text-right`.
 - Avoid wrappers. Do not add a `div` or a component that only passes its children through.
 

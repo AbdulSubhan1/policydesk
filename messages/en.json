@@ -25,7 +25,8 @@
     "arabic": "Arabic",
     "perYear": "{amount} a year",
     "select": "Select…",
-    "noMatches": "No matches"
+    "noMatches": "No matches",
+    "inactive": "Inactive"
   },
   "nav": {
     "main": "Main",
@@ -203,7 +204,10 @@
     "date": "Enter a valid date",
     "positive": "Enter an amount above zero",
     "wholeNumber": "Use whole numbers only",
-    "invalidOption": "Pick one of the options"
+    "invalidOption": "Pick one of the options",
+    "name": "Use letters only",
+    "fullName": "Enter a first and last name",
+    "phoneLength": "This number is too short or too long for its country"
   },
   "errors": {
     "invalidLogin": "That email and password don't match a user",
@@ -292,7 +296,8 @@
     "convertNeedsQualified": "Mark the opportunity as qualified first.",
     "convertBody": "Creates a lead for an advisor in {department}. Quotes, KYC, documents and the policy happen on the lead.",
     "advisor": "Advisor",
-    "convert": "Convert"
+    "convert": "Convert",
+    "search": "Search by name or email"
   },
   "leads": {
     "title": "Leads",
@@ -304,7 +309,8 @@
     "advisor": "Advisor",
     "updated": "Updated",
     "empty": "No leads match this filter.",
-    "leadNumber": "Lead #{id}"
+    "leadNumber": "Lead #{id}",
+    "search": "Search by customer name"
   },
   "lead": {
     "summary": "{product} insurance in {department}, handled by {advisor}.",
@@ -347,7 +353,8 @@
       "add": "Add quote",
       "adding": "Adding…",
       "excess": "Excess {amount}",
-      "noPlans": "No active plans for this product. An admin can add them under Insurers & plans."
+      "noPlans": "No active plans for this product. An admin can add them under Insurers & plans.",
+      "emptyTitle": "No quotes yet"
     },
     "kyc": {
       "none": "No KYC record",
@@ -378,7 +385,8 @@
       "uploading": "Uploading…",
       "view": "View",
       "delete": "Delete",
-      "documentTypePlaceholder": "Pick a document type…"
+      "documentTypePlaceholder": "Pick a document type…",
+      "emptyTitle": "No documents yet"
     },
     "policy": {
       "notReady": "Not ready to book yet",
@@ -465,7 +473,8 @@
     "empty": "No policies match this filter.",
     "renew": "Renew",
     "renewal": "Renewal",
-    "noAdvisor": "No advisor"
+    "noAdvisor": "No advisor",
+    "search": "Search by customer or policy number"
   },
   "plans": {
     "title": "Insurers & plans",
@@ -514,7 +523,9 @@
     "you": "(you)",
     "noDepartment": "No department",
     "active": "Active",
-    "deactivated": "Deactivated"
+    "deactivated": "Deactivated",
+    "role": "Role",
+    "department": "Department"
   },
   "roles": {
     "title": "Roles & permissions",
@@ -534,7 +545,8 @@
     "action": "Action",
     "details": "Details",
     "lead": "Lead",
-    "empty": "Nothing logged yet."
+    "empty": "Nothing logged yet.",
+    "search": "Search details or people"
   },
   "designSystem": {
     "title": "Component library",
@@ -548,7 +560,26 @@
     "cards": "Cards and stats",
     "icons": "Icons",
     "sampleHeading": "Policy schedule for Ahmed Rahman",
-    "sampleBody": "Comprehensive car cover with agency repair, renewing on 24 November."
+    "sampleBody": "Comprehensive car cover with agency repair, renewing on 24 November.",
+    "validation": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "check": "Check the rules"
+    },
+    "validationTitle": "Validation rules",
+    "validationHint": "Every form uses these rules from schemas/fields.ts. Type here to see them work.",
+    "panels": "Panels and layout",
+    "data": "Data",
+    "navigation": "Navigation",
+    "feedback": "Feedback",
+    "all": "All",
+    "file": "File",
+    "props": "Props",
+    "usage": "Usage",
+    "usedIn": "Used in {count, plural, =0 {no files} one {# file} other {# files}}"
   },
   "placeholders": {
     "customerName": "e.g. Ahmed Rahman",
@@ -585,6 +616,16 @@
     "cover": "Pick a cover…",
     "payment": "Pick an outcome…",
     "method": "Pick a method…",
-    "note": "Write a short note…"
+    "note": "Write a short note…",
+    "firstName": "Ahmed",
+    "lastName": "Rahman"
+  },
+  "table": {
+    "all": "All",
+    "showing": "{from}–{to} of {total}",
+    "previous": "Previous page",
+    "next": "Next page",
+    "pageOf": "Page {page} of {pages}",
+    "pages": "Pages"
   }
 }

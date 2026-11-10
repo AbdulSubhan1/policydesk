@@ -20,6 +20,8 @@ const PATHS = {
   check: "M5 12.5l4.5 4.5L19 7.5",
   chevronStart: "M15 5l-7 7 7 7",
   chevronDown: "M6 9l6 6 6-6",
+  chevronEnd: "M9 5l7 7-7 7",
+  search: "M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4",
 } as const;
 
 export type IconName = keyof typeof PATHS;

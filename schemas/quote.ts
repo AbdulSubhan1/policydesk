@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { amount, id } from "./common";
+import { amount, id } from "./fields";
 
 export const quoteSchema = z.object({
   leadId: id,

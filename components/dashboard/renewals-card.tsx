@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card, CardHeader, EmptyState } from "@/components/ui";
+import { EmptyState, Panel } from "@/components/ui";
 import { RENEWAL_WINDOW_DAYS } from "@/constants/config";
 import { shortDate } from "@/lib/format";
 
@@ -9,10 +9,9 @@ type Renewal = { id: number; policyNumber: string; endDate: string; customerName
 export function RenewalsCard({ renewals }: { renewals: Renewal[] }) {
   const t = useTranslations("dashboard");
   return (
-    <Card>
-      <CardHeader title={t("renewals")} description={t("renewalsHint", { days: RENEWAL_WINDOW_DAYS })} />
+    <Panel title={t("renewals")} description={t("renewalsHint", { days: RENEWAL_WINDOW_DAYS })} flush>
       {renewals.length === 0 ? (
-        <EmptyState title={t("noRenewals")} />
+        <EmptyState title={t("noRenewals")} icon="shield" />
       ) : (
         <ul className="divide-y divide-line">
           {renewals.map((r) => (
@@ -31,6 +30,6 @@ export function RenewalsCard({ renewals }: { renewals: Renewal[] }) {
           ))}
         </ul>
       )}
-    </Card>
+    </Panel>
   );
 }

@@ -1,74 +1,68 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
-import { Card, EmptyRow, Forbidden, PageHeader, Table, Td, Th, Tr } from "@/components/ui";
+import { DataTable, Forbidden, PageHeader } from "@/components/ui";
 import { dateTime } from "@/lib/format";
+import { pageFrom } from "@/lib/pagination";
 import { can } from "@/lib/rbac";
+import type { SearchParams } from "@/lib/url";
 import { requireUser } from "@/server/auth";
-import { db, schema } from "@/server/db";
+import { listAudit } from "@/server/queries/audit";
 
-const { auditLogs, users } = schema;
-
-export default async function AuditPage() {
+export default async function AuditPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireUser();
   if (!can(user, "audit:view")) return <Forbidden permission="audit:view" />;
 
-  const [rows, t] = await Promise.all([
-    db
-      .select({
-        id: auditLogs.id,
-        action: auditLogs.action,
-        entity: auditLogs.entity,
-        entityId: auditLogs.entityId,
-        leadId: auditLogs.leadId,
-        details: auditLogs.details,
-        createdAt: auditLogs.createdAt,
-        userName: users.name,
-      })
-      .from(auditLogs)
-      .leftJoin(users, eq(auditLogs.userId, users.id))
-      .orderBy(desc(auditLogs.createdAt), desc(auditLogs.id))
-      .limit(150),
-    getTranslations(),
-  ]);
+  const params = await searchParams;
+  const page = pageFrom(params);
+  const [{ rows, total }, t] = await Promise.all([listAudit({ q: params.q, page }), getTranslations()]);
 
   return (
     <>
       <PageHeader title={t("audit.title")} description={t("audit.description")} />
-      <Card>
-        <Table>
-          <thead>
-            <tr>
-              <Th>{t("audit.when")}</Th>
-              <Th>{t("audit.who")}</Th>
-              <Th>{t("audit.action")}</Th>
-              <Th>{t("audit.details")}</Th>
-              <Th>{t("audit.lead")}</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && <EmptyRow colSpan={5}>{t("audit.empty")}</EmptyRow>}
-            {rows.map((r) => (
-              <Tr key={r.id}>
-                <Td className="whitespace-nowrap text-muted">{dateTime(r.createdAt)}</Td>
-                <Td>{r.userName ?? t("lead.system")}</Td>
-                <Td className="font-mono text-xs whitespace-nowrap text-ink-soft">
-                  {r.entity}.{r.action}
-                  {r.entityId ? ` #${r.entityId}` : ""}
-                </Td>
-                <Td className="max-w-80 [overflow-wrap:anywhere] text-ink-soft">{r.details}</Td>
-                <Td>
-                  {r.leadId && (
-                    <Link href={`/leads/${r.leadId}`} className="text-brand hover:underline">
-                      #{r.leadId}
-                    </Link>
-                  )}
-                </Td>
-              </Tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
+      <DataTable
+        path="/audit"
+        params={params}
+        rows={rows}
+        rowKey={(r) => r.id}
+        search={{ placeholder: t("audit.search") }}
+        pagination={{ page: page.page, pageSize: page.limit, total }}
+        empty={{ title: t("audit.empty"), icon: "scroll" }}
+        columns={[
+          {
+            key: "when",
+            header: t("audit.when"),
+            nowrap: true,
+            cell: (r) => <span className="text-muted">{dateTime(r.createdAt)}</span>,
+          },
+          { key: "who", header: t("audit.who"), cell: (r) => r.userName ?? t("lead.system") },
+          {
+            key: "action",
+            header: t("audit.action"),
+            nowrap: true,
+            cell: (r) => (
+              <span className="font-mono text-xs text-ink-soft">
+                {r.entity}.{r.action}
+                {r.entityId ? ` #${r.entityId}` : ""}
+              </span>
+            ),
+          },
+          {
+            key: "details",
+            header: t("audit.details"),
+            cell: (r) => <span className="[overflow-wrap:anywhere] text-ink-soft">{r.details}</span>,
+          },
+          {
+            key: "lead",
+            header: t("audit.lead"),
+            cell: (r) =>
+              r.leadId && (
+                <Link href={`/leads/${r.leadId}`} className="text-brand hover:underline">
+                  #{r.leadId}
+                </Link>
+              ),
+          },
+        ]}
+      />
     </>
   );
 }

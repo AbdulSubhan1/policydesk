@@ -1,48 +1,31 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import {
-  Badge,
-  Button,
-  Card,
-  CellText,
-  EmptyRow,
-  FilterTabs,
-  Forbidden,
-  Hidden,
-  PageHeader,
-  Table,
-  Td,
-  Th,
-  Tr,
-} from "@/components/ui";
-import { RENEWAL_WINDOW_DAYS } from "@/constants/config";
+import { Badge, Button, CellText, DataTable, Forbidden, Hidden, PageHeader } from "@/components/ui";
 import { POLICY_FILTERS } from "@/constants/statuses";
-import { cn } from "@/lib/cn";
 import { money, shortDate } from "@/lib/format";
 import { localized } from "@/lib/i18n";
+import { keyedOptions } from "@/lib/options";
+import { pageFrom } from "@/lib/pagination";
 import { can, scopeOf } from "@/lib/rbac";
+import type { SearchParams } from "@/lib/url";
 import { startRenewal } from "@/server/actions/policies";
 import { requireUser } from "@/server/auth";
-import { listPolicies } from "@/server/queries/policies";
+import { listPolicies, type PolicyFilter } from "@/server/queries/policies";
 
-const DAY = 86_400_000;
-
-export default async function PoliciesPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
+export default async function PoliciesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireUser();
   if (!can(user, "policies:view")) return <Forbidden permission="policies:view" />;
 
-  const { filter } = await searchParams;
-  const [all, t, locale] = await Promise.all([listPolicies(user), getTranslations(), getLocale()]);
-  const renewalDue = (p: (typeof all)[number]) =>
-    p.status === "active" &&
-    !p.renewedByLeadId &&
-    new Date(p.endDate).getTime() - Date.now() < RENEWAL_WINDOW_DAYS * DAY;
-  const rows = all.filter((p) => {
-    if (filter === "unpaid") return p.paymentStatus === "pending" || p.paymentStatus === "failed";
-    if (filter === "renewal_due") return renewalDue(p);
-    return POLICY_FILTERS.includes(filter as never) ? p.status === filter : true;
-  });
+  const params = await searchParams;
+  const filter = POLICY_FILTERS.find((f) => f === params.filter) as PolicyFilter | undefined;
+  const page = pageFrom(params);
+  const [{ rows, total }, t, locale] = await Promise.all([
+    listPolicies(user, { filter, q: params.q, page }),
+    getTranslations(),
+    getLocale(),
+  ]);
   const scope = scopeOf(user, "leads");
+  const canRenew = can(user, "policies:renew");
 
   return (
     <>
@@ -50,69 +33,74 @@ export default async function PoliciesPage({ searchParams }: { searchParams: Pro
         title={t("policies.title")}
         description={t("policies.description", { scope: scope === "none" ? "" : t(`scope.${scope}`) })}
       />
-      <FilterTabs base="/policies" values={POLICY_FILTERS} current={filter} />
-      <Card>
-        <Table size="lg">
-          <thead>
-            <tr>
-              <Th>{t("policies.policy")}</Th>
-              <Th>{t("policies.customer")}</Th>
-              <Th>{t("policies.insurer")}</Th>
-              <Th>{t("policies.premium")}</Th>
-              <Th>{t("policies.ends")}</Th>
-              <Th>{t("policies.status")}</Th>
-              <Th>{t("policies.payment")}</Th>
-              <Th />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && <EmptyRow colSpan={8}>{t("policies.empty")}</EmptyRow>}
-            {rows.map((p) => (
-              <Tr key={p.id}>
-                <Td className="font-mono text-xs whitespace-nowrap text-ink-soft">{p.policyNumber}</Td>
-                <Td>
-                  <CellText
-                    href={`/leads/${p.leadId}?tab=policy`}
-                    primary={p.customerName}
-                    secondary={`${t(`products.${p.product}`)}, ${p.advisorName ?? t("policies.noAdvisor")}`}
-                  />
-                </Td>
-                <Td>
-                  <CellText primary={p.insurer} secondary={localized(p.planName, locale)} />
-                </Td>
-                <Td>{money(p.premium)}</Td>
-                <Td className={cn("whitespace-nowrap", renewalDue(p) ? "font-medium text-warn" : "text-ink-soft")}>
-                  {shortDate(p.endDate)}
-                </Td>
-                <Td>
-                  <Badge status={p.status} />
-                </Td>
-                <Td>
-                  <Badge status={p.paymentStatus} />
-                </Td>
-                <Td className="text-end">
-                  {p.renewedByLeadId ? (
-                    <Link
-                      href={`/leads/${p.renewedByLeadId}`}
-                      className="text-sm whitespace-nowrap text-plum hover:underline"
-                    >
-                      {t("policies.renewal")}
-                    </Link>
-                  ) : (
-                    renewalDue(p) &&
-                    can(user, "policies:renew") && (
-                      <form action={startRenewal}>
-                        <Hidden name="policyId" value={p.id} />
-                        <Button size="sm">{t("policies.renew")}</Button>
-                      </form>
-                    )
-                  )}
-                </Td>
-              </Tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
+      <DataTable
+        path="/policies"
+        params={params}
+        rows={rows}
+        rowKey={(p) => p.id}
+        minWidth="lg"
+        search={{ placeholder: t("policies.search") }}
+        filters={{ label: t("policies.status"), options: keyedOptions(t, "status", POLICY_FILTERS) }}
+        pagination={{ page: page.page, pageSize: page.limit, total }}
+        empty={{ title: t("policies.empty"), icon: "shield" }}
+        columns={[
+          {
+            key: "policy",
+            header: t("policies.policy"),
+            nowrap: true,
+            cell: (p) => <span className="font-mono text-xs text-ink-soft">{p.policyNumber}</span>,
+          },
+          {
+            key: "customer",
+            header: t("policies.customer"),
+            cell: (p) => (
+              <CellText
+                href={`/leads/${p.leadId}?tab=policy`}
+                primary={p.customerName}
+                secondary={`${t(`products.${p.product}`)}, ${p.advisorName ?? t("policies.noAdvisor")}`}
+              />
+            ),
+          },
+          {
+            key: "insurer",
+            header: t("policies.insurer"),
+            cell: (p) => <CellText primary={p.insurer} secondary={localized(p.planName, locale)} />,
+          },
+          { key: "premium", header: t("policies.premium"), align: "end", nowrap: true, cell: (p) => money(p.premium) },
+          {
+            key: "ends",
+            header: t("policies.ends"),
+            nowrap: true,
+            cell: (p) => (
+              <span className={p.renewalDue ? "font-medium text-warn" : undefined}>{shortDate(p.endDate)}</span>
+            ),
+          },
+          { key: "status", header: t("policies.status"), cell: (p) => <Badge status={p.status} /> },
+          { key: "payment", header: t("policies.payment"), cell: (p) => <Badge status={p.paymentStatus} /> },
+          {
+            key: "renewal",
+            header: "",
+            align: "end",
+            cell: (p) =>
+              p.renewedByLeadId ? (
+                <Link
+                  href={`/leads/${p.renewedByLeadId}`}
+                  className="text-sm whitespace-nowrap text-plum hover:underline"
+                >
+                  {t("policies.renewal")}
+                </Link>
+              ) : (
+                p.renewalDue &&
+                canRenew && (
+                  <form action={startRenewal}>
+                    <Hidden name="policyId" value={p.id} />
+                    <Button size="sm">{t("policies.renew")}</Button>
+                  </form>
+                )
+              ),
+          },
+        ]}
+      />
     </>
   );
 }

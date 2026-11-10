@@ -3,7 +3,8 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { MAX_UPLOAD_BYTES, UPLOAD_MIME_TYPES } from "@/constants/config";
-import { id, type ActionResult } from "@/schemas/common";
+import type { ActionResult } from "@/schemas/action-result";
+import { id } from "@/schemas/fields";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import { requireLead } from "@/server/guards";

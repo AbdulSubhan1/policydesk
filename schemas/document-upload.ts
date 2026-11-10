@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MAX_UPLOAD_BYTES, UPLOAD_MIME_TYPES } from "@/constants/config";
-import { id } from "./common";
+import { id } from "./fields";
 
 /** Browser-side checks before upload. The server action repeats them on the real file. */
 export const documentUploadSchema = z.object({

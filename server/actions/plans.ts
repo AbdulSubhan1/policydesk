@@ -2,7 +2,8 @@
 
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { amount, id, type ActionResult } from "@/schemas/common";
+import type { ActionResult } from "@/schemas/action-result";
+import { amount, id } from "@/schemas/fields";
 import { insurerSchema, planSchema, type InsurerInput, type PlanInput } from "@/schemas/plan";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";

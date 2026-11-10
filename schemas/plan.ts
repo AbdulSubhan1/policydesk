@@ -1,17 +1,17 @@
 import { z } from "zod";
 import { PRODUCTS } from "@/constants/products";
-import { amount, email, id, option, optionalText, text } from "./common";
+import { amount, id, option, optionalEmail, optionalText, requiredText } from "./fields";
 
 export const insurerSchema = z.object({
-  name: text(2, 80),
-  contactEmail: z.union([z.literal(""), email]),
+  name: requiredText(2, 80),
+  contactEmail: optionalEmail,
 });
 
 export const planSchema = z.object({
   insurerId: id,
   product: option(PRODUCTS),
-  cover: text(),
-  nameEn: text(2, 80),
+  cover: requiredText(),
+  nameEn: requiredText(2, 80),
   nameAr: optionalText(80),
   basePremium: amount,
   excess: z.coerce.number().int("validation.wholeNumber").min(0, "validation.positive"),

@@ -13,3 +13,6 @@ export const UPLOAD_MIME_TYPES = ["application/pdf", "image/png", "image/jpeg", 
 
 /** Policies ending within this many days show up as due for renewal. */
 export const RENEWAL_WINDOW_DAYS = 45;
+
+/** Rows per page in every DataTable. */
+export const PAGE_SIZE = 15;
