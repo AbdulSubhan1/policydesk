@@ -62,6 +62,28 @@ Gyms are only an example. The kit must not assume any industry or country; which
 - **The kit keeps being updated** as more CRMs are built.
 - **Public on the owner's GitHub**, linked from the portfolio, installable by anyone from the repo.
 
+## No business logic in the kit
+
+The template contains no business logic. Anything that varies between businesses is either asked by `new-crm` at the start, or proposed by the research steps and approved by the owner before any code is written. From PolicyDesk this means:
+
+- **Roles:** only Admin ships. Other roles come from the business research.
+- **Permissions:** only platform ones ship (users, roles, audit). Business permissions are created from the knowledge base.
+- **Teams and scopes:** the scope engine (all / team / own) ships as a tool. Whether the business has teams, and what they are called (department, branch, clinic), is decided in the business step.
+- **No example module in the app.** The Contacts pattern lives in `references/` as code to copy, because what a "customer" is called (member, patient, student) varies.
+- **Name, brand colour, languages, currency and phone country** are set from the owner's answers.
+- **Dashboard tiles, sidebar items, demo users and seed data** start empty and are made from the approved knowledge base.
+
+## How the kit asks questions
+
+The owner may know nothing about the industry, so every question the kit asks comes after research and uses one format:
+
+1. **What the research found**, with the source.
+2. **Why it is asking:** what this decides in the app.
+3. **What happens with each answer**, with a concrete example, e.g. "with branches, a trainer at Branch A sees only Branch A members; without, everyone sees everyone".
+4. **What it recommends, and why.**
+
+The owner can answer "go with the recommendation". Questions are batched per step, most important first. A question the research can answer with confidence is not asked; it is stated as the kit's call and listed for review.
+
 ## Shape (builder's calls, stated so the owner can object)
 
 ### One repo: `AbdulSubhan1/crm-kit`
@@ -92,7 +114,7 @@ This is the PolicyDesk generic core. It is extracted from this repo and kept in 
 Kept:
 
 - sign-in with demo-role buttons, the session, and a sidebar driven by permissions
-- users, roles and the permission matrix; teams (PolicyDesk's "departments" made generic) and data scopes: all / team / own
+- users, roles and the permission matrix (Admin role and platform permissions only); the team/scope engine (all / team / own), unused until the business step turns it on
 - the audit log and a per-record timeline
 - i18n with RTL and translated stored data (`Localized`). The template ships en + ar, but locales, the RTL list, the default phone country and the currency are settings in `constants/`, so `new-crm` can set them for the market (for example en + ur and PKR for Pakistan).
 - the whole UI library (54 components), the registry, `usage.json`, the docs-style component library pages and demos
@@ -100,13 +122,13 @@ Kept:
 - Playwright config, helpers and generic tests (access, scopes, UI library)
 - CI (checks + build, an AI PR reviewer, on-demand E2E), `AGENTS.md`, `CLAUDE.md`
 - `scripts/setup-db.ts` (seed shape only), `scripts/ui-usage.ts`, and the Vercel + Neon deploy notes
-- **one small reference module, "Contacts"** (list, detail, create form, server action, audit, translations, test). It shows the full pattern once, and every industry has customers anyway.
+- no business module: the full pattern of one module (list, detail, create form, server action, audit, translations, test) is kept in `references/module-pattern/` for `build-module` to copy
 
 Removed: everything about opportunities, leads, quotes, KYC, documents, policies, plans, insurers and renewals, plus the insurance products, covers and KB pages.
 
 ### The steps (each is a skill; each stops for "go")
 
-1. **`new-crm` (entry).** Asks for the industry, a working name, the target country or countries, and the languages (English plus an optional second one, which may be RTL like Arabic or Urdu). Creates `~/<name>` from `template/` and a fresh git repo, then sets the market settings: locales and RTL list, default phone country, currency and date formats. The business research uses that country's rules. Then runs steps 2–6 in order, stopping after each one with a short summary and links to what it produced. It never runs ahead.
+1. **`new-crm` (entry).** Asks only what the owner knows on day one: the industry, an app name, the target country or countries, the languages (English plus an optional second one, which may be RTL like Arabic or Urdu), the currency and a brand colour. Business-structure questions (teams or branches, roles, statuses) are not asked here; they come after the research, in the format below. Creates `~/<name>` from `template/` and a fresh git repo, then sets the market settings: locales and RTL list, default phone country, currency and date formats. The business research uses that country's rules. Then runs steps 2–6 in order, stopping after each one with a short summary and links to what it produced. It never runs ahead.
 2. **`research-components`.**
    - Study leading products in the industry (for gyms, for example Mindbody, Glofox, PushPress) and good UI libraries (shadcn.io and similar), looking at behaviour only.
    - Output `docs/research/components.md`: the screens these products have, the components each needs, which ones the library already covers, which are new and why, with source links.
@@ -114,7 +136,7 @@ Removed: everything about opportunities, leads, quotes, KYC, documents, policies
 3. **`research-business`.**
    - Research how the industry runs: roles, records, journeys, statuses, money, renewals, local rules (UAE/Pakistan where relevant), with sources.
    - Output the knowledge base in `docs/` in PolicyDesk's format: start-here training guide, overview, roles and access, workflows with Mermaid diagrams, data model, glossary, and a sources page.
-   - Rules the research couldn't settle are listed as questions for the owner instead of guessed.
+   - Rules the research couldn't settle are asked in the format under "How the kit asks questions" instead of guessed. This includes teams or branches, roles, statuses and money rules.
 4. **`standards`.**
    - Check `AGENTS.md` against current official guidance: Next.js and React docs, OWASP for auth and uploads, WCAG for accessibility. Done in depth once while building the kit; later CRMs only check what changed since the kit's last review.
    - Propose changes as a diff with reasons and sources. After approval, apply them to the CRM **and to the kit** (through `sync-back`), so there is still one standard and every later CRM follows the latest version.
@@ -149,7 +171,7 @@ This project ends when the kit is built and published. Building a real CRM with 
 - The kit installs from `AbdulSubhan1/crm-kit` with the two commands above.
 - `new-crm` with a sample industry and market creates a repo where:
   - `npm run check` passes;
-  - the generic tests pass (access, scopes, UI library, the Contacts module);
+  - the generic tests pass (sign-in, admin access, UI library);
   - `AGENTS.md`, the lint rules and the UI library match the kit.
 - The smoke run stops after `new-crm` creates the project; it doesn't do the research or build steps.
 - Each step's skill tells Claude exactly what to produce, where, with sources, and when to stop for the owner.
@@ -160,5 +182,5 @@ This project ends when the kit is built and published. Building a real CRM with 
 
 - Exact wording and internal structure of each skill (keep them focused; put long references in `references/`).
 - How the template extraction is done (script vs. manual), as long as PolicyDesk itself is not changed.
-- Naming of the reference module's fields and seed data.
+- The example data used in `references/module-pattern/`.
 - Whether `new-crm` also creates the GitHub repo and Vercel project (it must ask first: both are outward-facing).
