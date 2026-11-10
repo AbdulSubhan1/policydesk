@@ -73,6 +73,19 @@ The template contains no business logic. Anything that varies between businesses
 - **Name, brand colour, languages, currency and phone country** are set from the owner's answers.
 - **Dashboard tiles, sidebar items, demo users and seed data** start empty and are made from the approved knowledge base.
 
+## Start questions have suggestions
+
+`new-crm` asks six questions. If the owner skips one or says "you decide", the kit suggests an answer with a one-line reason, and the owner can accept it or pick another:
+
+| Question     | Suggestion when unanswered                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Industry     | Required. If the owner is unsure, it suggests 2–3 industries where a CRM fits well, each with one line of reasoning |
+| App name     | Three short names that fit the industry                                                                             |
+| Country      | From the conversation or the owner's location                                                                       |
+| Languages    | From the country: Pakistan → English + Urdu, UAE → English + Arabic                                                 |
+| Currency     | From the country: PKR, AED                                                                                          |
+| Brand colour | 2–3 colours that suit the industry, shown as swatches                                                               |
+
 ## How the kit asks questions
 
 The owner may know nothing about the industry, so every question the kit asks comes after research and uses one format:
