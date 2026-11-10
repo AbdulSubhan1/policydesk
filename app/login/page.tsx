@@ -1,77 +1,51 @@
-"use client";
+import { getTranslations } from "next-intl/server";
+import { LoginForm } from "@/components/forms/login-form";
+import { LocaleSwitch } from "@/components/layout/locale-switch";
+import { Card } from "@/components/ui";
+import { DEMO_PASSWORD } from "@/constants/config";
 
-import { useActionState, useRef } from "react";
-import { login, type LoginState } from "./actions";
-
-const DEMO_PASSWORD = "demo1234";
-
+// The seeded demo users, one per role (see scripts/setup-db.ts)
 const DEMO_ACCOUNTS = [
-  { role: "Admin", email: "admin@policydesk.dev", hint: "Everything, including plans, documents and roles" },
-  { role: "Department Manager", email: "manager@policydesk.dev", hint: "Motor & Marine: all its opportunities and leads" },
-  { role: "Coordinator", email: "coordinator@policydesk.dev", hint: "Qualifies opportunities, hands leads to advisors" },
-  { role: "Advisor", email: "advisor@policydesk.dev", hint: "Only own leads: quotes, KYC, documents, policy" },
-  { role: "Compliance Officer", email: "compliance@policydesk.dev", hint: "Reviews KYC / AML screening" },
-  { role: "Finance", email: "finance@policydesk.dev", hint: "Records payments, activates policies" },
-];
+  { email: "admin@policydesk.dev", role: "admin" },
+  { email: "manager@policydesk.dev", role: "manager" },
+  { email: "coordinator@policydesk.dev", role: "coordinator" },
+  { email: "advisor@policydesk.dev", role: "advisor" },
+  { email: "compliance@policydesk.dev", role: "compliance" },
+  { email: "finance@policydesk.dev", role: "finance" },
+] as const;
 
-export default function LoginPage() {
-  const [state, action, pending] = useActionState<LoginState, FormData>(login, {});
-  const emailRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-
-  function loginAs(email: string) {
-    emailRef.current!.value = email;
-    passwordRef.current!.value = DEMO_PASSWORD;
-    formRef.current!.requestSubmit();
-  }
-
+export default async function LoginPage() {
+  const t = await getTranslations();
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white">
-            P
-          </div>
-          <h1 className="text-2xl font-semibold text-slate-900">PolicyDesk</h1>
-          <p className="mt-1 text-sm text-slate-500">Insurance CRM: opportunities, leads, KYC/AML, policies and renewals</p>
+    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <section className="flex flex-col justify-between gap-10 bg-ink px-6 py-8 text-white md:px-12 md:py-12">
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-md bg-brand font-bold">P</span>
+            <span className="text-lg font-semibold tracking-tight">{t("app.name")}</span>
+          </span>
+          <LocaleSwitch />
         </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-1 text-sm font-semibold text-slate-900">Try a demo account</h2>
-          <p className="mb-4 text-xs text-slate-500">Each role sees a different app. Password for every demo user: demo1234</p>
-          <div className="grid gap-2">
-            {DEMO_ACCOUNTS.map((a) => (
-              <button
-                key={a.email}
-                type="button"
-                disabled={pending}
-                onClick={() => loginAs(a.email)}
-                className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 text-left hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50"
-              >
-                <span>
-                  <span className="block text-sm font-medium text-slate-900">Log in as {a.role}</span>
-                  <span className="block text-xs text-slate-500">{a.hint}</span>
-                </span>
-                <span className="text-indigo-600">→</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
-            <span className="h-px flex-1 bg-slate-200" /> or sign in <span className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <form ref={formRef} action={action} className="grid gap-3">
-            <input ref={emailRef} name="email" type="email" required placeholder="Email" className="input" />
-            <input ref={passwordRef} name="password" type="password" required placeholder="Password" className="input" />
-            {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-            <button disabled={pending} className="btn-primary">
-              {pending ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
+        <div className="max-w-md">
+          <h1 className="text-3xl leading-tight font-semibold tracking-tight md:text-4xl">{t("app.tagline")}</h1>
+          <p className="mt-4 text-white/70">{t("login.pitch")}</p>
         </div>
-      </div>
+      </section>
+
+      <section className="flex items-center justify-center px-4 py-10 md:px-10">
+        <Card className="w-full max-w-md p-6">
+          <h2 className="text-lg font-semibold">{t("login.demoTitle")}</h2>
+          <p className="mt-1 mb-5 text-sm text-muted">{t("login.demoBody", { password: DEMO_PASSWORD })}</p>
+          <LoginForm
+            demoPassword={DEMO_PASSWORD}
+            demoEmails={DEMO_ACCOUNTS.map((a) => ({
+              email: a.email,
+              label: t(`login.roles.${a.role}`),
+              hint: t(`login.roles.${a.role}Hint`),
+            }))}
+          />
+        </Card>
+      </section>
     </main>
   );
 }

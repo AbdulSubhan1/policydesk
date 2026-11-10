@@ -1,5 +1,5 @@
 {
-  "id": "8ed80f4b-b8c6-4690-ab28-6d4c65549d1a",
+  "id": "44d4743a-207a-4e83-af66-4510976a0e55",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -91,8 +91,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "key": {
+          "name": "key",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -102,11 +102,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "departments_name_unique": {
-          "name": "departments_name_unique",
+        "departments_key_unique": {
+          "name": "departments_key_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "name"
+            "key"
           ]
         }
       },
@@ -126,16 +126,16 @@
         },
         "name": {
           "name": "name",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
-          "default": "''"
+          "default": "'{\"en\":\"\"}'::jsonb"
         },
         "active": {
           "name": "active",
@@ -148,15 +148,7 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "document_types_name_unique": {
-          "name": "document_types_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -748,7 +740,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
@@ -1039,15 +1031,21 @@
           "primaryKey": false,
           "notNull": true
         },
-        "premium": {
-          "name": "premium",
-          "type": "integer",
+        "plan_name": {
+          "name": "plan_name",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
-        "coverage": {
-          "name": "coverage",
+        "cover": {
+          "name": "cover",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "premium": {
+          "name": "premium",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },

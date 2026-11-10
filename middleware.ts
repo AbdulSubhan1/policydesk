@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-
-const SESSION_COOKIE = "pd_session";
+import { SESSION_COOKIE } from "@/constants/config";
 
 // Cheap redirect for signed-out visitors; the session itself is verified server-side in lib/auth.ts
 export function middleware(request: NextRequest) {

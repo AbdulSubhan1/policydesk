@@ -1,15 +1,21 @@
+import { getTranslations } from "next-intl/server";
+import { OpportunityForm } from "@/components/forms/opportunity-form";
 import { Forbidden, PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth";
 import { can } from "@/lib/rbac";
-import { OpportunityForm } from "./opportunity-form";
+import { requireUser } from "@/server/auth";
 
 export default async function NewOpportunityPage() {
   const user = await requireUser();
   if (!can(user, "opportunities:create")) return <Forbidden permission="opportunities:create" />;
+  const t = await getTranslations("opportunities");
 
   return (
     <>
-      <PageHeader title="New opportunity" description="It is routed to the department that handles the chosen product." />
+      <PageHeader
+        back={{ href: "/opportunities", label: t("title") }}
+        title={t("new")}
+        description={t("newDescription")}
+      />
       <OpportunityForm />
     </>
   );

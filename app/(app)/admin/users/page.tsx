@@ -1,9 +1,24 @@
 import { eq } from "drizzle-orm";
-import { Forbidden, PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth";
-import { db, schema } from "@/lib/db";
+import { getTranslations } from "next-intl/server";
+import {
+  Button,
+  Card,
+  CellText,
+  Forbidden,
+  Hidden,
+  InlineForm,
+  PageHeader,
+  Select,
+  Table,
+  Td,
+  Th,
+  Tr,
+} from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { can } from "@/lib/rbac";
-import { toggleUserActive, updateUser } from "./actions";
+import { toggleUserActive, updateUser } from "@/server/actions/users";
+import { requireUser } from "@/server/auth";
+import { db, schema } from "@/server/db";
 
 const { users, roles, departments } = schema;
 
@@ -11,7 +26,7 @@ export default async function UsersPage() {
   const user = await requireUser();
   if (!can(user, "users:manage")) return <Forbidden permission="users:manage" />;
 
-  const [userRows, roleRows, deptRows] = await Promise.all([
+  const [userRows, roleRows, deptRows, t] = await Promise.all([
     db
       .select({
         id: users.id,
@@ -21,7 +36,7 @@ export default async function UsersPage() {
         roleId: users.roleId,
         roleName: roles.name,
         departmentId: users.departmentId,
-        departmentName: departments.name,
+        departmentKey: departments.key,
       })
       .from(users)
       .innerJoin(roles, eq(users.roleId, roles.id))
@@ -29,77 +44,81 @@ export default async function UsersPage() {
       .orderBy(users.id),
     db.select({ id: roles.id, name: roles.name }).from(roles).orderBy(roles.id),
     db.select().from(departments).orderBy(departments.id),
+    getTranslations(),
   ]);
 
   return (
     <>
-      <PageHeader title="Users" description="Role decides what someone can do; department decides whose data they see." />
-      <div className="card overflow-x-auto">
-        <table className="w-full min-w-[820px] text-sm">
-          <thead className="table-head">
+      <PageHeader title={t("users.title")} description={t("users.description")} />
+      <Card>
+        <Table size="lg">
+          <thead>
             <tr>
-              <th className="px-4 py-3">User</th>
-              <th className="px-4 py-3">Role & department</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3" />
+              <Th>{t("users.user")}</Th>
+              <Th>{t("users.roleDepartment")}</Th>
+              <Th>{t("users.status")}</Th>
+              <Th />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {userRows.map((u) => {
               const isMe = u.id === user.id;
               return (
-                <tr key={u.id} className={u.active ? "" : "opacity-60"}>
-                  <td className="px-4 py-3">
-                    <span className="font-medium text-slate-900">
-                      {u.name} {isMe && <span className="text-xs font-normal text-slate-400">(you)</span>}
-                    </span>
-                    <span className="block text-xs text-slate-500">{u.email}</span>
-                  </td>
-                  <td className="px-4 py-3">
+                <Tr key={u.id} className={cn(!u.active && "opacity-60")}>
+                  <Td>
+                    <CellText primary={isMe ? `${u.name} ${t("users.you")}` : u.name} secondary={u.email} />
+                  </Td>
+                  <Td>
                     {isMe ? (
-                      <span>
-                        {u.roleName}
-                        {u.departmentName && ` · ${u.departmentName}`}
-                      </span>
+                      <CellText
+                        primary={u.roleName}
+                        secondary={u.departmentKey ? t(`departments.${u.departmentKey}`) : undefined}
+                      />
                     ) : (
-                      <form key={`${u.roleId}-${u.departmentId}`} action={updateUser} className="flex flex-wrap gap-2">
-                        <input type="hidden" name="userId" value={u.id} />
-                        <select name="roleId" defaultValue={u.roleId} className="input !w-44 !py-1.5">
+                      <InlineForm key={`${u.roleId}-${u.departmentId}`} action={updateUser}>
+                        <Hidden name="userId" value={u.id} />
+                        <Select name="roleId" defaultValue={u.roleId} aria-label={t("users.roleDepartment")}>
                           {roleRows.map((r) => (
                             <option key={r.id} value={r.id}>
                               {r.name}
                             </option>
                           ))}
-                        </select>
-                        <select name="departmentId" defaultValue={u.departmentId ?? ""} className="input !w-40 !py-1.5">
-                          <option value="">No department</option>
+                        </Select>
+                        <Select
+                          name="departmentId"
+                          defaultValue={u.departmentId ?? ""}
+                          aria-label={t("users.roleDepartment")}
+                        >
+                          <option value="">{t("users.noDepartment")}</option>
                           {deptRows.map((d) => (
                             <option key={d.id} value={d.id}>
-                              {d.name}
+                              {t(`departments.${d.key}`)}
                             </option>
                           ))}
-                        </select>
-                        <button className="btn-secondary">Save</button>
-                      </form>
+                        </Select>
+                        <Button size="sm">{t("common.save")}</Button>
+                      </InlineForm>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={u.active ? "text-emerald-700" : "text-slate-400"}>{u.active ? "Active" : "Deactivated"}</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
+                  </Td>
+                  <Td className={u.active ? "text-brand-strong" : "text-muted"}>
+                    {u.active ? t("users.active") : t("users.deactivated")}
+                  </Td>
+                  <Td className="text-end">
                     {!isMe && (
                       <form action={toggleUserActive}>
-                        <input type="hidden" name="userId" value={u.id} />
-                        <button className={u.active ? "btn-danger" : "btn-secondary"}>{u.active ? "Deactivate" : "Activate"}</button>
+                        <Hidden name="userId" value={u.id} />
+                        <Button size="sm" variant={u.active ? "danger" : "secondary"}>
+                          {u.active ? t("common.deactivate") : t("common.activate")}
+                        </Button>
                       </form>
                     )}
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               );
             })}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </Card>
     </>
   );
 }

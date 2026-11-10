@@ -1,12 +1,34 @@
 import { eq, sql } from "drizzle-orm";
-import { EmptyRow, Forbidden, PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth";
-import { db, schema } from "@/lib/db";
+import { getLocale, getTranslations } from "next-intl/server";
+import { InsurerForm } from "@/components/forms/insurer-form";
+import { PlanForm } from "@/components/forms/plan-form";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CellText,
+  EmptyRow,
+  Forbidden,
+  Hidden,
+  Input,
+  InlineForm,
+  ListRow,
+  PageHeader,
+  PillNav,
+  Table,
+  Td,
+  Th,
+  Tr,
+} from "@/components/ui";
+import { PRODUCTS, type Product } from "@/constants/products";
+import { cn } from "@/lib/cn";
 import { money } from "@/lib/format";
-import { DEPARTMENTS, PRODUCT_INFO, PRODUCTS, type Product } from "@/lib/products";
+import { localized } from "@/lib/i18n";
 import { can } from "@/lib/rbac";
-import { toggleInsurer, updatePlan } from "./actions";
-import { InsurerForm, PlanForm } from "./forms";
+import { toggleInsurer, updatePlan } from "@/server/actions/plans";
+import { requireUser } from "@/server/auth";
+import { db, schema } from "@/server/db";
 
 const { insurers, plans } = schema;
 
@@ -14,10 +36,10 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
   const user = await requireUser();
   if (!can(user, "plans:manage")) return <Forbidden permission="plans:manage" />;
 
-  const { product: raw } = await searchParams;
-  const product: Product = PRODUCTS.includes(raw as Product) ? (raw as Product) : "car";
+  const requested = (await searchParams).product;
+  const product: Product = PRODUCTS.find((p) => p === requested) ?? "car";
 
-  const [insurerRows, planRows] = await Promise.all([
+  const [insurerRows, planRows, t, locale] = await Promise.all([
     db
       .select({
         id: insurers.id,
@@ -34,93 +56,110 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
       .innerJoin(insurers, eq(plans.insurerId, insurers.id))
       .where(eq(plans.product, product))
       .orderBy(insurers.name, plans.basePremium),
+    getTranslations(),
+    getLocale(),
   ]);
 
   return (
     <>
-      <PageHeader title="Insurers & plans" description="Plans loaded from each insurer. Advisors quote from active plans of the lead's product." />
+      <PageHeader title={t("plans.title")} description={t("plans.description")} />
 
-      <section className="card mb-6 overflow-hidden">
-        <h2 className="p-5 pb-3 text-sm font-semibold text-slate-900">Insurers</h2>
-        <ul className="divide-y divide-slate-100 border-t border-slate-100 text-sm">
+      <Card className="mb-6">
+        <CardHeader title={t("plans.insurers")} />
+        <ul>
           {insurerRows.map((i) => (
-            <li key={i.id} className={`flex items-center justify-between gap-3 px-5 py-3 ${i.active ? "" : "opacity-60"}`}>
-              <span>
-                <span className="font-medium text-slate-900">{i.name}</span>
-                <span className="block text-xs text-slate-500">
-                  {i.planCount} plans{i.contactEmail && ` · ${i.contactEmail}`}
-                </span>
-              </span>
-              <form action={toggleInsurer}>
-                <input type="hidden" name="insurerId" value={i.id} />
-                <button className={i.active ? "btn-danger" : "btn-secondary"}>{i.active ? "Deactivate" : "Activate"}</button>
-              </form>
-            </li>
+            <ListRow
+              key={i.id}
+              muted={!i.active}
+              action={
+                <form action={toggleInsurer}>
+                  <Hidden name="insurerId" value={i.id} />
+                  <Button size="sm" variant={i.active ? "danger" : "secondary"}>
+                    {i.active ? t("common.deactivate") : t("common.activate")}
+                  </Button>
+                </form>
+              }
+            >
+              <CellText
+                primary={i.name}
+                secondary={[t("plans.planCount", { count: i.planCount }), i.contactEmail].filter(Boolean).join(", ")}
+              />
+            </ListRow>
           ))}
         </ul>
-        <InsurerForm />
-      </section>
+        <CardBody className="border-t border-line bg-paper/50">
+          <InsurerForm />
+        </CardBody>
+      </Card>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {DEPARTMENTS.flatMap((d) => d.products).map((p) => (
-          <a
-            key={p}
-            href={`/admin/plans?product=${p}`}
-            className={`rounded-full px-3 py-1 text-sm ${p === product ? "bg-indigo-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}
-          >
-            {PRODUCT_INFO[p].label}
-          </a>
-        ))}
-      </div>
+      <PillNav
+        label={t("plans.product")}
+        items={PRODUCTS.map((p) => ({
+          href: `/admin/plans?product=${p}`,
+          label: t(`products.${p}`),
+          active: p === product,
+        }))}
+      />
 
-      <section className="card mb-6 overflow-x-auto">
-        <table className="w-full min-w-[820px] text-sm">
-          <thead className="table-head">
+      <Card className="mb-6">
+        <Table size="lg">
+          <thead>
             <tr>
-              <th className="px-4 py-3">{PRODUCT_INFO[product].label} plan</th>
-              <th className="px-4 py-3">Cover</th>
-              <th className="px-4 py-3">Excess</th>
-              <th className="px-4 py-3">Base premium</th>
-              <th className="px-4 py-3" />
+              <Th>{t("plans.plan", { product: t(`products.${product}`) })}</Th>
+              <Th>{t("plans.cover")}</Th>
+              <Th>{t("plans.excess")}</Th>
+              <Th>{t("plans.basePremium")}</Th>
+              <Th />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {planRows.length === 0 && <EmptyRow colSpan={5}>No plans for this product yet.</EmptyRow>}
+          <tbody>
+            {planRows.length === 0 && <EmptyRow colSpan={5}>{t("plans.empty")}</EmptyRow>}
             {planRows.map(({ plan, insurerName, insurerActive }) => (
-              <tr key={plan.id} className={plan.active && insurerActive ? "" : "opacity-50"}>
-                <td className="px-4 py-3">
-                  <span className="font-medium text-slate-900">{plan.name}</span>
-                  <span className="block text-xs text-slate-500">
-                    {insurerName}
-                    {plan.benefits.length > 0 && ` · ${plan.benefits.join(", ")}`}
-                  </span>
-                </td>
-                <td className="px-4 py-3">{plan.cover}</td>
-                <td className="px-4 py-3">{money(plan.excess)}</td>
-                <td className="px-4 py-3">
-                  <form key={plan.basePremium} action={updatePlan} className="flex gap-2">
-                    <input type="hidden" name="planId" value={plan.id} />
-                    <input name="basePremium" type="number" min={1} defaultValue={plan.basePremium} className="input !w-28 !py-1.5" />
-                    <button name="intent" value="price" className="btn-secondary">
-                      Save
-                    </button>
-                  </form>
-                </td>
-                <td className="px-4 py-3 text-right">
+              <Tr key={plan.id} className={cn(!(plan.active && insurerActive) && "opacity-50")}>
+                <Td>
+                  <CellText
+                    primary={localized(plan.name, locale)}
+                    secondary={[insurerName, ...plan.benefits].join(", ")}
+                  />
+                </Td>
+                <Td>{t(`covers.${plan.cover}`)}</Td>
+                <Td>{money(plan.excess)}</Td>
+                <Td>
+                  <InlineForm key={plan.basePremium} action={updatePlan} className="flex-nowrap">
+                    <Hidden name="planId" value={plan.id} />
+                    <Input
+                      name="basePremium"
+                      type="number"
+                      min={1}
+                      defaultValue={plan.basePremium}
+                      aria-label={t("plans.basePremium")}
+                      className="w-28"
+                    />
+                    <Button size="sm" name="intent" value="price">
+                      {t("common.save")}
+                    </Button>
+                  </InlineForm>
+                </Td>
+                <Td className="text-end">
                   <form action={updatePlan}>
-                    <input type="hidden" name="planId" value={plan.id} />
-                    <button name="intent" value="toggle" className={plan.active ? "btn-danger" : "btn-secondary"}>
-                      {plan.active ? "Deactivate" : "Activate"}
-                    </button>
+                    <Hidden name="planId" value={plan.id} />
+                    <Button size="sm" name="intent" value="toggle" variant={plan.active ? "danger" : "secondary"}>
+                      {plan.active ? t("common.deactivate") : t("common.activate")}
+                    </Button>
                   </form>
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             ))}
           </tbody>
-        </table>
-      </section>
+        </Table>
+      </Card>
 
-      <PlanForm insurers={insurerRows.filter((i) => i.active)} defaultProduct={product} />
+      <Card>
+        <CardHeader title={t("plans.addPlan")} description={t("plans.addPlanHint")} />
+        <CardBody>
+          <PlanForm key={product} product={product} insurers={insurerRows.filter((i) => i.active)} />
+        </CardBody>
+      </Card>
     </>
   );
 }

@@ -1,13 +1,30 @@
 import Link from "next/link";
-import { Badge, EmptyRow, FilterTabs, Forbidden, PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth";
+import { getLocale, getTranslations } from "next-intl/server";
+import {
+  Badge,
+  Button,
+  Card,
+  CellText,
+  EmptyRow,
+  FilterTabs,
+  Forbidden,
+  Hidden,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+  Tr,
+} from "@/components/ui";
+import { RENEWAL_WINDOW_DAYS } from "@/constants/config";
+import { POLICY_FILTERS } from "@/constants/statuses";
+import { cn } from "@/lib/cn";
 import { money, shortDate } from "@/lib/format";
-import { productLabel } from "@/lib/products";
-import { listPolicies } from "@/lib/queries";
-import { can, SCOPE_LABEL, scopeOf } from "@/lib/rbac";
-import { startRenewal } from "./actions";
+import { localized } from "@/lib/i18n";
+import { can, scopeOf } from "@/lib/rbac";
+import { startRenewal } from "@/server/actions/policies";
+import { requireUser } from "@/server/auth";
+import { listPolicies } from "@/server/queries/policies";
 
-const FILTERS = ["booked", "active", "cancelled", "unpaid", "renewal_due"] as const;
 const DAY = 86_400_000;
 
 export default async function PoliciesPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
@@ -15,80 +32,87 @@ export default async function PoliciesPage({ searchParams }: { searchParams: Pro
   if (!can(user, "policies:view")) return <Forbidden permission="policies:view" />;
 
   const { filter } = await searchParams;
-  const all = await listPolicies(user);
+  const [all, t, locale] = await Promise.all([listPolicies(user), getTranslations(), getLocale()]);
   const renewalDue = (p: (typeof all)[number]) =>
-    p.status === "active" && !p.renewedByLeadId && new Date(p.endDate).getTime() - Date.now() < 45 * DAY;
+    p.status === "active" &&
+    !p.renewedByLeadId &&
+    new Date(p.endDate).getTime() - Date.now() < RENEWAL_WINDOW_DAYS * DAY;
   const rows = all.filter((p) => {
     if (filter === "unpaid") return p.paymentStatus === "pending" || p.paymentStatus === "failed";
     if (filter === "renewal_due") return renewalDue(p);
-    if (filter && FILTERS.includes(filter as never)) return p.status === filter;
-    return true;
+    return POLICY_FILTERS.includes(filter as never) ? p.status === filter : true;
   });
-  const canRenew = can(user, "policies:renew");
+  const scope = scopeOf(user, "leads");
 
   return (
     <>
-      <PageHeader title="Policies & payments" description={`Booked policies become active once payment is recorded. Showing policies ${SCOPE_LABEL[scopeOf(user, "leads")]}.`} />
-      <FilterTabs base="/policies" values={FILTERS} current={filter} />
-      <div className="card overflow-x-auto">
-        <table className="w-full min-w-[860px] text-sm">
-          <thead className="table-head">
+      <PageHeader
+        title={t("policies.title")}
+        description={t("policies.description", { scope: scope === "none" ? "" : t(`scope.${scope}`) })}
+      />
+      <FilterTabs base="/policies" values={POLICY_FILTERS} current={filter} />
+      <Card>
+        <Table size="lg">
+          <thead>
             <tr>
-              <th className="px-4 py-3">Policy</th>
-              <th className="px-4 py-3">Customer</th>
-              <th className="px-4 py-3">Insurer</th>
-              <th className="px-4 py-3">Premium</th>
-              <th className="px-4 py-3">Ends</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Payment</th>
-              <th className="px-4 py-3" />
+              <Th>{t("policies.policy")}</Th>
+              <Th>{t("policies.customer")}</Th>
+              <Th>{t("policies.insurer")}</Th>
+              <Th>{t("policies.premium")}</Th>
+              <Th>{t("policies.ends")}</Th>
+              <Th>{t("policies.status")}</Th>
+              <Th>{t("policies.payment")}</Th>
+              <Th />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {rows.length === 0 && <EmptyRow colSpan={8}>No policies here.</EmptyRow>}
+          <tbody>
+            {rows.length === 0 && <EmptyRow colSpan={8}>{t("policies.empty")}</EmptyRow>}
             {rows.map((p) => (
-              <tr key={p.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono text-xs text-slate-700">{p.policyNumber}</td>
-                <td className="px-4 py-3">
-                  <Link href={`/leads/${p.leadId}`} className="font-medium text-slate-900 hover:text-indigo-600">
-                    {p.customerName}
-                  </Link>
-                  <span className="block text-xs text-slate-500">
-                    {productLabel(p.product)} · {p.advisorName ?? "no advisor"}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  {p.insurer}
-                  <span className="block text-xs text-slate-500">{p.coverage}</span>
-                </td>
-                <td className="px-4 py-3">{money(p.premium)}</td>
-                <td className={`px-4 py-3 ${renewalDue(p) ? "font-medium text-amber-700" : "text-slate-600"}`}>{shortDate(p.endDate)}</td>
-                <td className="px-4 py-3">
-                  <Badge value={p.status} />
-                </td>
-                <td className="px-4 py-3">
-                  <Badge value={p.paymentStatus} />
-                </td>
-                <td className="px-4 py-3 text-right">
+              <Tr key={p.id}>
+                <Td className="font-mono text-xs whitespace-nowrap text-ink-soft">{p.policyNumber}</Td>
+                <Td>
+                  <CellText
+                    href={`/leads/${p.leadId}?tab=policy`}
+                    primary={p.customerName}
+                    secondary={`${t(`products.${p.product}`)}, ${p.advisorName ?? t("policies.noAdvisor")}`}
+                  />
+                </Td>
+                <Td>
+                  <CellText primary={p.insurer} secondary={localized(p.planName, locale)} />
+                </Td>
+                <Td>{money(p.premium)}</Td>
+                <Td className={cn("whitespace-nowrap", renewalDue(p) ? "font-medium text-warn" : "text-ink-soft")}>
+                  {shortDate(p.endDate)}
+                </Td>
+                <Td>
+                  <Badge status={p.status} />
+                </Td>
+                <Td>
+                  <Badge status={p.paymentStatus} />
+                </Td>
+                <Td className="text-end">
                   {p.renewedByLeadId ? (
-                    <Link href={`/leads/${p.renewedByLeadId}`} className="text-xs text-violet-700 hover:underline">
-                      Renewal →
+                    <Link
+                      href={`/leads/${p.renewedByLeadId}`}
+                      className="text-sm whitespace-nowrap text-plum hover:underline"
+                    >
+                      {t("policies.renewal")}
                     </Link>
                   ) : (
-                    canRenew &&
-                    renewalDue(p) && (
+                    renewalDue(p) &&
+                    can(user, "policies:renew") && (
                       <form action={startRenewal}>
-                        <input type="hidden" name="policyId" value={p.id} />
-                        <button className="btn-secondary">Renew</button>
+                        <Hidden name="policyId" value={p.id} />
+                        <Button size="sm">{t("policies.renew")}</Button>
                       </form>
                     )
                   )}
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             ))}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </Card>
     </>
   );
 }

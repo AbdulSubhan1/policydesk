@@ -1,33 +1,29 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
+import { RTL_LOCALES, type Locale } from "@/constants/i18n";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const hanken = Hanken_Grotesk({ variable: "--font-hanken", subsets: ["latin"] });
+const plexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-plex-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
 });
+const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500"] });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("app");
+  return { title: t("name"), description: t("tagline") };
+}
 
-export const metadata: Metadata = {
-  title: "PolicyDesk",
-  description: "Insurance sales CRM with dynamic role-based access control",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = (await getLocale()) as Locale;
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang={locale} dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}>
+      <body className={`${hanken.variable} ${plexArabic.variable} ${plexMono.variable} font-sans antialiased`}>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
   );

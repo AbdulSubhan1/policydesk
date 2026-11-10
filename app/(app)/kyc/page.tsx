@@ -1,111 +1,111 @@
 import Link from "next/link";
-import { Badge, Forbidden, PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth";
-import { money, shortDate } from "@/lib/format";
-import { productLabel } from "@/lib/products";
-import { kycQueue } from "@/lib/queries";
+import { getTranslations } from "next-intl/server";
+import { ScreeningResult } from "@/components/leads/screening-result";
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  DetailList,
+  EmptyState,
+  Forbidden,
+  Hidden,
+  Input,
+  PageHeader,
+  PillNav,
+} from "@/components/ui";
+import { shortDate } from "@/lib/format";
 import { can } from "@/lib/rbac";
-import { reviewKyc } from "./actions";
+import { reviewKyc } from "@/server/actions/kyc";
+import { requireUser } from "@/server/auth";
+import { kycQueue } from "@/server/queries/kyc";
 
-export default async function KycPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
+export default async function KycReviewPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
   const user = await requireUser();
   if (!can(user, "kyc:review")) return <Forbidden permission="kyc:review" />;
 
-  const { filter } = await searchParams;
-  const showHistory = filter === "history";
-  const rows = await kycQueue(showHistory ? ["approved", "rejected"] : ["submitted"]);
+  const history = (await searchParams).filter === "history";
+  const [rows, t] = await Promise.all([
+    kycQueue(history ? ["approved", "rejected"] : ["submitted"]),
+    getTranslations(),
+  ]);
 
   return (
     <>
-      <PageHeader
-        title="KYC / AML review"
-        description="Advisors submit KYC; screening flags PEPs, watchlist matches and high-risk countries. Approve before any policy can be booked."
+      <PageHeader title={t("kycReview.title")} description={t("kycReview.description")} />
+      <PillNav
+        label={t("kycReview.title")}
+        items={[
+          { href: "/kyc", label: t("kycReview.waiting"), active: !history },
+          { href: "/kyc?filter=history", label: t("kycReview.reviewed"), active: history },
+        ]}
       />
-      <div className="mb-4 flex gap-2">
-        <Link href="/kyc" className={`rounded-full px-3 py-1 text-sm ${!showHistory ? "bg-indigo-600 text-white" : "border border-slate-200 bg-white text-slate-600"}`}>
-          Waiting for review
-        </Link>
-        <Link href="/kyc?filter=history" className={`rounded-full px-3 py-1 text-sm ${showHistory ? "bg-indigo-600 text-white" : "border border-slate-200 bg-white text-slate-600"}`}>
-          Reviewed
-        </Link>
-      </div>
 
-      {rows.length === 0 && <p className="card p-8 text-center text-sm text-slate-500">Nothing here. 🎉</p>}
+      {rows.length === 0 && (
+        <Card>
+          <EmptyState title={t("kycReview.empty")} />
+        </Card>
+      )}
 
       <div className="grid gap-4">
         {rows.map(({ kyc, ...r }) => (
-          <article key={kyc.id} className={`card p-5 ${kyc.eddRequired ? "border-red-200" : ""}`}>
-            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-              <div>
-                <Link href={`/leads/${r.leadId}`} className="font-semibold text-slate-900 hover:text-indigo-600">
-                  {r.customerName}
-                </Link>
-                <p className="text-xs text-slate-500">
-                  {productLabel(r.product)} · {r.departmentName} · advisor {r.advisorName ?? "—"} · submitted {kyc.submittedAt && shortDate(kyc.submittedAt)}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {kyc.riskRating && <Badge value={kyc.riskRating} prefix="Risk: " />}
-                {kyc.isPep && <Badge value="high" text="PEP" />}
-                {kyc.watchlistMatch && <Badge value="rejected" text="Watchlist match" />}
-                {kyc.eddRequired && <Badge value="pending" text="EDD required" />}
-                {showHistory && <Badge value={kyc.status} />}
-              </div>
-            </div>
-
-            <dl className="mt-4 grid gap-3 text-sm md:grid-cols-4">
-              <div>
-                <dt className="text-xs text-slate-500">ID number</dt>
-                <dd>{kyc.idNumber}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-slate-500">ID expiry</dt>
-                <dd>{kyc.idExpiry && shortDate(kyc.idExpiry)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-slate-500">Nationality · occupation</dt>
-                <dd>
-                  {kyc.nationality} · {kyc.occupation}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-slate-500">Source of funds</dt>
-                <dd className="capitalize">{kyc.sourceOfFunds}</dd>
-              </div>
-            </dl>
-            {kyc.riskReasons.length > 0 && (
-              <ul className="mt-3 list-disc pl-5 text-xs text-slate-600">
-                {kyc.riskReasons.map((reason) => (
-                  <li key={reason}>{reason}</li>
-                ))}
-              </ul>
-            )}
-
-            {showHistory ? (
-              kyc.reviewNote && <p className="mt-3 text-xs text-slate-600">Note: “{kyc.reviewNote}”</p>
-            ) : (
-              <form action={reviewKyc} className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4 md:flex-row">
-                <input type="hidden" name="kycId" value={kyc.id} />
-                <input
-                  name="note"
-                  required={kyc.eddRequired}
-                  placeholder={kyc.eddRequired ? "Required: enhanced due diligence notes" : "Optional note (required to reject)"}
-                  className="input"
-                />
-                <div className="flex gap-2">
-                  <button name="decision" value="approved" className="btn-primary">
-                    Approve
-                  </button>
-                  <button name="decision" value="rejected" className="btn-danger">
-                    Reject
-                  </button>
+          <Card key={kyc.id} className={kyc.eddRequired ? "border-risk/30" : undefined}>
+            <CardBody className="grid gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <Link href={`/leads/${r.leadId}?tab=kyc`} className="font-semibold text-ink hover:text-brand">
+                    {r.customerName}
+                  </Link>
+                  <p className="text-xs text-muted">
+                    {t("kycReview.submittedBy", {
+                      product: t(`products.${r.product}`),
+                      department: t(`departments.${r.departmentKey}`),
+                      advisor: r.advisorName ?? "—",
+                      date: kyc.submittedAt ? shortDate(kyc.submittedAt) : "—",
+                    })}
+                  </p>
                 </div>
-              </form>
-            )}
-          </article>
+                {history && <Badge status={kyc.status} />}
+              </div>
+              <DetailList
+                columns={3}
+                items={[
+                  { label: t("lead.kyc.idNumber"), value: kyc.idNumber },
+                  { label: t("lead.kyc.idExpiry"), value: kyc.idExpiry && shortDate(kyc.idExpiry) },
+                  { label: t("lead.kyc.nationality"), value: kyc.nationality },
+                  { label: t("lead.kyc.occupation"), value: kyc.occupation },
+                  { label: t("lead.kyc.sourceOfFunds"), value: kyc.sourceOfFunds && t(`funds.${kyc.sourceOfFunds}`) },
+                ]}
+              />
+              <ScreeningResult kyc={kyc} />
+              {history ? (
+                kyc.reviewNote && (
+                  <p className="text-sm text-ink-soft">{t("kycReview.noteShown", { note: kyc.reviewNote })}</p>
+                )
+              ) : (
+                <form action={reviewKyc} className="flex flex-col gap-2 border-t border-line pt-4 sm:flex-row">
+                  <Hidden name="kycId" value={kyc.id} />
+                  <Input
+                    name="note"
+                    required={kyc.eddRequired}
+                    aria-label={t("kycReview.note")}
+                    placeholder={kyc.eddRequired ? t("kycReview.noteRequired") : t("kycReview.notePlaceholder")}
+                  />
+                  <span className="flex gap-2">
+                    <Button variant="primary" name="decision" value="approved">
+                      {t("kycReview.approve")}
+                    </Button>
+                    <Button variant="danger" name="decision" value="rejected">
+                      {t("kycReview.reject")}
+                    </Button>
+                  </span>
+                </form>
+              )}
+            </CardBody>
+          </Card>
         ))}
       </div>
-      <p className="mt-6 text-xs text-slate-400">Premiums over {money(3000)} raise the risk score. Screening is simulated for the demo.</p>
+      <p className="mt-6 text-xs text-muted">{t("kycReview.simulated")}</p>
     </>
   );
 }

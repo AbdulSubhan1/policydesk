@@ -1,20 +1,5 @@
-import type { RiskRating, SourceOfFunds } from "./db/schema";
-
-// Demo reference data. A real system would call a screening provider instead.
-export const HIGH_RISK_COUNTRIES = ["Freedonia", "Sokovia"];
-export const NATIONALITIES = [
-  "Pakistan",
-  "India",
-  "United Kingdom",
-  "United States",
-  "Egypt",
-  "Philippines",
-  "Germany",
-  ...HIGH_RISK_COUNTRIES,
-];
-export const PEP_OCCUPATIONS = ["Government official", "Politician", "Senior military officer"];
-export const OCCUPATIONS = ["Salaried employee", "Business owner", "Self-employed", "Student", "Retired", ...PEP_OCCUPATIONS];
-export const WATCHLIST = ["ivan fakeman", "carla sanctioned"];
+import { HIGH_PREMIUM_THRESHOLD, HIGH_RISK_COUNTRIES, PEP_OCCUPATIONS, WATCHLIST } from "@/constants/kyc";
+import type { RiskRating, SourceOfFunds } from "@/constants/statuses";
 
 export type ScreeningInput = {
   customerName: string;
@@ -60,7 +45,7 @@ export function screenCustomer(input: ScreeningInput, today = new Date()): Scree
     reasons.push("Source of funds is cash");
   }
 
-  if (input.highestPremium > 3000) {
+  if (input.highestPremium > HIGH_PREMIUM_THRESHOLD) {
     score += 1;
     reasons.push("High premium amount");
   }

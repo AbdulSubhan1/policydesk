@@ -7,16 +7,29 @@ import bcrypt from "bcryptjs";
 import { sql } from "drizzle-orm";
 import { migrate as migrateNeon } from "drizzle-orm/neon-http/migrator";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
-import { db, schema } from "../lib/db";
-import type { LeadStage, OpportunityStatus, SourceOfFunds } from "../lib/db/schema";
-import { NATIONALITIES, OCCUPATIONS, screenCustomer } from "../lib/kyc";
-import { DEPARTMENTS, PRODUCT_INFO, PRODUCTS, departmentForProduct, type Product } from "../lib/products";
-import { ALL_PERMISSIONS, type Permission } from "../lib/rbac";
-
-export const DEMO_PASSWORD = "demo1234";
+import { DEMO_PASSWORD } from "@/constants/config";
+import type { Localized } from "@/constants/i18n";
+import { NATIONALITIES, OCCUPATIONS } from "@/constants/kyc";
+import {
+  DEPARTMENTS,
+  PRODUCT_COVERS,
+  PRODUCTS,
+  departmentOf,
+  type DepartmentKey,
+  type Product,
+} from "@/constants/products";
+import { OPPORTUNITY_SOURCES, type LeadStage, type OpportunityStatus, type SourceOfFunds } from "@/constants/statuses";
+import { screenCustomer } from "@/lib/kyc";
+import { ALL_PERMISSIONS, type Permission } from "@/lib/rbac";
+import { db, schema } from "@/server/db";
 
 const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permissions: Permission[] }[] = [
-  { name: "Admin", description: "Full access, including users, roles and document settings", isSystem: true, permissions: ALL_PERMISSIONS },
+  {
+    name: "Admin",
+    description: "Full access, including users, roles and document settings",
+    isSystem: true,
+    permissions: ALL_PERMISSIONS,
+  },
   {
     name: "Department Manager",
     description: "Runs one department: sees all its opportunities and leads, approves quotes, issues policies",
@@ -78,7 +91,14 @@ const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permis
   {
     name: "Compliance Officer",
     description: "Reviews KYC / AML screening results and approves or rejects customers",
-    permissions: ["dashboard:view", "leads:view_all", "kyc:review", "documents:download", "policies:view", "audit:view"],
+    permissions: [
+      "dashboard:view",
+      "leads:view_all",
+      "kyc:review",
+      "documents:download",
+      "policies:view",
+      "audit:view",
+    ],
   },
   {
     name: "Finance",
@@ -92,37 +112,102 @@ const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permis
   },
 ];
 
-const USER_SEED: { name: string; email: string; role: string; department?: string }[] = [
+const USER_SEED: { name: string; email: string; role: string; department?: DepartmentKey }[] = [
   { name: "Sara Admin", email: "admin@policydesk.dev", role: "Admin" },
-  { name: "Omar Siddiqui", email: "manager@policydesk.dev", role: "Department Manager", department: "Motor & Marine" },
-  { name: "Hina Coordinator", email: "coordinator@policydesk.dev", role: "Coordinator", department: "Motor & Marine" },
-  { name: "Aisha Khan", email: "advisor@policydesk.dev", role: "Advisor", department: "Motor & Marine" },
-  { name: "Bilal Ahmed", email: "bilal@policydesk.dev", role: "Advisor", department: "Motor & Marine" },
-  { name: "Sana Malik", email: "sana@policydesk.dev", role: "Department Manager", department: "Health" },
-  { name: "Kamran Ali", email: "kamran@policydesk.dev", role: "Coordinator", department: "Health" },
-  { name: "Zain Raza", email: "zain@policydesk.dev", role: "Advisor", department: "Health" },
-  { name: "Rehan Shah", email: "rehan@policydesk.dev", role: "Coordinator", department: "Life & Savings" },
-  { name: "Noor Fatima", email: "noor@policydesk.dev", role: "Advisor", department: "Life & Savings" },
-  { name: "Mehwish Iqbal", email: "mehwish@policydesk.dev", role: "Coordinator", department: "Home & Travel" },
-  { name: "Tariq Hussain", email: "tariq@policydesk.dev", role: "Advisor", department: "Home & Travel" },
-  { name: "Ayesha Nadeem", email: "ayesha@policydesk.dev", role: "Coordinator", department: "Business" },
-  { name: "Yasir Qureshi", email: "yasir@policydesk.dev", role: "Advisor", department: "Business" },
+  { name: "Omar Siddiqui", email: "manager@policydesk.dev", role: "Department Manager", department: "motor_marine" },
+  { name: "Hina Coordinator", email: "coordinator@policydesk.dev", role: "Coordinator", department: "motor_marine" },
+  { name: "Aisha Khan", email: "advisor@policydesk.dev", role: "Advisor", department: "motor_marine" },
+  { name: "Bilal Ahmed", email: "bilal@policydesk.dev", role: "Advisor", department: "motor_marine" },
+  { name: "Sana Malik", email: "sana@policydesk.dev", role: "Department Manager", department: "health" },
+  { name: "Kamran Ali", email: "kamran@policydesk.dev", role: "Coordinator", department: "health" },
+  { name: "Zain Raza", email: "zain@policydesk.dev", role: "Advisor", department: "health" },
+  { name: "Rehan Shah", email: "rehan@policydesk.dev", role: "Coordinator", department: "life_savings" },
+  { name: "Noor Fatima", email: "noor@policydesk.dev", role: "Advisor", department: "life_savings" },
+  { name: "Mehwish Iqbal", email: "mehwish@policydesk.dev", role: "Coordinator", department: "home_travel" },
+  { name: "Tariq Hussain", email: "tariq@policydesk.dev", role: "Advisor", department: "home_travel" },
+  { name: "Ayesha Nadeem", email: "ayesha@policydesk.dev", role: "Coordinator", department: "business" },
+  { name: "Yasir Qureshi", email: "yasir@policydesk.dev", role: "Advisor", department: "business" },
   { name: "Fatima Compliance", email: "compliance@policydesk.dev", role: "Compliance Officer" },
   { name: "Hamza Finance", email: "finance@policydesk.dev", role: "Finance" },
   { name: "Victor Viewer", email: "viewer@policydesk.dev", role: "Viewer" },
 ];
 
-const FIRST = ["Ahmed", "Fatima", "John", "Maria", "Ali", "Priya", "David", "Layla", "Hassan", "Emma", "Yusuf", "Chen", "Noor", "Lucas", "Zara"];
-const LAST = ["Khan", "Smith", "Rahman", "Garcia", "Ali", "Patel", "Brown", "Haddad", "Iqbal", "Wilson", "Lee", "Malik"];
+const FIRST = [
+  "Ahmed",
+  "Fatima",
+  "John",
+  "Maria",
+  "Ali",
+  "Priya",
+  "David",
+  "Layla",
+  "Hassan",
+  "Emma",
+  "Yusuf",
+  "Chen",
+  "Noor",
+  "Lucas",
+  "Zara",
+];
+const LAST = [
+  "Khan",
+  "Smith",
+  "Rahman",
+  "Garcia",
+  "Ali",
+  "Patel",
+  "Brown",
+  "Haddad",
+  "Iqbal",
+  "Wilson",
+  "Lee",
+  "Malik",
+];
 const INSURERS = ["Northwind Assurance", "Bluepeak Insurance", "Harbor Mutual", "Summit General", "Crescent Cover"];
 // Rough yearly base premium per product, scaled per cover level and insurer
 const BASE_PREMIUM: Record<Product, number> = {
-  car: 900, bike: 350, yacht: 4200, health: 1800, life: 1200, savings: 3000,
-  home: 450, travel: 120, business: 2600, cyber: 1900, trade_licence: 700,
+  car: 900,
+  bike: 350,
+  yacht: 4200,
+  health: 1800,
+  life: 1200,
+  savings: 3000,
+  home: 450,
+  travel: 120,
+  business: 2600,
+  cyber: 1900,
+  trade_licence: 700,
 };
-const BENEFITS = ["24/7 claims helpline", "Cashless network", "Free cancellation in 14 days", "Worldwide cover", "Personal accident cover", "Roadside assistance", "Legal expenses", "Emergency evacuation"];
-const SOURCES = ["website", "referral", "phone", "partner", "social"];
-const OPP_STATUSES: OpportunityStatus[] = ["new", "new", "contacted", "contacted", "qualified", "disqualified", "converted", "converted", "converted", "converted", "converted"];
+const PLAN_TIERS: Localized[] = [
+  { en: "Essential", ar: "الأساسية" },
+  { en: "Plus", ar: "بلس" },
+  { en: "Elite", ar: "النخبة" },
+  { en: "Max", ar: "ماكس" },
+  { en: "Pro", ar: "برو" },
+];
+const BENEFITS = [
+  "24/7 claims helpline",
+  "Cashless network",
+  "Free cancellation in 14 days",
+  "Worldwide cover",
+  "Personal accident cover",
+  "Roadside assistance",
+  "Legal expenses",
+  "Emergency evacuation",
+];
+const OPP_STATUSES: OpportunityStatus[] = [
+  "new",
+  "new",
+  "contacted",
+  "contacted",
+  "qualified",
+  "disqualified",
+  "converted",
+  "converted",
+  "converted",
+  "converted",
+  "converted",
+];
 const LEAD_STAGES: LeadStage[] = ["needs_analysis", "quoted", "quoted", "kyc", "kyc", "won", "won", "won", "lost"];
 const FUNDS: SourceOfFunds[] = ["salary", "salary", "business", "savings", "investments"];
 
@@ -132,7 +217,7 @@ function rand() {
   seedState = (seedState * 1103515245 + 12345) % 2147483648;
   return seedState / 2147483648;
 }
-const pick = <T,>(items: readonly T[]) => items[Math.floor(rand() * items.length)];
+const pick = <T>(items: readonly T[]) => items[Math.floor(rand() * items.length)];
 const DAY = 86_400_000;
 const daysAgo = (days: number) => new Date(Date.now() - days * DAY);
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
@@ -152,42 +237,127 @@ async function wipe() {
 }
 
 // [document, required] per product; anything not listed can still be uploaded as "Other"
-const DOCUMENT_SEED: { name: string; description: string }[] = [
-  { name: "National ID", description: "Front and back of the customer's national ID card" },
-  { name: "Passport", description: "Photo page of a valid passport" },
-  { name: "Driving licence", description: "Valid driving or riding licence" },
-  { name: "Vehicle registration", description: "Registration card of the car or bike" },
-  { name: "Boat registration", description: "Vessel registration and survey report" },
-  { name: "Medical declaration", description: "Signed health questionnaire" },
-  { name: "Proof of income", description: "Salary certificate or bank statement" },
-  { name: "Title deed / tenancy contract", description: "Proof of ownership or tenancy of the property" },
-  { name: "Trade licence", description: "Valid company trade licence" },
-  { name: "Company financials", description: "Latest audited financial statements" },
-  { name: "Travel itinerary", description: "Flight bookings or itinerary" },
-  { name: "Signed proposal form", description: "Proposal form signed by the customer" },
-  { name: "Other", description: "Any other supporting document" },
+const DOCUMENT_SEED: { name: Localized; description: Localized }[] = [
+  {
+    name: { en: "National ID", ar: "الهوية الوطنية" },
+    description: {
+      en: "Front and back of the customer's national ID card",
+      ar: "وجه وظهر بطاقة الهوية الوطنية للعميل",
+    },
+  },
+  {
+    name: { en: "Passport", ar: "جواز السفر" },
+    description: { en: "Photo page of a valid passport", ar: "صفحة الصورة من جواز سفر ساري" },
+  },
+  {
+    name: { en: "Driving licence", ar: "رخصة القيادة" },
+    description: { en: "Valid driving or riding licence", ar: "رخصة قيادة سارية" },
+  },
+  {
+    name: { en: "Vehicle registration", ar: "ملكية المركبة" },
+    description: { en: "Registration card of the car or bike", ar: "بطاقة تسجيل السيارة أو الدراجة" },
+  },
+  {
+    name: { en: "Boat registration", ar: "تسجيل القارب" },
+    description: { en: "Vessel registration and survey report", ar: "تسجيل السفينة وتقرير المعاينة" },
+  },
+  {
+    name: { en: "Medical declaration", ar: "الإقرار الطبي" },
+    description: { en: "Signed health questionnaire", ar: "استبيان صحي موقّع" },
+  },
+  {
+    name: { en: "Proof of income", ar: "إثبات الدخل" },
+    description: { en: "Salary certificate or bank statement", ar: "شهادة راتب أو كشف حساب بنكي" },
+  },
+  {
+    name: { en: "Title deed or tenancy contract", ar: "سند الملكية أو عقد الإيجار" },
+    description: { en: "Proof of ownership or tenancy of the property", ar: "إثبات ملكية العقار أو استئجاره" },
+  },
+  {
+    name: { en: "Trade licence", ar: "الرخصة التجارية" },
+    description: { en: "Valid company trade licence", ar: "رخصة تجارية سارية للشركة" },
+  },
+  {
+    name: { en: "Company financials", ar: "البيانات المالية للشركة" },
+    description: { en: "Latest audited financial statements", ar: "أحدث بيانات مالية مدققة" },
+  },
+  {
+    name: { en: "Travel itinerary", ar: "خط سير الرحلة" },
+    description: { en: "Flight bookings or itinerary", ar: "حجوزات الطيران أو خط السير" },
+  },
+  {
+    name: { en: "Signed proposal form", ar: "نموذج الطلب الموقّع" },
+    description: { en: "Proposal form signed by the customer", ar: "نموذج طلب موقّع من العميل" },
+  },
+  { name: { en: "Other", ar: "أخرى" }, description: { en: "Any other supporting document", ar: "أي مستند داعم آخر" } },
 ];
 
 const PRODUCT_DOCUMENT_SEED: Record<Product, [string, boolean][]> = {
-  car: [["National ID", true], ["Driving licence", true], ["Vehicle registration", true], ["Signed proposal form", false]],
-  bike: [["National ID", true], ["Driving licence", true], ["Vehicle registration", true]],
-  yacht: [["Passport", true], ["Boat registration", true], ["Signed proposal form", true]],
-  health: [["National ID", true], ["Passport", false], ["Medical declaration", true]],
-  life: [["National ID", true], ["Medical declaration", true], ["Proof of income", true], ["Signed proposal form", true]],
-  savings: [["National ID", true], ["Proof of income", true], ["Signed proposal form", true]],
-  home: [["National ID", true], ["Title deed / tenancy contract", true]],
-  travel: [["Passport", true], ["Travel itinerary", false]],
-  business: [["Trade licence", true], ["Company financials", false], ["Signed proposal form", true]],
-  cyber: [["Trade licence", true], ["Signed proposal form", true]],
-  trade_licence: [["Trade licence", true], ["National ID", true]],
+  car: [
+    ["National ID", true],
+    ["Driving licence", true],
+    ["Vehicle registration", true],
+    ["Signed proposal form", false],
+  ],
+  bike: [
+    ["National ID", true],
+    ["Driving licence", true],
+    ["Vehicle registration", true],
+  ],
+  yacht: [
+    ["Passport", true],
+    ["Boat registration", true],
+    ["Signed proposal form", true],
+  ],
+  health: [
+    ["National ID", true],
+    ["Passport", false],
+    ["Medical declaration", true],
+  ],
+  life: [
+    ["National ID", true],
+    ["Medical declaration", true],
+    ["Proof of income", true],
+    ["Signed proposal form", true],
+  ],
+  savings: [
+    ["National ID", true],
+    ["Proof of income", true],
+    ["Signed proposal form", true],
+  ],
+  home: [
+    ["National ID", true],
+    ["Title deed or tenancy contract", true],
+  ],
+  travel: [
+    ["Passport", true],
+    ["Travel itinerary", false],
+  ],
+  business: [
+    ["Trade licence", true],
+    ["Company financials", false],
+    ["Signed proposal form", true],
+  ],
+  cyber: [
+    ["Trade licence", true],
+    ["Signed proposal form", true],
+  ],
+  trade_licence: [
+    ["Trade licence", true],
+    ["National ID", true],
+  ],
 };
 
 async function seed() {
   const docTypeRows = await db.insert(schema.documentTypes).values(DOCUMENT_SEED).returning();
-  const docTypeId = new Map(docTypeRows.map((d) => [d.name, d.id]));
+  const docTypeId = new Map(docTypeRows.map((d) => [d.name.en, d.id]));
   await db.insert(schema.productDocuments).values(
     Object.entries(PRODUCT_DOCUMENT_SEED).flatMap(([product, docs]) => [
-      ...docs.map(([name, required]) => ({ product: product as Product, documentTypeId: docTypeId.get(name)!, required })),
+      ...docs.map(([name, required]) => ({
+        product: product as Product,
+        documentTypeId: docTypeId.get(name)!,
+        required,
+      })),
       { product: product as Product, documentTypeId: docTypeId.get("Other")!, required: false },
     ]),
   );
@@ -201,12 +371,14 @@ async function seed() {
     insurerRows.forEach((insurer, n) => {
       // Not every insurer sells every product
       if ((p + n) % 5 >= 3) return;
-      PRODUCT_INFO[product].covers.forEach((cover, c) => {
+      PRODUCT_COVERS[product].forEach((cover, c) => {
         const premium = Math.round((BASE_PREMIUM[product] * (1 + c * 0.45) * (0.85 + n * 0.08)) / 5) * 5;
+        const brand = insurer.name.split(" ")[0];
+        const tier = PLAN_TIERS[c];
         planValues.push({
           insurerId: insurer.id,
           product,
-          name: `${insurer.name.split(" ")[0]} ${PRODUCT_INFO[product].label} ${["Essential", "Plus", "Elite", "Max", "Pro"][c]}`,
+          name: { en: `${brand} ${tier.en}`, ar: `${brand} ${tier.ar}` },
           cover,
           basePremium: premium,
           excess: product === "life" || product === "savings" || product === "travel" ? 0 : Math.round(premium * 0.1),
@@ -218,10 +390,10 @@ async function seed() {
   const planRows = await db.insert(schema.plans).values(planValues).returning();
   const insurerName = new Map(insurerRows.map((r) => [r.id, r.name]));
 
-  const deptIds = new Map<string, number>();
+  const deptIds = new Map<DepartmentKey, number>();
   for (const d of DEPARTMENTS) {
-    const [row] = await db.insert(schema.departments).values({ name: d.name }).returning();
-    deptIds.set(d.name, row.id);
+    const [row] = await db.insert(schema.departments).values({ key: d.key }).returning();
+    deptIds.set(d.key, row.id);
   }
 
   const roleIds = new Map<string, number>();
@@ -247,7 +419,7 @@ async function seed() {
       })),
     )
     .returning();
-  const byRole = (role: string, dept: string) =>
+  const byRole = (role: string, dept: DepartmentKey) =>
     userRows.filter((u, i) => USER_SEED[i].role === role && USER_SEED[i].department === dept);
   const compliance = userRows.find((u) => u.email.startsWith("compliance"))!;
   const finance = userRows.find((u) => u.email.startsWith("finance"))!;
@@ -258,11 +430,16 @@ async function seed() {
     // A couple of fixed customers so the compliance and renewal demos always have something to show
     const special = i === 0 ? "watchlist" : i === 1 ? "renewal" : null;
     const product: Product = special === "watchlist" ? "yacht" : special === "renewal" ? "car" : pick(PRODUCTS);
-    const deptName = departmentForProduct(product);
+    const deptName = departmentOf(product);
     const deptId = deptIds.get(deptName)!;
     const coordinator = pick(byRole("Coordinator", deptName));
     const advisors = byRole("Advisor", deptName);
-    const name = special === "watchlist" ? "Ivan Fakeman" : special === "renewal" ? "Ahmed Rahman" : `${pick(FIRST)} ${pick(LAST)}`;
+    const name =
+      special === "watchlist"
+        ? "Ivan Fakeman"
+        : special === "renewal"
+          ? "Ahmed Rahman"
+          : `${pick(FIRST)} ${pick(LAST)}`;
     const status: OpportunityStatus = special ? "converted" : pick(OPP_STATUSES);
     const created = special === "renewal" ? daysAgo(350) : daysAgo(5 + Math.floor(rand() * 120));
 
@@ -275,7 +452,7 @@ async function seed() {
         product,
         departmentId: deptId,
         status,
-        source: pick(SOURCES),
+        source: pick(OPPORTUNITY_SOURCES),
         coordinatorId: status === "new" && rand() < 0.3 ? null : coordinator.id,
         createdAt: created,
         updatedAt: created,
@@ -289,9 +466,24 @@ async function seed() {
     const convertedAt = new Date(created.getTime() + DAY);
     const [lead] = await db
       .insert(schema.leads)
-      .values({ opportunityId: opp.id, departmentId: deptId, advisorId: advisor.id, stage, createdAt: convertedAt, updatedAt: convertedAt })
+      .values({
+        opportunityId: opp.id,
+        departmentId: deptId,
+        advisorId: advisor.id,
+        stage,
+        createdAt: convertedAt,
+        updatedAt: convertedAt,
+      })
       .returning();
-    audit.push({ userId: coordinator.id, action: "convert", entity: "opportunity", entityId: opp.id, leadId: lead.id, details: `Assigned to ${advisor.name}`, createdAt: convertedAt });
+    audit.push({
+      userId: coordinator.id,
+      action: "convert",
+      entity: "opportunity",
+      entityId: opp.id,
+      leadId: lead.id,
+      details: `Assigned to ${advisor.name}`,
+      createdAt: convertedAt,
+    });
 
     if (stage === "needs_analysis") {
       await db.insert(schema.kycRecords).values({ leadId: lead.id });
@@ -309,8 +501,14 @@ async function seed() {
             planId: plan.id,
             insurer: insurerName.get(plan.insurerId)!,
             premium: special === "watchlist" ? 9800 : plan.basePremium,
-            coverage: `${plan.name} (${plan.cover})`,
-            status: stage === "won" && q === 0 ? ("accepted" as const) : stage === "lost" ? ("rejected" as const) : ("sent" as const),
+            planName: plan.name,
+            cover: plan.cover,
+            status:
+              stage === "won" && q === 0
+                ? ("accepted" as const)
+                : stage === "lost"
+                  ? ("rejected" as const)
+                  : ("sent" as const),
             createdBy: advisor.id,
             createdAt: convertedAt,
           };
@@ -318,7 +516,15 @@ async function seed() {
       )
       .returning();
     for (const q of quoteRows) {
-      audit.push({ userId: advisor.id, action: "create", entity: "quote", entityId: q.id, leadId: lead.id, details: `${q.insurer}, ${q.coverage}`, createdAt: convertedAt });
+      audit.push({
+        userId: advisor.id,
+        action: "create",
+        entity: "quote",
+        entityId: q.id,
+        leadId: lead.id,
+        details: `${q.insurer}, ${q.planName.en}`,
+        createdAt: convertedAt,
+      });
     }
 
     if (stage === "quoted" || stage === "lost") {
@@ -356,9 +562,25 @@ async function seed() {
         reviewNote: approved ? "Documents verified" : null,
       })
       .returning();
-    audit.push({ userId: advisor.id, action: "submit", entity: "kyc", entityId: kyc.id, leadId: lead.id, details: `Risk ${screening.riskRating}`, createdAt: submittedAt });
+    audit.push({
+      userId: advisor.id,
+      action: "submit",
+      entity: "kyc",
+      entityId: kyc.id,
+      leadId: lead.id,
+      details: `Risk ${screening.riskRating}`,
+      createdAt: submittedAt,
+    });
     if (!approved) continue;
-    audit.push({ userId: compliance.id, action: "approve", entity: "kyc", entityId: kyc.id, leadId: lead.id, details: "Documents verified", createdAt: new Date(submittedAt.getTime() + DAY) });
+    audit.push({
+      userId: compliance.id,
+      action: "approve",
+      entity: "kyc",
+      entityId: kyc.id,
+      leadId: lead.id,
+      details: "Documents verified",
+      createdAt: new Date(submittedAt.getTime() + DAY),
+    });
 
     const accepted = quoteRows[0];
     // The renewal demo policy expires in two weeks; the rest are spread over the past year
@@ -382,16 +604,31 @@ async function seed() {
         createdAt: start,
       })
       .returning();
-    audit.push({ userId: advisor.id, action: "book", entity: "policy", entityId: policy.id, leadId: lead.id, details: policy.policyNumber, createdAt: start });
+    audit.push({
+      userId: advisor.id,
+      action: "book",
+      entity: "policy",
+      entityId: policy.id,
+      leadId: lead.id,
+      details: policy.policyNumber,
+      createdAt: start,
+    });
     if (paid) {
-      audit.push({ userId: finance.id, action: "paid", entity: "payment", entityId: policy.id, leadId: lead.id, details: `${policy.paymentReference}`, createdAt: start });
+      audit.push({
+        userId: finance.id,
+        action: "paid",
+        entity: "payment",
+        entityId: policy.id,
+        leadId: lead.id,
+        details: `${policy.paymentReference}`,
+        createdAt: start,
+      });
     }
   }
 
-  await db.insert(schema.auditLogs).values([
-    { userId: null, action: "seed", entity: "system", details: "Demo data created" },
-    ...audit,
-  ]);
+  await db
+    .insert(schema.auditLogs)
+    .values([{ userId: null, action: "seed", entity: "system", details: "Demo data created" }, ...audit]);
 }
 
 async function main() {

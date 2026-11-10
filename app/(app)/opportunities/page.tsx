@@ -1,11 +1,23 @@
-import Link from "next/link";
-import { Badge, EmptyRow, FilterTabs, Forbidden, PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth";
-import { OPPORTUNITY_STATUSES, type OpportunityStatus } from "@/lib/db/schema";
+import { getTranslations } from "next-intl/server";
+import {
+  Badge,
+  ButtonLink,
+  Card,
+  CellText,
+  EmptyRow,
+  FilterTabs,
+  Forbidden,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+  Tr,
+} from "@/components/ui";
+import { OPPORTUNITY_STATUSES, type OpportunityStatus } from "@/constants/statuses";
 import { shortDate } from "@/lib/format";
-import { productLabel } from "@/lib/products";
-import { listOpportunities } from "@/lib/queries";
-import { can, SCOPE_LABEL, scopeOf } from "@/lib/rbac";
+import { can, scopeOf } from "@/lib/rbac";
+import { requireUser } from "@/server/auth";
+import { listOpportunities } from "@/server/queries/opportunities";
 
 export default async function OpportunitiesPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
   const user = await requireUser();
@@ -13,60 +25,54 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
   if (scope === "none") return <Forbidden permission="opportunities:view_own" />;
 
   const { filter } = await searchParams;
-  const status = OPPORTUNITY_STATUSES.includes(filter as OpportunityStatus) ? (filter as OpportunityStatus) : undefined;
-  const rows = await listOpportunities(user, status);
+  const status = OPPORTUNITY_STATUSES.find((s) => s === filter) as OpportunityStatus | undefined;
+  const [rows, t] = await Promise.all([listOpportunities(user, status), getTranslations()]);
 
   return (
     <>
       <PageHeader
-        title="Opportunities"
-        description={`New inquiries ${SCOPE_LABEL[scope]}. Coordinators qualify them and convert them into leads for advisors.`}
+        title={t("opportunities.title")}
+        description={t("opportunities.description", { scope: t(`scope.${scope}`) })}
         action={
           can(user, "opportunities:create") && (
-            <Link href="/opportunities/new" className="btn-primary">
-              + New opportunity
-            </Link>
+            <ButtonLink href="/opportunities/new" variant="primary">
+              {t("opportunities.new")}
+            </ButtonLink>
           )
         }
       />
       <FilterTabs base="/opportunities" values={OPPORTUNITY_STATUSES} current={status} />
-
-      <div className="card overflow-x-auto">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead className="table-head">
+      <Card>
+        <Table>
+          <thead>
             <tr>
-              <th className="px-4 py-3">Customer</th>
-              <th className="px-4 py-3">Product</th>
-              <th className="px-4 py-3">Department</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Coordinator</th>
-              <th className="px-4 py-3">Received</th>
+              <Th>{t("opportunities.customer")}</Th>
+              <Th>{t("opportunities.product")}</Th>
+              <Th>{t("opportunities.status")}</Th>
+              <Th>{t("opportunities.coordinator")}</Th>
+              <Th>{t("opportunities.received")}</Th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {rows.length === 0 && <EmptyRow colSpan={6}>No opportunities here.</EmptyRow>}
+          <tbody>
+            {rows.length === 0 && <EmptyRow colSpan={5}>{t("opportunities.empty")}</EmptyRow>}
             {rows.map((o) => (
-              <tr key={o.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3">
-                  <Link href={`/opportunities/${o.id}`} className="font-medium text-slate-900 hover:text-indigo-600">
-                    {o.customerName}
-                  </Link>
-                  <span className="block text-xs text-slate-500">
-                    {o.email} · via {o.source}
-                  </span>
-                </td>
-                <td className="px-4 py-3">{productLabel(o.product)}</td>
-                <td className="px-4 py-3 text-slate-600">{o.departmentName}</td>
-                <td className="px-4 py-3">
-                  <Badge value={o.status} />
-                </td>
-                <td className="px-4 py-3 text-slate-600">{o.coordinatorName ?? <span className="text-slate-400">Unassigned</span>}</td>
-                <td className="px-4 py-3 text-slate-500">{shortDate(o.createdAt)}</td>
-              </tr>
+              <Tr key={o.id}>
+                <Td>
+                  <CellText href={`/opportunities/${o.id}`} primary={o.customerName} secondary={o.email} />
+                </Td>
+                <Td>
+                  <CellText primary={t(`products.${o.product}`)} secondary={t(`departments.${o.departmentKey}`)} />
+                </Td>
+                <Td>
+                  <Badge status={o.status} />
+                </Td>
+                <Td className="text-ink-soft">{o.coordinatorName ?? t("common.unassigned")}</Td>
+                <Td className="whitespace-nowrap text-muted">{shortDate(o.createdAt)}</Td>
+              </Tr>
             ))}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </Card>
     </>
   );
 }

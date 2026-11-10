@@ -1,34 +1,5 @@
-export const PERMISSIONS = {
-  "dashboard:view": { group: "Dashboard", label: "View dashboard" },
-  "opportunities:view_all": { group: "Opportunities", label: "View all opportunities" },
-  "opportunities:view_department": { group: "Opportunities", label: "View opportunities in my department" },
-  "opportunities:view_own": { group: "Opportunities", label: "View opportunities I coordinate" },
-  "opportunities:create": { group: "Opportunities", label: "Create opportunities" },
-  "opportunities:edit": { group: "Opportunities", label: "Qualify opportunities and change status" },
-  "opportunities:assign": { group: "Opportunities", label: "Change an opportunity's coordinator" },
-  "opportunities:convert": { group: "Opportunities", label: "Convert qualified opportunities into leads" },
-  "leads:view_all": { group: "Leads", label: "View all leads" },
-  "leads:view_department": { group: "Leads", label: "View leads in my department" },
-  "leads:view_own": { group: "Leads", label: "View leads assigned to me" },
-  "leads:edit": { group: "Leads", label: "Change lead stage" },
-  "leads:assign": { group: "Leads", label: "Reassign leads to advisors" },
-  "quotes:create": { group: "Quotes", label: "Create quotes" },
-  "quotes:approve": { group: "Quotes", label: "Mark quotes accepted or rejected" },
-  "kyc:submit": { group: "KYC / AML", label: "Collect and submit customer KYC" },
-  "kyc:review": { group: "KYC / AML", label: "Approve or reject KYC (compliance)" },
-  "policies:view": { group: "Policies", label: "View policies" },
-  "policies:issue": { group: "Policies", label: "Issue policies (needs accepted quote + approved KYC)" },
-  "policies:cancel": { group: "Policies", label: "Cancel policies" },
-  "policies:renew": { group: "Policies", label: "Start renewals for expiring policies" },
-  "payments:record": { group: "Policies", label: "Record payment status" },
-  "documents:upload": { group: "Documents", label: "Upload customer documents" },
-  "documents:download": { group: "Documents", label: "View and download customer documents" },
-  "documents:configure": { group: "Documents", label: "Manage document types and what each product requires" },
-  "plans:manage": { group: "Admin", label: "Manage insurers and their plans" },
-  "users:manage": { group: "Admin", label: "Manage users, their roles and departments" },
-  "roles:manage": { group: "Admin", label: "Create roles and edit permissions" },
-  "audit:view": { group: "Admin", label: "View audit log" },
-} as const;
+import { PERMISSIONS } from "@/constants/permissions";
+import type { DepartmentKey } from "@/constants/products";
 
 export type Permission = keyof typeof PERMISSIONS;
 
@@ -45,7 +16,7 @@ export type SessionUser = {
   roleId: number;
   roleName: string;
   departmentId: number | null;
-  departmentName: string | null;
+  departmentKey: DepartmentKey | null;
   permissions: Permission[];
 };
 
@@ -62,10 +33,3 @@ export function scopeOf(user: Pick<SessionUser, "permissions">, kind: "opportuni
   if (can(user, `${kind}:view_own`)) return "own";
   return "none";
 }
-
-export const SCOPE_LABEL: Record<Scope, string> = {
-  all: "across all departments",
-  department: "in your department",
-  own: "assigned to you",
-  none: "",
-};

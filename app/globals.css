@@ -1,32 +1,97 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --font-sans: var(--font-hanken), var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --color-ink: #14213d;
+  --color-ink-soft: #3b4a66;
+  --color-muted: #65728a;
+  --color-paper: #f4f6f8;
+  --color-line: #e2e6ec;
+
+  --color-brand: #0e7c66;
+  --color-brand-strong: #0a5e4d;
+  --color-brand-soft: #e2f1ec;
+
+  --color-info: #2c6e9b;
+  --color-info-soft: #e3eef6;
+  --color-warn: #a86a12;
+  --color-warn-soft: #fbf0dc;
+  --color-risk: #b4441c;
+  --color-risk-soft: #fbe8e0;
+  --color-plum: #6b4fa0;
+  --color-plum-soft: #eee8f6;
 }
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-feature-settings: "tnum" 1;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Knowledge base articles: Markdown rendered from docs/ */
 @layer components {
-  .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100;
+  .kb-prose {
+    @apply max-w-3xl text-[15px] leading-7 text-ink-soft;
   }
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50;
+  .kb-prose h1 {
+    @apply mb-4 text-2xl font-semibold tracking-tight text-ink;
   }
-  .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50;
+  .kb-prose h2 {
+    @apply mt-8 mb-3 text-lg font-semibold text-ink;
   }
-  .btn-danger {
-    @apply inline-flex items-center justify-center rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50;
+  .kb-prose h3 {
+    @apply mt-6 mb-2 font-semibold text-ink;
   }
-  .card {
-    @apply rounded-xl border border-slate-200 bg-white;
+  .kb-prose p,
+  .kb-prose ul,
+  .kb-prose ol,
+  .kb-prose table,
+  .kb-prose pre {
+    @apply mb-4;
   }
-  .table-head {
-    @apply border-b border-slate-200 bg-slate-50 text-left text-xs font-medium tracking-wide text-slate-500 uppercase;
+  .kb-prose ul {
+    @apply list-disc ps-6;
+  }
+  .kb-prose ol {
+    @apply list-decimal ps-6;
+  }
+  .kb-prose a {
+    @apply text-brand underline underline-offset-2;
+  }
+  .kb-prose code {
+    @apply rounded bg-paper px-1 py-0.5 font-mono text-[13px] text-ink;
+  }
+  .kb-prose pre:not(.mermaid) {
+    @apply overflow-x-auto rounded-md bg-ink p-3 text-white;
+  }
+  .kb-prose pre code {
+    @apply bg-transparent p-0 text-white;
+  }
+  .kb-prose pre.mermaid {
+    @apply overflow-x-auto rounded-md border border-line bg-white p-3 text-center;
+  }
+  .kb-prose table {
+    @apply block overflow-x-auto text-sm;
+  }
+  .kb-prose th,
+  .kb-prose td {
+    @apply border border-line px-3 py-1.5 text-start align-top;
+  }
+  .kb-prose th {
+    @apply bg-paper font-medium text-ink;
   }
 }

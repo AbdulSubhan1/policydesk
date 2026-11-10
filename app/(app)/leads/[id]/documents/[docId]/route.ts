@@ -1,9 +1,10 @@
 import { and, eq } from "drizzle-orm";
-import { getCurrentUser } from "@/lib/auth";
-import { db, schema } from "@/lib/db";
-import { getLead } from "@/lib/queries";
 import { can } from "@/lib/rbac";
+import { getCurrentUser } from "@/server/auth";
+import { db, schema } from "@/server/db";
+import { getLead } from "@/server/queries/leads";
 
+// The one route handler in the app: streaming a stored file to the browser is a GET, not a server action.
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string; docId: string }> }) {
   const { id, docId } = await params;
   const user = await getCurrentUser();

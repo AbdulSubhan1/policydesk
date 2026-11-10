@@ -1,46 +1,52 @@
 # PolicyDesk
 
-An insurance CRM for a brokerage: opportunities come in, coordinators qualify them, advisors turn them into policies, compliance runs KYC/AML, finance records payments, and expiring policies flow back in as renewals. Every screen, button and row of data is controlled by **database-driven role-based access control**.
+An insurance CRM for a brokerage. Opportunities come in and coordinators qualify them. Advisors turn them into policies, compliance runs KYC/AML, finance records payments, and expiring policies come back as renewals. **Database-driven role-based access control** decides every screen, button and row of data. The app is fully bilingual in English and Arabic (RTL).
 
-**Live demo:** _coming soon_ · log in with one click as any role (password `demo1234`).
+**Live demo:** _coming soon_. Sign in with one click as any role; every demo user's password is `demo1234`.
 
-## Features
+## Highlights
 
-- **Opportunity → Lead flow.** An opportunity is the raw inquiry. A coordinator qualifies it and converts it into a lead for an advisor in the right department.
-- **Departments.** Motor & Marine, Health, Life & Savings, Home & Travel and Business. Each product is routed to one of them.
-- **11 insurance products, each with its own covers:** car, bike, yacht, health, life, savings, home, travel, business (SME), cyber and trade licence.
-- **Insurers & plans catalog.** Admins load plans from each insurer. Advisors quote from active plans of the lead's product, and the premium is prefilled.
-- **KYC / AML.** Simulated sanctions-watchlist, PEP and high-risk-country screening with a risk score and enhanced due diligence flags. A separate compliance review applies the four-eyes rule.
-- **Central document settings.** One list of document types; each product marks them as optional or required. Lead uploads only offer that product's documents.
-- **Policy booking gate.** A policy can only be booked with an accepted quote, approved KYC and every required document.
-- **Payments.** Policies are *booked* until finance records a payment, which makes them *active*. Failed and refunded payments are handled too.
-- **Renewals.** Policies near expiry can be renewed into a new renewal lead. KYC carries over if the ID is still valid.
-- **Audit trail.** A global audit log, plus a per-lead activity timeline.
-
-## RBAC design
-
-- **Permissions** are fixed in code (`lib/rbac.ts`). **Roles** and their permissions live in the database, so admins can create roles and toggle permissions in the UI. Changes apply on the next request.
-- **Row-level scope:** `view_all` > `view_department` > `view_own`, applied in every query (`lib/queries.ts`). A record outside your scope returns 404, not 403.
-- Every server action re-checks its permission and scope. Hidden buttons are UX only.
-- Demo roles: Admin, Department Manager, Coordinator, Advisor, Compliance Officer, Finance, Viewer.
+- **Opportunity → lead flow** across five departments and 11 insurance products, each with its own covers.
+- **Dynamic RBAC** with a role permission matrix plus department and own-record data scopes, enforced in every query and server action.
+- **Insurers & plans catalogue.** Quotes are created from plans.
+- **KYC / AML** screening (PEP, watchlist, high-risk country) with a compliance queue and a four-eyes rule.
+- **Central document settings.** Required documents per product gate policy booking.
+- **Payments** (booked → active), **renewals** and an **audit trail** with a per-lead timeline.
+- **i18n:** English and Arabic for the UI, validation messages and the data itself.
+- **Own UI library.** One component per file, a machine-readable registry, a live component library page and lint rules that enforce it.
+- **Knowledge base** in the app, with Mermaid diagrams, built from `docs/`.
+- **Quality gates:** strict TypeScript, ESLint UI rules, Prettier, Playwright E2E, and CI with an AI PR reviewer that follows `AGENTS.md`.
 
 ## Stack
 
-Next.js 15 (App Router, Server Actions) · TypeScript · Tailwind CSS 4 · Drizzle ORM · PostgreSQL (Neon in production, embedded PGlite locally) · Zod · JWT sessions (jose).
+Next.js 15 (App Router, Server Components, Server Actions), TypeScript, Tailwind CSS 4, Drizzle ORM, PostgreSQL (Neon in production, PGlite locally), next-intl, React Hook Form, Zod, Playwright.
 
 ## Run locally
 
-No database install is needed: locally it uses PGlite, a Postgres that runs inside Node.
+No database install is needed.
 
 ```bash
 npm install
-npm run db:setup      # creates tables and demo data (add -- --reset to start over)
+npm run db:setup     # tables + demo data (add -- --reset to start over)
 npm run dev
 ```
 
+## Quality
+
+```bash
+npm run check        # types, lint, formatting, UI registry
+npm run test:e2e     # Playwright (run `npx playwright install chromium` once)
+```
+
+## Read next
+
+- `AGENTS.md`: the coding standard every person and AI follows
+- `docs/`: the knowledge base, also at `/kb` in the app
+- `/design-system` in the app: the component library
+
 ## Deploy (Vercel + Neon)
 
-1. Import the repo in Vercel.
+1. Import the repo in Vercel under your own account.
 2. Add a Neon Postgres database under **Storage**. It sets `DATABASE_URL`.
-3. Add `AUTH_SECRET`, a long random string, for example from `openssl rand -base64 32`.
-4. Run `DATABASE_URL=<neon url> npm run db:setup` once to create tables and demo data.
+3. Add `AUTH_SECRET`, for example from `openssl rand -base64 32`.
+4. Run `DATABASE_URL=<neon url> npm run db:setup` once.
