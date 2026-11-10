@@ -2,7 +2,7 @@
 
 An insurance CRM for a brokerage. Opportunities come in and coordinators qualify them. Advisors turn them into policies, compliance runs KYC/AML, finance records payments, and expiring policies come back as renewals. **Database-driven role-based access control** decides every screen, button and row of data. The app is fully bilingual in English and Arabic (RTL).
 
-**Live demo:** _coming soon_. Sign in with one click as any role; every demo user's password is `demo1234`.
+**Live demo:** https://policydesk-opal.vercel.app/login. Sign in with one click as any role; every demo user's password is `demo1234`. New here? Start with the training guide at `/kb` in the app ([docs/00-start-here.md](docs/00-start-here.md)).
 
 ## Highlights
 
@@ -47,6 +47,6 @@ npm run test:e2e     # Playwright (run `npx playwright install chromium` once)
 ## Deploy (Vercel + Neon)
 
 1. Import the repo in Vercel under your own account.
-2. Add a Neon Postgres database under **Storage**. It sets `DATABASE_URL`.
+2. Add a Neon Postgres database under **Storage** with the env prefix `DATABASE`, so it sets `DATABASE_URL`. Put the database and the function region (Settings → Functions) in the same region.
 3. Add `AUTH_SECRET`, for example from `openssl rand -base64 32`.
 4. Run `DATABASE_URL=<neon url> npm run db:setup` once.
