@@ -5,7 +5,8 @@ test("manager renews a policy that is due", async ({ page }) => {
   await loginAs(page, "manager");
   await page.goto("/policies?filter=renewal_due");
   await page.getByRole("button", { name: "Renew" }).first().click();
-  await expect(page).toHaveURL(/\/leads\/\d+$/);
+  // The redirect lands on a lead page the dev server may still be compiling
+  await expect(page).toHaveURL(/\/leads\/[0-9a-f-]{36}$/, { timeout: 20_000 });
   await expect(page.getByText("Renewal", { exact: true })).toBeVisible();
   await expect(page.getByText(/^Renews PD-/)).toBeVisible();
 });
