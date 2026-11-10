@@ -8,14 +8,13 @@ import { requirePermission } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { isPermission } from "@/lib/rbac";
 
-const { roles, rolePermissions, users } = schema;
+const { roles, rolePermissions } = schema;
 
 export type FormState = { error?: string };
 
 export async function saveRolePermissions(formData: FormData) {
   const user = await requirePermission("roles:manage");
-  const roleId = Number(formData.get("roleId"));
-  const [role] = await db.select().from(roles).where(eq(roles.id, roleId));
+  const [role] = await db.select().from(roles).where(eq(roles.id, Number(formData.get("roleId"))));
   if (!role) throw new Error("Role not found");
   if (role.isSystem) throw new Error("System roles cannot be changed");
 
@@ -48,32 +47,4 @@ export async function createRole(_prev: FormState, formData: FormData): Promise<
   await logAudit({ userId: user.id, action: "create", entity: "role", entityId: role.id, details: role.name });
   revalidatePath("/admin/roles");
   return {};
-}
-
-export async function changeUserRole(formData: FormData) {
-  const user = await requirePermission("users:manage");
-  const targetId = Number(formData.get("userId"));
-  const roleId = Number(formData.get("roleId"));
-  if (targetId === user.id) throw new Error("You cannot change your own role");
-
-  const [role] = await db.select().from(roles).where(eq(roles.id, roleId));
-  const [target] = await db.select().from(users).where(eq(users.id, targetId));
-  if (!role || !target) throw new Error("Not found");
-
-  await db.update(users).set({ roleId: role.id }).where(eq(users.id, target.id));
-  await logAudit({ userId: user.id, action: "role", entity: "user", entityId: target.id, details: `${target.name} → ${role.name}` });
-  revalidatePath("/admin/users");
-}
-
-export async function toggleUserActive(formData: FormData) {
-  const user = await requirePermission("users:manage");
-  const targetId = Number(formData.get("userId"));
-  if (targetId === user.id) throw new Error("You cannot deactivate yourself");
-
-  const [target] = await db.select().from(users).where(eq(users.id, targetId));
-  if (!target) throw new Error("Not found");
-
-  await db.update(users).set({ active: !target.active }).where(eq(users.id, target.id));
-  await logAudit({ userId: user.id, action: target.active ? "deactivate" : "activate", entity: "user", entityId: target.id, details: target.name });
-  revalidatePath("/admin/users");
 }

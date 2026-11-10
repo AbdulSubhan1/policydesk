@@ -59,9 +59,12 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
       active: schema.users.active,
       roleId: schema.roles.id,
       roleName: schema.roles.name,
+      departmentId: schema.users.departmentId,
+      departmentName: schema.departments.name,
     })
     .from(schema.users)
     .innerJoin(schema.roles, eq(schema.users.roleId, schema.roles.id))
+    .leftJoin(schema.departments, eq(schema.users.departmentId, schema.departments.id))
     .where(eq(schema.users.id, id));
   if (!row || !row.active) return null;
 
@@ -76,6 +79,8 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
     email: row.email,
     roleId: row.roleId,
     roleName: row.roleName,
+    departmentId: row.departmentId,
+    departmentName: row.departmentName,
     permissions: perms.map((p) => p.permission).filter(isPermission),
   };
 });

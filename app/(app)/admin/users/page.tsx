@@ -3,32 +3,43 @@ import { Forbidden, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { can } from "@/lib/rbac";
-import { changeUserRole, toggleUserActive } from "../actions";
+import { toggleUserActive, updateUser } from "./actions";
 
-const { users, roles } = schema;
+const { users, roles, departments } = schema;
 
 export default async function UsersPage() {
   const user = await requireUser();
   if (!can(user, "users:manage")) return <Forbidden permission="users:manage" />;
 
-  const [userRows, roleRows] = await Promise.all([
+  const [userRows, roleRows, deptRows] = await Promise.all([
     db
-      .select({ id: users.id, name: users.name, email: users.email, active: users.active, roleId: users.roleId, roleName: roles.name })
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        active: users.active,
+        roleId: users.roleId,
+        roleName: roles.name,
+        departmentId: users.departmentId,
+        departmentName: departments.name,
+      })
       .from(users)
       .innerJoin(roles, eq(users.roleId, roles.id))
+      .leftJoin(departments, eq(users.departmentId, departments.id))
       .orderBy(users.id),
     db.select({ id: roles.id, name: roles.name }).from(roles).orderBy(roles.id),
+    db.select().from(departments).orderBy(departments.id),
   ]);
 
   return (
     <>
-      <PageHeader title="Users" description="Change a user's role and their access changes on their next click." />
+      <PageHeader title="Users" description="Role decides what someone can do; department decides whose data they see." />
       <div className="card overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-[820px] text-sm">
           <thead className="table-head">
             <tr>
               <th className="px-4 py-3">User</th>
-              <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Role & department</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3" />
             </tr>
@@ -37,7 +48,7 @@ export default async function UsersPage() {
             {userRows.map((u) => {
               const isMe = u.id === user.id;
               return (
-                <tr key={u.id}>
+                <tr key={u.id} className={u.active ? "" : "opacity-60"}>
                   <td className="px-4 py-3">
                     <span className="font-medium text-slate-900">
                       {u.name} {isMe && <span className="text-xs font-normal text-slate-400">(you)</span>}
@@ -46,14 +57,25 @@ export default async function UsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     {isMe ? (
-                      <span className="text-slate-700">{u.roleName}</span>
+                      <span>
+                        {u.roleName}
+                        {u.departmentName && ` · ${u.departmentName}`}
+                      </span>
                     ) : (
-                      <form action={changeUserRole} className="flex gap-2">
+                      <form key={`${u.roleId}-${u.departmentId}`} action={updateUser} className="flex flex-wrap gap-2">
                         <input type="hidden" name="userId" value={u.id} />
-                        <select name="roleId" defaultValue={u.roleId} className="input !w-40 !py-1.5">
+                        <select name="roleId" defaultValue={u.roleId} className="input !w-44 !py-1.5">
                           {roleRows.map((r) => (
                             <option key={r.id} value={r.id}>
                               {r.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select name="departmentId" defaultValue={u.departmentId ?? ""} className="input !w-40 !py-1.5">
+                          <option value="">No department</option>
+                          {deptRows.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.name}
                             </option>
                           ))}
                         </select>

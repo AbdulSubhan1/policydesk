@@ -6,10 +6,12 @@ import { login, type LoginState } from "./actions";
 const DEMO_PASSWORD = "demo1234";
 
 const DEMO_ACCOUNTS = [
-  { role: "Admin", email: "admin@policydesk.dev", hint: "Everything, including roles and users" },
-  { role: "Manager", email: "manager@policydesk.dev", hint: "All leads, assigns work, approves quotes" },
-  { role: "Agent", email: "agent@policydesk.dev", hint: "Only the leads assigned to them" },
-  { role: "Viewer", email: "viewer@policydesk.dev", hint: "Read-only reporting" },
+  { role: "Admin", email: "admin@policydesk.dev", hint: "Everything, including plans, documents and roles" },
+  { role: "Department Manager", email: "manager@policydesk.dev", hint: "Motor & Marine: all its opportunities and leads" },
+  { role: "Coordinator", email: "coordinator@policydesk.dev", hint: "Qualifies opportunities, hands leads to advisors" },
+  { role: "Advisor", email: "advisor@policydesk.dev", hint: "Only own leads: quotes, KYC, documents, policy" },
+  { role: "Compliance Officer", email: "compliance@policydesk.dev", hint: "Reviews KYC / AML screening" },
+  { role: "Finance", email: "finance@policydesk.dev", hint: "Records payments, activates policies" },
 ];
 
 export default function LoginPage() {
@@ -32,12 +34,12 @@ export default function LoginPage() {
             P
           </div>
           <h1 className="text-2xl font-semibold text-slate-900">PolicyDesk</h1>
-          <p className="mt-1 text-sm text-slate-500">Insurance sales CRM with role-based access control</p>
+          <p className="mt-1 text-sm text-slate-500">Insurance CRM: opportunities, leads, KYC/AML, policies and renewals</p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="mb-1 text-sm font-semibold text-slate-900">Try a demo account</h2>
-          <p className="mb-4 text-xs text-slate-500">Each role sees a different app. Log in as two roles to compare.</p>
+          <p className="mb-4 text-xs text-slate-500">Each role sees a different app. Password for every demo user: demo1234</p>
           <div className="grid gap-2">
             {DEMO_ACCOUNTS.map((a) => (
               <button

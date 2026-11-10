@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createRole, type FormState } from "../actions";
+import { createRole, type FormState } from "./actions";
 
 export function RoleForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(createRole, {});

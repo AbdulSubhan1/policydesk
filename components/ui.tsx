@@ -1,28 +1,56 @@
 import type { Permission } from "@/lib/rbac";
 import { PERMISSIONS } from "@/lib/rbac";
 
+const GREEN = "bg-emerald-50 text-emerald-700 ring-emerald-200";
+const BLUE = "bg-sky-50 text-sky-700 ring-sky-200";
+const AMBER = "bg-amber-50 text-amber-700 ring-amber-200";
+const VIOLET = "bg-violet-50 text-violet-700 ring-violet-200";
+const RED = "bg-red-50 text-red-700 ring-red-200";
+const GREY = "bg-slate-100 text-slate-600 ring-slate-200";
+
 const BADGE_COLORS: Record<string, string> = {
-  new: "bg-sky-50 text-sky-700 ring-sky-200",
-  contacted: "bg-amber-50 text-amber-700 ring-amber-200",
-  quoted: "bg-violet-50 text-violet-700 ring-violet-200",
-  won: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  lost: "bg-slate-100 text-slate-600 ring-slate-200",
-  draft: "bg-slate-100 text-slate-600 ring-slate-200",
-  sent: "bg-sky-50 text-sky-700 ring-sky-200",
-  accepted: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  rejected: "bg-red-50 text-red-700 ring-red-200",
-  active: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  cancelled: "bg-red-50 text-red-700 ring-red-200",
+  new: BLUE,
+  contacted: AMBER,
+  qualified: VIOLET,
+  disqualified: GREY,
+  converted: GREEN,
+  needs_analysis: BLUE,
+  quoted: VIOLET,
+  kyc: AMBER,
+  won: GREEN,
+  lost: GREY,
+  draft: GREY,
+  sent: BLUE,
+  accepted: GREEN,
+  rejected: RED,
+  booked: AMBER,
+  active: GREEN,
+  cancelled: RED,
+  pending: AMBER,
+  submitted: BLUE,
+  approved: GREEN,
+  paid: GREEN,
+  failed: RED,
+  refunded: GREY,
+  low: GREEN,
+  medium: AMBER,
+  high: RED,
+  new_business: BLUE,
+  renewal: VIOLET,
 };
 
-export function Badge({ value }: { value: string }) {
+export function label(value: string) {
+  const text = value.replaceAll("_", " ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** `value` picks the colour; `text` replaces the label for flag-style badges. */
+export function Badge({ value, prefix, text }: { value: string; prefix?: string; text?: string }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ring-1 ring-inset ${
-        BADGE_COLORS[value] ?? "bg-slate-100 text-slate-600 ring-slate-200"
-      }`}
+      className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset ${BADGE_COLORS[value] ?? GREY}`}
     >
-      {value}
+      {text ?? `${prefix ?? ""}${label(value)}`}
     </span>
   );
 }
@@ -59,5 +87,32 @@ export function EmptyRow({ colSpan, children }: { colSpan: number; children: Rea
         {children}
       </td>
     </tr>
+  );
+}
+
+export function FilterTabs({ base, values, current }: { base: string; values: readonly string[]; current?: string }) {
+  return (
+    <div className="mb-4 flex flex-wrap gap-2">
+      {[undefined, ...values].map((v) => (
+        <a
+          key={v ?? "all"}
+          href={v ? `${base}?filter=${v}` : base}
+          className={`rounded-full px-3 py-1 text-sm ${
+            v === current ? "bg-indigo-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          {v ? label(v) : "All"}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export function Field({ label: text, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`grid gap-1 text-sm ${className}`}>
+      <span className="font-medium text-slate-700">{text}</span>
+      {children}
+    </label>
   );
 }

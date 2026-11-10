@@ -3,7 +3,7 @@ import { Forbidden, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { ALL_PERMISSIONS, can, PERMISSIONS } from "@/lib/rbac";
-import { saveRolePermissions } from "../actions";
+import { saveRolePermissions } from "./actions";
 import { RoleForm } from "./role-form";
 
 const { roles, rolePermissions, users } = schema;
