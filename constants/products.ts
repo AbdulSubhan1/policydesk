@@ -14,6 +14,21 @@ export type Product = (typeof DEPARTMENTS)[number]["products"][number];
 
 export const PRODUCTS = DEPARTMENTS.flatMap((d) => d.products) as [Product, ...Product[]];
 
+/** Short code of each line of business, the start of every lead reference (CAR-J2M3HX7). */
+export const PRODUCT_CODES: Record<Product, string> = {
+  car: "CAR",
+  bike: "BIK",
+  yacht: "YCT",
+  health: "HLT",
+  life: "LIF",
+  savings: "SAV",
+  home: "HOM",
+  travel: "TRV",
+  business: "BUS",
+  cyber: "CYB",
+  trade_licence: "TLC",
+};
+
 export const PRODUCT_COVERS: Record<Product, readonly string[]> = {
   car: ["third_party", "comprehensive", "comprehensive_agency"],
   bike: ["third_party", "comprehensive"],

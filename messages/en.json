@@ -26,7 +26,21 @@
     "perYear": "{amount} a year",
     "select": "Select…",
     "noMatches": "No matches",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "cannotUndo": "This can't be undone.",
+    "close": "Close",
+    "selected": "{count} selected",
+    "clearSelection": "Clear selection",
+    "show": "Show",
+    "hide": "Hide",
+    "increase": "Increase",
+    "decrease": "Decrease",
+    "dropFiles": "Drag a file here or click to choose",
+    "pickDate": "Pick a date…",
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today",
+    "saved": "Saved"
   },
   "nav": {
     "main": "Main",
@@ -309,8 +323,10 @@
     "advisor": "Advisor",
     "updated": "Updated",
     "empty": "No leads match this filter.",
-    "leadNumber": "Lead #{id}",
-    "search": "Search by customer name"
+    "search": "Search by name or reference, e.g. CAR-J2M3HX7",
+    "bulk": {
+      "setStage": "Move to stage"
+    }
   },
   "lead": {
     "summary": "{product} insurance in {department}, handled by {advisor}.",
@@ -386,7 +402,8 @@
       "view": "View",
       "delete": "Delete",
       "documentTypePlaceholder": "Pick a document type…",
-      "emptyTitle": "No documents yet"
+      "emptyTitle": "No documents yet",
+      "deleteTitle": "Delete {name}?"
     },
     "policy": {
       "notReady": "Not ready to book yet",
@@ -405,7 +422,9 @@
       "savePayment": "Save payment",
       "openRenewal": "Open renewal",
       "startRenewal": "Start renewal",
-      "cancelPolicy": "Cancel policy"
+      "cancelPolicy": "Cancel policy",
+      "cancelTitle": "Cancel policy {number}?",
+      "cancelBody": "The policy stops covering the customer and can't be reactivated. Start a new quote to insure them again."
     }
   },
   "activity": {
@@ -474,7 +493,7 @@
     "renew": "Renew",
     "renewal": "Renewal",
     "noAdvisor": "No advisor",
-    "search": "Search by customer or policy number"
+    "search": "Search by customer, policy number or reference"
   },
   "plans": {
     "title": "Insurers & plans",
@@ -525,7 +544,9 @@
     "active": "Active",
     "deactivated": "Deactivated",
     "role": "Role",
-    "department": "Department"
+    "department": "Department",
+    "deactivateTitle": "Deactivate {name}?",
+    "deactivateBody": "They can no longer sign in. Their leads and history stay, and you can activate them again later."
   },
   "roles": {
     "title": "Roles & permissions",
@@ -579,7 +600,26 @@
     "file": "File",
     "props": "Props",
     "usage": "Usage",
-    "usedIn": "Used in {count, plural, =0 {no files} one {# file} other {# files}}"
+    "usedIn": "Used in {count, plural, =0 {no files} one {# file} other {# files}}",
+    "overview": "Overview",
+    "foundations": "Foundations",
+    "allComponents": "{count} components in {groups} categories. Open one to try its demos, read its props and see where the app uses it.",
+    "searchComponents": "Search components…",
+    "noResults": "No component has that name.",
+    "examples": "Examples",
+    "keyboard": "Keyboard",
+    "keys": "Keys",
+    "does": "What it does",
+    "width": "Preview width",
+    "widths": {
+      "full": "Full",
+      "tablet": "Tablet",
+      "mobile": "Mobile"
+    },
+    "previousComponent": "Previous",
+    "nextComponent": "Next",
+    "library": "Component library",
+    "code": "Code"
   },
   "placeholders": {
     "customerName": "e.g. Ahmed Rahman",
@@ -626,6 +666,7 @@
     "previous": "Previous page",
     "next": "Next page",
     "pageOf": "Page {page} of {pages}",
-    "pages": "Pages"
+    "pages": "Pages",
+    "select": "Select"
   }
 }

@@ -25,7 +25,28 @@ export async function updateLeadStage(formData: FormData) {
     leadId: lead.id,
     details: `${lead.stage} → ${stage}`,
   });
-  revalidatePath(`/leads/${lead.id}`);
+  revalidatePath("/leads/[id]", "page");
+}
+
+/** Moves every selected lead to one stage (ActionBar on the leads list). Won leads stay closed. */
+export async function updateLeadStages(formData: FormData) {
+  const stage = option(EDITABLE_LEAD_STAGES).parse(formData.get("stage"));
+  const ids = formData.getAll("leadIds").map((v) => id.parse(v));
+
+  for (const leadId of ids) {
+    const { user, lead } = await requireLead("leads:edit", leadId);
+    if (lead.stage === "won" || lead.stage === stage) continue;
+    await db.update(leads).set({ stage, updatedAt: new Date() }).where(eq(leads.id, lead.id));
+    await logAudit({
+      userId: user.id,
+      action: "stage",
+      entity: "lead",
+      entityId: lead.id,
+      leadId: lead.id,
+      details: `${lead.stage} → ${stage}`,
+    });
+  }
+  revalidatePath("/leads");
 }
 
 export async function reassignAdvisor(formData: FormData) {
@@ -44,5 +65,5 @@ export async function reassignAdvisor(formData: FormData) {
     leadId: lead.id,
     details: advisor.name,
   });
-  revalidatePath(`/leads/${lead.id}`);
+  revalidatePath("/leads/[id]", "page");
 }

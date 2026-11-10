@@ -11,10 +11,12 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> 
   label: string;
   hint?: string;
   size?: keyof typeof SIZES;
+  /** Keep the label for screen readers only, e.g. a row checkbox in a table. */
+  hideLabel?: boolean;
 };
 
 /** Checkbox with its label; the whole row is clickable. */
-export function Checkbox({ label, hint, size = "md", className, ...props }: Props) {
+export function Checkbox({ label, hint, size = "md", hideLabel, className, ...props }: Props) {
   const s = SIZES[size];
   return (
     <label
@@ -42,7 +44,7 @@ export function Checkbox({ label, hint, size = "md", className, ...props }: Prop
           className="pointer-events-none absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100"
         />
       </span>
-      <span className="min-w-0 leading-5">
+      <span className={hideLabel ? "sr-only" : "min-w-0 leading-5"}>
         {label}
         {hint && <span className="block text-xs text-muted">{hint}</span>}
       </span>

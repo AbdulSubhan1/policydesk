@@ -20,6 +20,7 @@ import {
 } from "@/constants/products";
 import { OPPORTUNITY_SOURCES, type LeadStage, type OpportunityStatus, type SourceOfFunds } from "@/constants/statuses";
 import { screenCustomer } from "@/lib/kyc";
+import { leadReference, quoteReference } from "@/lib/reference";
 import { ALL_PERMISSIONS, type Permission } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
 
@@ -468,6 +469,7 @@ async function seed() {
       .insert(schema.leads)
       .values({
         opportunityId: opp.id,
+        reference: leadReference(product),
         departmentId: deptId,
         advisorId: advisor.id,
         stage,
@@ -498,6 +500,7 @@ async function seed() {
           const plan = productPlans[(i + q * 2) % productPlans.length];
           return {
             leadId: lead.id,
+            reference: quoteReference(lead.reference, q + 1),
             planId: plan.id,
             insurer: insurerName.get(plan.insurerId)!,
             premium: special === "watchlist" ? 9800 : plan.basePremium,

@@ -14,7 +14,8 @@ export function NavLink({ href, icon, label }: { href: string; icon: IconName; l
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex h-9 shrink-0 items-center gap-2.5 rounded-md px-3 text-sm whitespace-nowrap transition-colors",
-        active ? "bg-white/12 font-medium text-white" : "text-white/65 hover:bg-white/6 hover:text-white",
+        // The background comes from the sidebar's MotionHighlight, which rests on aria-current
+        active ? "font-medium text-white" : "text-white/65 hover:text-white",
       )}
     >
       <Icon name={icon} className={active ? "text-brand-soft" : "text-white/45"} />

@@ -8,6 +8,7 @@ import { keyedOptions } from "@/lib/options";
 import { pageFrom } from "@/lib/pagination";
 import { can, scopeOf } from "@/lib/rbac";
 import type { SearchParams } from "@/lib/url";
+import { leadPath } from "@/lib/reference";
 import { startRenewal } from "@/server/actions/policies";
 import { requireUser } from "@/server/auth";
 import { listPolicies, type PolicyFilter } from "@/server/queries/policies";
@@ -55,9 +56,9 @@ export default async function PoliciesPage({ searchParams }: { searchParams: Pro
             header: t("policies.customer"),
             cell: (p) => (
               <CellText
-                href={`/leads/${p.leadId}?tab=policy`}
+                href={leadPath(p.leadPublicId, "policy")}
                 primary={p.customerName}
-                secondary={`${t(`products.${p.product}`)}, ${p.advisorName ?? t("policies.noAdvisor")}`}
+                secondary={`${p.reference}, ${p.advisorName ?? t("policies.noAdvisor")}`}
               />
             ),
           },
@@ -82,9 +83,9 @@ export default async function PoliciesPage({ searchParams }: { searchParams: Pro
             header: "",
             align: "end",
             cell: (p) =>
-              p.renewedByLeadId ? (
+              p.renewalPublicId ? (
                 <Link
-                  href={`/leads/${p.renewedByLeadId}`}
+                  href={leadPath(p.renewalPublicId)}
                   className="text-sm whitespace-nowrap text-plum hover:underline"
                 >
                   {t("policies.renewal")}

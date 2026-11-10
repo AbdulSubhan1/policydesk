@@ -37,7 +37,7 @@ export async function dashboardStats(user: SessionUser) {
         policyNumber: policies.policyNumber,
         endDate: policies.endDate,
         customerName: opportunities.customerName,
-        leadId: leads.id,
+        leadPublicId: leads.publicId,
       })
       .from(policies)
       .innerJoin(leads, eq(policies.leadId, leads.id))

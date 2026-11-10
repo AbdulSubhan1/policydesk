@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Field, FormError, Input } from "@/components/ui";
+import { Button, Field, FileUpload, FormError } from "@/components/ui";
 import { UPLOAD_MIME_TYPES } from "@/constants/config";
 import type { Localized } from "@/constants/i18n";
 import { localized } from "@/lib/i18n";
@@ -48,10 +48,15 @@ export function UploadForm({
             }))}
           />
         </Field>
-        <Field label={t("file")} hint={t("fileHint")} error={errorOf("files")}>
-          <Input type="file" accept={UPLOAD_MIME_TYPES.join(",")} {...form.register("files")} />
+        <Field label={t("file")} error={errorOf("files")} group>
+          <FileUpload
+            accept={UPLOAD_MIME_TYPES.join(",")}
+            hint={t("fileHint")}
+            invalid={!!errorOf("files")}
+            {...form.register("files")}
+          />
         </Field>
-        <Button variant="primary" disabled={pending} className="sm:mt-6">
+        <Button variant="primary" disabled={pending} className="sm:self-end">
           {pending ? t("uploading") : t("upload")}
         </Button>
       </div>

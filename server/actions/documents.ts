@@ -48,7 +48,7 @@ export async function uploadDocument(formData: FormData): Promise<ActionResult> 
     leadId: lead.id,
     details: doc.fileName,
   });
-  revalidatePath(`/leads/${lead.id}`);
+  revalidatePath("/leads/[id]", "page");
   return { ok: true };
 }
 
@@ -69,5 +69,5 @@ export async function deleteDocument(formData: FormData) {
     leadId: doc.leadId,
     details: doc.fileName,
   });
-  revalidatePath(`/leads/${doc.leadId}`);
+  revalidatePath("/leads/[id]", "page");
 }

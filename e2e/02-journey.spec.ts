@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginAs, pick, SAMPLE_PNG } from "./helpers";
+import { SAMPLE_PNG, loginAs, pick, pickDate } from "./helpers";
 
 // One customer from qualified opportunity to an active, paid policy, passing between five roles
 test.describe.serial("opportunity to paid policy", () => {
@@ -15,9 +15,17 @@ test.describe.serial("opportunity to paid policy", () => {
 
     await pick(page, "Advisor", "Aisha Khan");
     await page.getByRole("button", { name: "Convert" }).click();
-    await expect(page).toHaveURL(/\/leads\/\d+$/);
+    // Lead links use a UUID; people use the reference: product code + 7 characters
+    await expect(page).toHaveURL(/\/leads\/[0-9a-f-]{36}$/);
     leadUrl = new URL(page.url()).pathname;
     await expect(page.getByRole("heading", { name: customer })).toBeVisible();
+    const reference = (await page
+      .getByText(/^[A-Z]{3}-[2-9A-HJKMNP-Z]{7}$/)
+      .first()
+      .textContent())!;
+
+    await page.goto(`/leads?q=${reference}`);
+    await expect(page.getByRole("link", { name: customer })).toHaveAttribute("href", leadUrl);
   });
 
   test("advisor quotes, collects KYC and uploads documents", async ({ page }) => {
@@ -34,8 +42,8 @@ test.describe.serial("opportunity to paid policy", () => {
     await page.goto(`${leadUrl}?tab=kyc`);
     await page.getByLabel("ID or passport number").fill("ID-445566");
     await pick(page, "Nationality", "Pakistan");
-    await page.getByLabel("Date of birth").fill("1990-04-12");
-    await page.getByLabel("ID expiry").fill("2030-01-31");
+    await pickDate(page, "Date of birth", "1990-04-12");
+    await pickDate(page, "ID expiry", "2030-01-31");
     await pick(page, "Occupation", "Salaried employee");
     await pick(page, "Source of funds", "Salary");
     await page.getByRole("button", { name: "Screen and send to compliance" }).click();
@@ -53,7 +61,8 @@ test.describe.serial("opportunity to paid policy", () => {
         .getByRole("option", { name: /required/ })
         .nth(i)
         .click();
-      await page.getByLabel("File").setInputFiles(SAMPLE_PNG);
+      await page.getByLabel("Drag a file here or click to choose").setInputFiles(SAMPLE_PNG);
+      await expect(page.getByText(SAMPLE_PNG.name).first()).toBeVisible();
       await page.getByRole("button", { name: "Upload" }).click();
       await expect(page.locator(`a[href^="${leadUrl}/documents/"]`)).toHaveCount(i + 1);
     }

@@ -19,12 +19,16 @@ The tests are in `e2e/` and cover:
 - **The full journey:** opportunity, convert, quote, KYC, compliance approval, documents, booking, payment, active policy.
 - **Renewal:** a renewal lead is created from an expiring policy.
 - **Languages:** switching to Arabic turns the layout right-to-left.
+- **Bulk actions:** a manager moves two leads to another stage from the ActionBar.
+- **Component library:** every component's page renders, and the interactive ones (menus, dialogs, date picker, multi-select…) work.
 
-Run them on demand:
+The whole suite takes about 7 minutes, so it is **on demand only**: nothing runs it automatically. Day to day, run `npm run check` and only the tests for what you changed:
 
 ```bash
-npx playwright install chromium   # once
-npm run test:e2e
+npx playwright install chromium                                  # once
+npm run test:e2e -- e2e/02-journey.spec.ts                       # one file
+npm run test:e2e -- e2e/04-ui-library.spec.ts --grep DatePicker  # matching tests only
+npm run test:e2e                                                 # everything, before a release
 ```
 
 They can also run from GitHub: **Actions → E2E tests → Run workflow**.

@@ -1,7 +1,19 @@
 import { getTranslations } from "next-intl/server";
-import { EmptyState } from "@/components/ui";
+import { EmptyState, PanelSection, Timeline, type IconName, type TimelineItem } from "@/components/ui";
 import { dateTime } from "@/lib/format";
 import { getTimeline } from "@/server/queries/lead-details";
+
+// How each kind of record looks on the trail
+const ENTITY: Record<string, { icon: IconName; tone: TimelineItem["tone"] }> = {
+  opportunity: { icon: "inbox", tone: "info" },
+  lead: { icon: "clipboard", tone: "info" },
+  quote: { icon: "send", tone: "warn" },
+  kyc: { icon: "shield", tone: "warn" },
+  document: { icon: "upload", tone: "muted" },
+  policy: { icon: "badgeCheck", tone: "brand" },
+  payment: { icon: "check", tone: "brand" },
+  renewal: { icon: "scroll", tone: "brand" },
+};
 
 /** The lead's own audit trail, newest first. */
 export async function ActivityFeed({ leadId }: { leadId: number }) {
@@ -9,23 +21,27 @@ export async function ActivityFeed({ leadId }: { leadId: number }) {
   if (timeline.length === 0) return <EmptyState title={t("lead.noActivity")} />;
 
   return (
-    <ol className="grid gap-4 px-5 py-4">
-      {timeline.map((entry) => {
-        const key = `activity.${entry.entity}.${entry.action}`;
-        return (
-          <li key={entry.id} className="grid grid-cols-[8px_1fr] gap-3 text-sm">
-            <span className="mt-1.5 h-2 w-2 rounded-full bg-brand" aria-hidden />
-            <div className="min-w-0">
-              <p>
-                <span className="font-medium">{entry.userName ?? t("lead.system")}</span>{" "}
-                {t.has(key) ? t(key) : t("activity.other", { action: entry.action, entity: entry.entity })}
-              </p>
-              {entry.details && <p className="[overflow-wrap:anywhere] text-muted">{entry.details}</p>}
-              <p className="text-xs text-muted">{dateTime(entry.createdAt)}</p>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+    <PanelSection>
+      <Timeline
+        items={timeline.map((entry) => {
+          const key = `activity.${entry.entity}.${entry.action}`;
+          return {
+            id: entry.id,
+            icon: ENTITY[entry.entity]?.icon,
+            tone: ENTITY[entry.entity]?.tone,
+            title: (
+              <>
+                {entry.userName ?? t("lead.system")}{" "}
+                <span className="font-normal text-ink-soft">
+                  {t.has(key) ? t(key) : t("activity.other", { action: entry.action, entity: entry.entity })}
+                </span>
+              </>
+            ),
+            description: entry.details,
+            time: dateTime(entry.createdAt),
+          };
+        })}
+      />
+    </PanelSection>
   );
 }

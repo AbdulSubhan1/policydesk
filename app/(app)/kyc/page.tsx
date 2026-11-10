@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import { shortDate } from "@/lib/format";
 import { can } from "@/lib/rbac";
+import { leadPath } from "@/lib/reference";
 import { reviewKyc } from "@/server/actions/kyc";
 import { requireUser } from "@/server/auth";
 import { kycQueue } from "@/server/queries/kyc";
@@ -52,9 +53,10 @@ export default async function KycReviewPage({ searchParams }: { searchParams: Pr
             <div className="grid gap-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <Link href={`/leads/${r.leadId}?tab=kyc`} className="font-semibold text-ink hover:text-brand">
+                  <Link href={leadPath(r.leadPublicId, "kyc")} className="font-semibold text-ink hover:text-brand">
                     {r.customerName}
                   </Link>
+                  <span className="ms-2 font-mono text-xs text-muted">{r.reference}</span>
                   <p className="text-xs text-muted">
                     {t("kycReview.submittedBy", {
                       product: t(`products.${r.product}`),

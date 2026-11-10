@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { withParams, type SearchParams } from "@/lib/url";
 import { ButtonLink } from "./button-link";
+import { Checkbox } from "./checkbox";
 import { EmptyState } from "./empty-state";
 import { Icon, type IconName } from "./icon";
 import { Input } from "./input";
@@ -35,6 +36,8 @@ type Props<T> = {
   minWidth?: "sm" | "md" | "lg";
   /** Inside a flush Panel: no border of its own. */
   embedded?: boolean;
+  /** Row checkboxes that belong to the form `form` (by id) under `name`; pair with ActionBar. */
+  select?: { form: string; name: string; label: (row: T) => string };
 };
 
 const MIN_WIDTH = { sm: "min-w-[560px]", md: "min-w-[720px]", lg: "min-w-[880px]" } as const;
@@ -53,6 +56,7 @@ export function DataTable<T>({
   empty,
   minWidth = "md",
   embedded,
+  select,
 }: Props<T>) {
   const t = useTranslations("table");
   const pages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
@@ -108,6 +112,11 @@ export function DataTable<T>({
             <table className={cn("w-full text-sm", MIN_WIDTH[minWidth])}>
               <thead>
                 <tr>
+                  {select && (
+                    <th scope="col" className="w-10 border-b border-line ps-4">
+                      <span className="sr-only">{t("select")}</span>
+                    </th>
+                  )}
                   {columns.map((c) => (
                     <th
                       key={c.key}
@@ -124,7 +133,21 @@ export function DataTable<T>({
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={rowKey(row)} className="hover:bg-paper/60 [&:last-child>td]:border-b-0">
+                  <tr
+                    key={rowKey(row)}
+                    className="hover:bg-paper/60 has-checked:bg-brand-soft/50 [&:last-child>td]:border-b-0"
+                  >
+                    {select && (
+                      <td className="border-b border-line ps-4 align-middle">
+                        <Checkbox
+                          form={select.form}
+                          name={select.name}
+                          value={rowKey(row)}
+                          label={select.label(row)}
+                          hideLabel
+                        />
+                      </td>
+                    )}
                     {columns.map((c) => (
                       <td
                         key={c.key}

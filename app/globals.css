@@ -22,6 +22,66 @@
   --color-risk-soft: #fbe8e0;
   --color-plum: #6b4fa0;
   --color-plum-soft: #eee8f6;
+
+  /* Motion: one set of entrances used by every overlay and effect. Reduced motion turns them off below. */
+  --animate-fade-in: fade-in 160ms ease-out both;
+  --animate-scale-in: scale-in 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-slide-up: slide-up 220ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  --animate-slide-in-end: slide-in-end 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  --animate-slide-in-start: slide-in-start 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-marker: marker 900ms cubic-bezier(0.6, 0, 0.2, 1) 200ms both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(4px);
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @keyframes slide-in-end {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes slide-in-start {
+    from {
+      transform: translateX(-100%);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes marker {
+    from {
+      background-size: 0% 100%;
+    }
+    to {
+      background-size: 100% 100%;
+    }
+  }
+}
+
+/* Native <dialog> backdrops can't take Tailwind classes from JSX */
+dialog::backdrop {
+  background: rgb(20 33 61 / 0.4);
+  backdrop-filter: blur(3px);
+  animation: fade-in 160ms ease-out both;
 }
 
 body {

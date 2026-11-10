@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 import { surface } from "./styles";
 
 /** A headline number with its label; becomes a link when `href` is set. */
-export function Stat({ label, value, href }: { label: string; value: string; href?: string }) {
+export function Stat({ label, value, href }: { label: string; value: React.ReactNode; href?: string }) {
   const className = cn(surface, "block px-4 py-3.5", href && "hover:border-ink/30");
   const body = (
     <>

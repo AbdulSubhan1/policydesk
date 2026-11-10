@@ -1,10 +1,7 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Preview } from "@/components/design-system/previews";
-import { Badge, PageHeader, Panel, PillNav } from "@/components/ui";
-import { UI_REGISTRY } from "@/components/ui/registry";
-import usage from "@/components/ui/usage.json";
-import { withParams, type SearchParams } from "@/lib/url";
-import { requireUser } from "@/server/auth";
+import { PageHeader, Panel } from "@/components/ui";
+import { UI_GROUPS, UI_REGISTRY } from "@/components/ui/registry";
 
 // Token names as defined in app/globals.css (@theme). Swatches use the real classes.
 const COLORS = [
@@ -20,20 +17,19 @@ const COLORS = [
   { token: "risk", className: "bg-risk" },
   { token: "plum", className: "bg-plum" },
 ];
-const GROUPS = [...new Set(UI_REGISTRY.map((c) => c.group))];
 
-export default async function DesignSystemPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requireUser();
-  const [params, t] = await Promise.all([searchParams, getTranslations("designSystem")]);
-  const group = GROUPS.find((g) => g === params.group);
-  const entries = UI_REGISTRY.filter((c) => !group || c.group === group);
-  const usedIn = usage as Record<string, string[]>;
+export default async function DesignSystemPage() {
+  const t = await getTranslations("designSystem");
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader
+        title={t("title")}
+        description={`${t("description")} ${t("allComponents", { count: UI_REGISTRY.length, groups: UI_GROUPS.length })}`}
+      />
 
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <h2 className="mb-3 font-semibold">{t("foundations")}</h2>
+      <div className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Panel title={t("colors")} description="app/globals.css">
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
             {COLORS.map((c) => (
@@ -56,59 +52,30 @@ export default async function DesignSystemPage({ searchParams }: { searchParams:
         </Panel>
       </div>
 
-      <PillNav
-        label={t("title")}
-        items={[
-          { href: "/design-system", label: t("all"), active: !group },
-          ...GROUPS.map((g) => ({
-            href: withParams("/design-system", {}, { group: g }),
-            label: g,
-            active: g === group,
-          })),
-        ]}
-      />
-
-      <div className="grid gap-6">
-        {entries.map((entry) => (
-          <Panel
-            key={entry.name}
-            id={entry.name}
-            title={entry.name}
-            description={entry.description}
-            actions={<Badge tone="grey">{entry.group}</Badge>}
-            className="scroll-mt-6"
-          >
-            <div className="grid gap-5">
-              <div className="min-w-0 rounded-lg border border-dashed border-line bg-paper/40 p-4 empty:hidden">
-                <Preview name={entry.name} params={params} />
+      <div className="grid gap-10">
+        {UI_GROUPS.map((group) => {
+          const entries = UI_REGISTRY.filter((c) => c.group === group);
+          return (
+            <section key={group} id={group} className="scroll-mt-6">
+              <h2 className="mb-3 flex items-baseline gap-2 font-semibold">
+                {group}
+                <span className="text-sm font-normal text-muted tabular-nums">{entries.length}</span>
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {entries.map((c) => (
+                  <Link
+                    key={c.name}
+                    href={`/design-system/${c.name}`}
+                    className="group min-w-0 rounded-lg border border-line bg-white p-4 transition-colors hover:border-brand/40 hover:shadow-sm"
+                  >
+                    <p className="font-medium group-hover:text-brand-strong">{c.name}</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-muted">{c.description}</p>
+                  </Link>
+                ))}
               </div>
-              <dl className="grid min-w-0 grid-cols-1 gap-4 text-sm md:grid-cols-2">
-                <div className="min-w-0">
-                  <dt className="text-xs text-muted">{t("file")}</dt>
-                  <dd className="font-mono text-xs">components/ui/{entry.file}</dd>
-                  <dt className="mt-3 text-xs text-muted">{t("props")}</dt>
-                  <dd className="font-mono text-xs [overflow-wrap:anywhere]">{entry.props}</dd>
-                </div>
-                <div className="min-w-0">
-                  <dt className="text-xs text-muted">{t("usage")}</dt>
-                  <dd>
-                    <pre className="overflow-x-auto rounded-md bg-ink px-3 py-2 font-mono text-xs text-white">
-                      <code>{entry.example}</code>
-                    </pre>
-                  </dd>
-                  <dt className="mt-3 text-xs text-muted">{t("usedIn", { count: usedIn[entry.name]?.length ?? 0 })}</dt>
-                  <dd className="font-mono text-xs text-ink-soft">
-                    {(usedIn[entry.name] ?? []).map((path) => (
-                      <span key={path} className="block truncate">
-                        {path}
-                      </span>
-                    ))}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </Panel>
-        ))}
+            </section>
+          );
+        })}
       </div>
     </>
   );

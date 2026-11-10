@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Field, FormError, Input } from "@/components/ui";
+import { Controller } from "react-hook-form";
+import { Button, DatePicker, Field, FormError, Input } from "@/components/ui";
 import { NATIONALITIES, OCCUPATIONS } from "@/constants/kyc";
 import { SOURCES_OF_FUNDS, type SourceOfFunds } from "@/constants/statuses";
 import { keyedOptions, plainOptions } from "@/lib/options";
@@ -47,11 +48,34 @@ export function KycForm({ leadId, saved }: { leadId: number; saved: Saved }) {
           placeholder={t("placeholders.nationality")}
         />
       </Field>
-      <Field label={t("lead.kyc.dateOfBirth")} error={errorOf("dateOfBirth")}>
-        <Input type="date" {...form.register("dateOfBirth")} />
+      <Field label={t("lead.kyc.dateOfBirth")} error={errorOf("dateOfBirth")} group>
+        <Controller
+          control={form.control}
+          name="dateOfBirth"
+          render={({ field, fieldState }) => (
+            <DatePicker
+              label={t("lead.kyc.dateOfBirth")}
+              value={field.value}
+              onChange={field.onChange}
+              max={new Date().toISOString().slice(0, 10)}
+              invalid={fieldState.invalid}
+            />
+          )}
+        />
       </Field>
-      <Field label={t("lead.kyc.idExpiry")} error={errorOf("idExpiry")}>
-        <Input type="date" {...form.register("idExpiry")} />
+      <Field label={t("lead.kyc.idExpiry")} error={errorOf("idExpiry")} group>
+        <Controller
+          control={form.control}
+          name="idExpiry"
+          render={({ field, fieldState }) => (
+            <DatePicker
+              label={t("lead.kyc.idExpiry")}
+              value={field.value}
+              onChange={field.onChange}
+              invalid={fieldState.invalid}
+            />
+          )}
+        />
       </Field>
       <Field label={t("lead.kyc.occupation")} error={errorOf("occupation")}>
         <FormAutocomplete

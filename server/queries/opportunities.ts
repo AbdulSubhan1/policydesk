@@ -51,7 +51,8 @@ export async function getOpportunity(user: SessionUser, id: number) {
       opportunity: opportunities,
       departmentKey: departments.key,
       coordinatorName: coordinator.name,
-      leadId: leads.id,
+      leadPublicId: leads.publicId,
+      leadReference: leads.reference,
     })
     .from(opportunities)
     .innerJoin(departments, eq(opportunities.departmentId, departments.id))

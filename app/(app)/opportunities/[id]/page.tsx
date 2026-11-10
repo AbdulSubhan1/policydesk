@@ -17,6 +17,7 @@ import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
 import { shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
 import { can, scopeOf } from "@/lib/rbac";
+import { leadPath } from "@/lib/reference";
 import { assignCoordinator, convertToLead, updateOpportunityStatus } from "@/server/actions/opportunities";
 import { requireUser } from "@/server/auth";
 import { getOpportunity } from "@/server/queries/opportunities";
@@ -66,11 +67,12 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
         </Panel>
 
         <div className="grid content-start gap-6">
-          {!open && row.leadId && (
+          {!open && row.leadPublicId && (
             <Panel
               title={t("opportunities.convertedNote")}
+              description={row.leadReference}
               actions={
-                <ButtonLink href={`/leads/${row.leadId}`} variant="primary">
+                <ButtonLink href={leadPath(row.leadPublicId)} variant="primary">
                   {t("opportunities.openLead")}
                 </ButtonLink>
               }

@@ -10,13 +10,15 @@ import { getLead } from "./leads";
 // Everything the lead page shows. Each loader is wrapped in cache(), so the page and every
 // tab can call them directly: one request runs each query once and nothing is passed as props.
 
-const { quotes, kycRecords, documents, policies, auditLogs, users, plans, insurers } = schema;
+const { quotes, kycRecords, documents, policies, auditLogs, users, plans, insurers, leads } = schema;
 const reviewer = alias(users, "reviewer");
+const renewalLead = alias(leads, "renewal_lead");
 
 /** The signed-in user and the lead, scoped to what they may see. 404 otherwise. */
-export const getLeadContext = cache(async (leadId: number) => {
+/** The page passes the public UUID from the URL; the tabs pass the numeric id. */
+export const getLeadContext = cache(async (key: number | string) => {
   const user = await requireUser();
-  const row = await getLead(user, leadId);
+  const row = await getLead(user, key);
   if (!row) notFound();
   return { user, ...row, closed: row.lead.stage === "won" || row.lead.stage === "lost" };
 });
@@ -34,9 +36,14 @@ export const getKyc = cache(async (leadId: number) => {
   return row;
 });
 
+/** The lead's policy, with the link to its renewal lead once renewed. */
 export const getPolicy = cache(async (leadId: number) => {
-  const [policy] = await db.select().from(policies).where(eq(policies.leadId, leadId));
-  return policy;
+  const [row] = await db
+    .select({ policy: policies, renewalPublicId: renewalLead.publicId })
+    .from(policies)
+    .leftJoin(renewalLead, eq(policies.renewedByLeadId, renewalLead.id))
+    .where(eq(policies.leadId, leadId));
+  return row && { ...row.policy, renewalPublicId: row.renewalPublicId };
 });
 
 export const getPolicyById = cache(async (policyId: number) => {

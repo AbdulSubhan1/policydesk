@@ -5,6 +5,7 @@ import { dateTime } from "@/lib/format";
 import { pageFrom } from "@/lib/pagination";
 import { can } from "@/lib/rbac";
 import type { SearchParams } from "@/lib/url";
+import { leadPath } from "@/lib/reference";
 import { requireUser } from "@/server/auth";
 import { listAudit } from "@/server/queries/audit";
 
@@ -55,9 +56,12 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
             key: "lead",
             header: t("audit.lead"),
             cell: (r) =>
-              r.leadId && (
-                <Link href={`/leads/${r.leadId}`} className="text-brand hover:underline">
-                  #{r.leadId}
+              r.leadPublicId && (
+                <Link
+                  href={leadPath(r.leadPublicId)}
+                  className="font-mono text-xs whitespace-nowrap text-brand hover:underline"
+                >
+                  {r.leadReference}
                 </Link>
               ),
           },

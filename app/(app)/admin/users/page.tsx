@@ -1,5 +1,16 @@
 import { getTranslations } from "next-intl/server";
-import { Autocomplete, Button, CellText, DataTable, Forbidden, Hidden, InlineForm, PageHeader } from "@/components/ui";
+import {
+  AlertDialog,
+  Autocomplete,
+  Avatar,
+  Button,
+  CellText,
+  DataTable,
+  Forbidden,
+  Hidden,
+  InlineForm,
+  PageHeader,
+} from "@/components/ui";
 import { can } from "@/lib/rbac";
 import { toggleUserActive, updateUser } from "@/server/actions/users";
 import { requireUser } from "@/server/auth";
@@ -35,7 +46,10 @@ export default async function UsersPage() {
             key: "user",
             header: t("users.user"),
             cell: (u) => (
-              <CellText primary={u.id === user.id ? `${u.name} ${t("users.you")}` : u.name} secondary={u.email} />
+              <span className="flex min-w-0 items-center gap-3">
+                <Avatar name={u.name} />
+                <CellText primary={u.id === user.id ? `${u.name} ${t("users.you")}` : u.name} secondary={u.email} />
+              </span>
             ),
           },
           {
@@ -83,9 +97,20 @@ export default async function UsersPage() {
               u.id !== user.id && (
                 <form action={toggleUserActive}>
                   <Hidden name="userId" value={u.id} />
-                  <Button size="sm" variant={u.active ? "danger" : "secondary"}>
-                    {u.active ? t("common.deactivate") : t("common.activate")}
-                  </Button>
+                  {u.active ? (
+                    <AlertDialog
+                      trigger={
+                        <Button type="button" size="sm" variant="danger">
+                          {t("common.deactivate")}
+                        </Button>
+                      }
+                      title={t("users.deactivateTitle", { name: u.name })}
+                      description={t("users.deactivateBody")}
+                      confirmLabel={t("common.deactivate")}
+                    />
+                  ) : (
+                    <Button size="sm">{t("common.activate")}</Button>
+                  )}
                 </form>
               ),
           },

@@ -1,8 +1,9 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { QUOTE_DECISIONS } from "@/constants/statuses";
+import { quoteReference } from "@/lib/reference";
 import type { ActionResult } from "@/schemas/action-result";
 import { id, option } from "@/schemas/fields";
 import { quoteSchema, type QuoteInput } from "@/schemas/quote";
@@ -31,10 +32,12 @@ export async function createQuote(input: QuoteInput): Promise<ActionResult> {
     );
   if (!plan) return { ok: false, error: "errors.planUnavailable" };
 
+  const [{ existing }] = await db.select({ existing: count() }).from(quotes).where(eq(quotes.leadId, lead.id));
   const [quote] = await db
     .insert(quotes)
     .values({
       leadId: lead.id,
+      reference: quoteReference(lead.reference, existing + 1),
       planId: plan.plan.id,
       insurer: plan.insurerName,
       planName: plan.plan.name,
@@ -52,9 +55,9 @@ export async function createQuote(input: QuoteInput): Promise<ActionResult> {
     entity: "quote",
     entityId: quote.id,
     leadId: lead.id,
-    details: `${quote.insurer}, ${quote.planName.en}`,
+    details: `${quote.reference}, ${quote.insurer}, ${quote.planName.en}`,
   });
-  revalidatePath(`/leads/${lead.id}`);
+  revalidatePath("/leads/[id]", "page");
   return { ok: true };
 }
 
@@ -71,5 +74,5 @@ export async function setQuoteStatus(formData: FormData) {
     leadId: lead.id,
     details: quote.insurer,
   });
-  revalidatePath(`/leads/${lead.id}`);
+  revalidatePath("/leads/[id]", "page");
 }

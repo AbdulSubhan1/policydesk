@@ -8,6 +8,7 @@ import { leadScope } from "./scope";
 
 const { opportunities, leads, quotes, policies, users } = schema;
 const advisor = alias(users, "advisor");
+const renewalLead = alias(leads, "renewal_lead");
 
 export type PolicyFilter = "booked" | "active" | "cancelled" | "unpaid" | "renewal_due";
 
@@ -32,7 +33,13 @@ export async function listPolicies(
   const where: SQL | undefined = and(
     leadScope(user),
     filterWhere(filter),
-    q ? or(ilike(opportunities.customerName, `%${q}%`), ilike(policies.policyNumber, `%${q}%`)) : undefined,
+    q
+      ? or(
+          ilike(opportunities.customerName, `%${q}%`),
+          ilike(policies.policyNumber, `%${q}%`),
+          ilike(leads.reference, `%${q}%`),
+        )
+      : undefined,
   );
   const [rows, [{ total }]] = await Promise.all([
     db
@@ -44,8 +51,9 @@ export async function listPolicies(
         endDate: policies.endDate,
         status: policies.status,
         paymentStatus: policies.paymentStatus,
-        renewedByLeadId: policies.renewedByLeadId,
-        leadId: leads.id,
+        renewalPublicId: renewalLead.publicId,
+        leadPublicId: leads.publicId,
+        reference: leads.reference,
         customerName: opportunities.customerName,
         product: opportunities.product,
         insurer: quotes.insurer,
@@ -59,6 +67,7 @@ export async function listPolicies(
       .innerJoin(opportunities, eq(leads.opportunityId, opportunities.id))
       .innerJoin(quotes, eq(policies.quoteId, quotes.id))
       .leftJoin(advisor, eq(leads.advisorId, advisor.id))
+      .leftJoin(renewalLead, eq(policies.renewedByLeadId, renewalLead.id))
       .where(where)
       .orderBy(policies.endDate, policies.id)
       .limit(page.limit)

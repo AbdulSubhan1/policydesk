@@ -40,3 +40,27 @@ export const SAMPLE_PNG = {
     "base64",
   ),
 };
+
+/** Picks a YYYY-MM-DD day in a DatePicker found by its label: jumps to the year, then pages to the month. */
+export async function pickDate(page: Page, label: string, iso: string) {
+  await page.getByRole("button", { name: label, exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: label });
+  const title = dialog.locator("[aria-live]");
+  const year = Number(iso.slice(0, 4));
+
+  await title.click();
+  for (;;) {
+    const [from, to] = (await title.innerText()).split(" – ").map(Number);
+    if (year >= from && year <= to) break;
+    await dialog.getByRole("button", { name: year < from ? "Previous" : "Next" }).click();
+  }
+  await dialog.getByRole("button", { name: String(year), exact: true }).click();
+
+  for (;;) {
+    const shown = (await dialog.locator("[data-day]").first().getAttribute("data-day"))!.slice(0, 7);
+    if (shown === iso.slice(0, 7)) break;
+    await dialog.getByRole("button", { name: shown < iso ? "Next" : "Previous" }).click();
+  }
+  await dialog.locator(`[data-day="${iso}"]`).click();
+  await expect(dialog).toHaveCount(0);
+}

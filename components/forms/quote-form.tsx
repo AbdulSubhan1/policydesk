@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Field, FormError, Input } from "@/components/ui";
+import { Button, Field, FormError, NumberInput } from "@/components/ui";
 import type { Localized } from "@/constants/i18n";
 import { money } from "@/lib/format";
 import { localized } from "@/lib/i18n";
@@ -48,13 +48,7 @@ export function QuoteForm({ leadId, plans }: { leadId: number; plans: PlanOption
           />
         </Field>
         <Field label={t("lead.quotes.premiumOffered")} error={errorOf("premium")}>
-          <Input
-            type="number"
-            min={1}
-            inputMode="numeric"
-            placeholder={t("placeholders.premium")}
-            {...form.register("premium")}
-          />
+          <NumberInput min={1} step={50} placeholder={t("placeholders.premium")} {...form.register("premium")} />
         </Field>
         <Button variant="primary" disabled={pending} className="sm:mt-6">
           {pending ? t("lead.quotes.adding") : t("lead.quotes.add")}

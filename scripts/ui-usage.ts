@@ -35,7 +35,7 @@ const usage = Object.fromEntries(
   UI_REGISTRY.map(({ name }) => [
     name,
     sources
-      .filter((s) => new RegExp(`<${name}[\\s>/]`).test(s.text))
+      .filter((s) => new RegExp(`<${name}[\\s>/]|\\buse${name}\\(`).test(s.text))
       .map((s) => s.path)
       .sort(),
   ]),

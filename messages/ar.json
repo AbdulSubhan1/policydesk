@@ -26,7 +26,21 @@
     "perYear": "{amount} سنويًا",
     "select": "اختر…",
     "noMatches": "لا توجد نتائج",
-    "inactive": "غير نشط"
+    "inactive": "غير نشط",
+    "cannotUndo": "لا يمكن التراجع عن هذا.",
+    "close": "إغلاق",
+    "selected": "{count} محدد",
+    "clearSelection": "إلغاء التحديد",
+    "show": "إظهار",
+    "hide": "إخفاء",
+    "increase": "زيادة",
+    "decrease": "إنقاص",
+    "dropFiles": "اسحب ملفًا إلى هنا أو انقر للاختيار",
+    "pickDate": "اختر تاريخًا…",
+    "previous": "السابق",
+    "next": "التالي",
+    "today": "اليوم",
+    "saved": "تم الحفظ"
   },
   "nav": {
     "main": "الرئيسية",
@@ -309,8 +323,10 @@
     "advisor": "المستشار",
     "updated": "آخر تحديث",
     "empty": "لا يوجد عملاء محتملون يطابقون هذا الفلتر.",
-    "leadNumber": "عميل محتمل رقم {id}",
-    "search": "ابحث باسم العميل"
+    "search": "ابحث بالاسم أو المرجع، مثل CAR-J2M3HX7",
+    "bulk": {
+      "setStage": "نقل إلى مرحلة"
+    }
   },
   "lead": {
     "summary": "تأمين {product} في قسم {department}، يتولاه {advisor}.",
@@ -386,7 +402,8 @@
       "view": "عرض",
       "delete": "حذف",
       "documentTypePlaceholder": "اختر نوع المستند…",
-      "emptyTitle": "لا توجد مستندات بعد"
+      "emptyTitle": "لا توجد مستندات بعد",
+      "deleteTitle": "حذف {name}؟"
     },
     "policy": {
       "notReady": "غير جاهزة للحجز بعد",
@@ -405,7 +422,9 @@
       "savePayment": "حفظ الدفع",
       "openRenewal": "فتح التجديد",
       "startRenewal": "بدء التجديد",
-      "cancelPolicy": "إلغاء الوثيقة"
+      "cancelPolicy": "إلغاء الوثيقة",
+      "cancelTitle": "إلغاء الوثيقة {number}؟",
+      "cancelBody": "تتوقف الوثيقة عن تغطية العميل ولا يمكن إعادة تفعيلها. ابدأ عرض سعر جديدًا لتأمينه مرة أخرى."
     }
   },
   "activity": {
@@ -474,7 +493,7 @@
     "renew": "تجديد",
     "renewal": "التجديد",
     "noAdvisor": "بدون مستشار",
-    "search": "ابحث بالعميل أو رقم الوثيقة"
+    "search": "ابحث بالعميل أو رقم الوثيقة أو المرجع"
   },
   "plans": {
     "title": "شركات التأمين والخطط",
@@ -525,7 +544,9 @@
     "active": "نشط",
     "deactivated": "موقوف",
     "role": "الدور",
-    "department": "القسم"
+    "department": "القسم",
+    "deactivateTitle": "إيقاف {name}؟",
+    "deactivateBody": "لن يتمكن من تسجيل الدخول. تبقى عملاؤه المحتملون وسجله، ويمكنك تفعيله لاحقًا."
   },
   "roles": {
     "title": "الأدوار والصلاحيات",
@@ -579,7 +600,26 @@
     "file": "الملف",
     "props": "الخصائص",
     "usage": "الاستخدام",
-    "usedIn": "مستخدم في {count, plural, =0 {لا ملفات} one {ملف واحد} two {ملفين} few {# ملفات} many {# ملفًا} other {# ملف}}"
+    "usedIn": "مستخدم في {count, plural, =0 {لا ملفات} one {ملف واحد} two {ملفين} few {# ملفات} many {# ملفًا} other {# ملف}}",
+    "overview": "نظرة عامة",
+    "foundations": "الأساسيات",
+    "allComponents": "{count} مكوّنًا في {groups} فئة. افتح أيًا منها لتجربة الأمثلة وقراءة الخصائص ومعرفة أين يستخدمه التطبيق.",
+    "searchComponents": "ابحث في المكوّنات…",
+    "noResults": "لا يوجد مكوّن بهذا الاسم.",
+    "examples": "أمثلة",
+    "keyboard": "لوحة المفاتيح",
+    "keys": "المفاتيح",
+    "does": "ما الذي تفعله",
+    "width": "عرض المعاينة",
+    "widths": {
+      "full": "كامل",
+      "tablet": "جهاز لوحي",
+      "mobile": "هاتف"
+    },
+    "previousComponent": "السابق",
+    "nextComponent": "التالي",
+    "library": "مكتبة المكوّنات",
+    "code": "الكود"
   },
   "placeholders": {
     "customerName": "مثال: أحمد رحمن",
@@ -626,6 +666,7 @@
     "previous": "الصفحة السابقة",
     "next": "الصفحة التالية",
     "pageOf": "صفحة {page} من {pages}",
-    "pages": "الصفحات"
+    "pages": "الصفحات",
+    "select": "تحديد"
   }
 }

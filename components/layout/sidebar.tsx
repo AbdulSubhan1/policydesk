@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui";
+import { Avatar, Button, MotionHighlight } from "@/components/ui";
 import { NAVIGATION } from "@/constants/navigation";
 import { can, type SessionUser } from "@/lib/rbac";
 import { logout } from "@/server/actions/auth";
@@ -38,19 +38,26 @@ export function Sidebar({ user }: { user: SessionUser }) {
         {sections.map((section) => (
           <div key={section.titleKey} className="flex gap-1 lg:flex-col">
             <p className="mt-5 mb-1 hidden px-3 text-xs text-white/40 first:mt-0 lg:block">{t(section.titleKey)}</p>
-            {section.items.map((item) => (
-              <NavLink key={item.href} href={item.href} icon={item.icon} label={t(item.labelKey)} />
-            ))}
+            <MotionHighlight tone="dark" className="flex gap-1 lg:flex-col">
+              {section.items.map((item) => (
+                <NavLink key={item.href} href={item.href} icon={item.icon} label={t(item.labelKey)} />
+              ))}
+            </MotionHighlight>
           </div>
         ))}
       </nav>
 
       <div className="hidden border-t border-white/10 p-4 lg:block">
-        <p className="truncate text-sm font-medium">{user.name}</p>
-        <p className="truncate text-xs text-white/55">
-          {user.roleName}
-          {user.departmentKey && `, ${t(`departments.${user.departmentKey}`)}`}
-        </p>
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={user.name} status="online" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{user.name}</p>
+            <p className="truncate text-xs text-white/55">
+              {user.roleName}
+              {user.departmentKey && `, ${t(`departments.${user.departmentKey}`)}`}
+            </p>
+          </div>
+        </div>
         <div className="mt-3 flex items-center justify-between gap-2">
           <form action={logout}>
             <Button size="sm" variant="inverse">

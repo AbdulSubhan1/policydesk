@@ -31,7 +31,7 @@ Opportunities and leads each have three view permissions. The widest one the use
 | `*:view_department` | Records of the user's department                         |
 | `*:view_own`        | Opportunities they coordinate, or leads assigned to them |
 
-Quotes, KYC, documents and policies follow their lead's scope. A record outside the scope returns **404**, so users can't even confirm that it exists.
+Quotes, KYC, documents and policies follow their lead's scope. A record outside the scope returns **404**, so users can't even confirm that it exists. Lead links use a random UUID rather than the row number, so they can't be guessed either.
 
 ## Demo roles
 

@@ -52,7 +52,7 @@ export async function submitKyc(input: KycInput): Promise<ActionResult> {
     leadId: lead.id,
     details: screening.riskRating,
   });
-  revalidatePath(`/leads/${lead.id}`);
+  revalidatePath("/leads/[id]", "page");
   return { ok: true };
 }
 
@@ -84,5 +84,5 @@ export async function reviewKyc(formData: FormData) {
     details: note,
   });
   revalidatePath("/kyc");
-  revalidatePath(`/leads/${kyc.leadId}`);
+  revalidatePath("/leads/[id]", "page");
 }

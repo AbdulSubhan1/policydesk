@@ -1,4 +1,4 @@
-import { boolean, date, integer, jsonb, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { Localized } from "@/constants/i18n";
 import type { DepartmentKey, Product } from "@/constants/products";
 import type {
@@ -72,6 +72,9 @@ export const opportunities = pgTable("opportunities", {
 
 export const leads = pgTable("leads", {
   id: serial("id").primaryKey(),
+  // Links use the UUID so they can't be guessed; people quote the reference, e.g. CAR-J2M3HX7
+  publicId: uuid("public_id").notNull().unique().defaultRandom(),
+  reference: text("reference").notNull().unique(),
   // One opportunity can produce several leads: the first sale and each yearly renewal
   opportunityId: integer("opportunity_id")
     .notNull()
@@ -113,6 +116,8 @@ export const plans = pgTable("plans", {
 
 export const quotes = pgTable("quotes", {
   id: serial("id").primaryKey(),
+  // The lead's reference and the quote's number on that lead, e.g. CAR-J2M3HX7-Q2
+  reference: text("reference").notNull().unique(),
   leadId: integer("lead_id")
     .notNull()
     .references(() => leads.id, { onDelete: "cascade" }),

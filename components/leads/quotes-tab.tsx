@@ -4,13 +4,14 @@ import { Badge, Button, CellText, DataTable, Hidden, PanelSection, type Column }
 import { money } from "@/lib/format";
 import { localized } from "@/lib/i18n";
 import { can } from "@/lib/rbac";
+import { leadPath } from "@/lib/reference";
 import { setQuoteStatus } from "@/server/actions/quotes";
 import { getLeadContext, getPlans, getQuotes } from "@/server/queries/lead-details";
 
 type Quote = Awaited<ReturnType<typeof getQuotes>>[number];
 
 export async function QuotesTab({ leadId }: { leadId: number }) {
-  const [{ user, closed }, quotes, t, locale] = await Promise.all([
+  const [{ user, lead, closed }, quotes, t, locale] = await Promise.all([
     getLeadContext(leadId),
     getQuotes(leadId),
     getTranslations(),
@@ -25,7 +26,10 @@ export async function QuotesTab({ leadId }: { leadId: number }) {
       key: "plan",
       header: t("lead.quotes.insurerPlan"),
       cell: (q) => (
-        <CellText primary={q.insurer} secondary={`${localized(q.planName, locale)}, ${t(`covers.${q.cover}`)}`} />
+        <CellText
+          primary={q.insurer}
+          secondary={`${q.reference}, ${localized(q.planName, locale)}, ${t(`covers.${q.cover}`)}`}
+        />
       ),
     },
     { key: "premium", header: t("lead.quotes.premium"), align: "end", nowrap: true, cell: (q) => money(q.premium) },
@@ -55,7 +59,7 @@ export async function QuotesTab({ leadId }: { leadId: number }) {
     <>
       <DataTable
         embedded
-        path={`/leads/${leadId}`}
+        path={leadPath(lead.publicId)}
         rows={quotes}
         rowKey={(q) => q.id}
         columns={columns}

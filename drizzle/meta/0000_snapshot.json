@@ -1,5 +1,5 @@
 {
-  "id": "44d4743a-207a-4e83-af66-4510976a0e55",
+  "id": "d1b499dc-1bea-4241-912f-83b5f3c4a6e4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -498,6 +498,19 @@
           "primaryKey": true,
           "notNull": true
         },
+        "public_id": {
+          "name": "public_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "reference": {
+          "name": "reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "opportunity_id": {
           "name": "opportunity_id",
           "type": "integer",
@@ -594,7 +607,22 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "leads_public_id_unique": {
+          "name": "leads_public_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_id"
+          ]
+        },
+        "leads_reference_unique": {
+          "name": "leads_reference_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reference"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1013,6 +1041,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "reference": {
+          "name": "reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "lead_id": {
           "name": "lead_id",
           "type": "integer",
@@ -1113,7 +1147,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "quotes_reference_unique": {
+          "name": "quotes_reference_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reference"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

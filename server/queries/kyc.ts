@@ -9,7 +9,8 @@ export async function kycQueue(statuses: ("submitted" | "approved" | "rejected")
   return db
     .select({
       kyc: kycRecords,
-      leadId: leads.id,
+      leadPublicId: leads.publicId,
+      reference: leads.reference,
       customerName: opportunities.customerName,
       product: opportunities.product,
       departmentKey: departments.key,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Hanken_Grotesk, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { ToastProvider } from "@/components/ui";
 import { RTL_LOCALES, type Locale } from "@/constants/i18n";
 import "./globals.css";
 
@@ -23,7 +24,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={locale} dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}>
       <body className={`${hanken.variable} ${plexArabic.variable} ${plexMono.variable} font-sans antialiased`}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

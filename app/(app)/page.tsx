@@ -1,9 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { Funnel } from "@/components/dashboard/funnel";
 import { RenewalsCard } from "@/components/dashboard/renewals-card";
-import { Forbidden, PageHeader, Stat } from "@/components/ui";
+import { Forbidden, NumberTicker, PageHeader, Stat } from "@/components/ui";
 import { LEAD_STAGES, OPPORTUNITY_STATUSES } from "@/constants/statuses";
-import { money } from "@/lib/format";
 import { can, scopeOf } from "@/lib/rbac";
 import { requireUser } from "@/server/auth";
 import { dashboardStats } from "@/server/queries/dashboard";
@@ -24,25 +23,32 @@ export default async function DashboardPage() {
   const tiles = [
     oppScope !== "none" && {
       label: t("dashboard.opportunities"),
-      value: String(sum(stats.oppsByStatus)),
+      value: <NumberTicker value={sum(stats.oppsByStatus)} />,
       href: "/opportunities",
     },
     leadScope !== "none" && {
       label: t("dashboard.openLeads"),
-      value: String(sum(stats.leadsByStage) - won - lost),
+      value: <NumberTicker value={sum(stats.leadsByStage) - won - lost} />,
       href: "/leads",
     },
     leadScope !== "none" && {
       label: t("dashboard.winRate"),
-      value: `${won + lost ? Math.round((won / (won + lost)) * 100) : 0}%`,
+      value: <NumberTicker value={won + lost ? Math.round((won / (won + lost)) * 100) : 0} format="percent" />,
     },
-    can(user, "kyc:review") && { label: t("dashboard.kycToReview"), value: String(stats.kycPending), href: "/kyc" },
+    can(user, "kyc:review") && {
+      label: t("dashboard.kycToReview"),
+      value: <NumberTicker value={stats.kycPending} />,
+      href: "/kyc",
+    },
     can(user, "policies:view") && {
       label: t("dashboard.activePolicies"),
-      value: String(stats.activePolicies),
+      value: <NumberTicker value={stats.activePolicies} />,
       href: "/policies?filter=active",
     },
-    can(user, "policies:view") && { label: t("dashboard.annualPremium"), value: money(stats.premium) },
+    can(user, "policies:view") && {
+      label: t("dashboard.annualPremium"),
+      value: <NumberTicker value={stats.premium} format="money" />,
+    },
   ].filter((tile) => !!tile);
 
   return (

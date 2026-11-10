@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import {
+  AlertDialog,
   Badge,
   Button,
   ButtonLink,
@@ -15,6 +16,7 @@ import { PAYMENT_METHODS } from "@/constants/statuses";
 import { money, shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
 import { can } from "@/lib/rbac";
+import { leadPath } from "@/lib/reference";
 import { cancelPolicy, issuePolicy, recordPayment, startRenewal } from "@/server/actions/policies";
 import { getDocuments, getKyc, getLeadContext, getPolicy, getQuotes } from "@/server/queries/lead-details";
 
@@ -134,8 +136,8 @@ export async function PolicyTab({ leadId }: { leadId: number }) {
       )}
 
       <div className="flex flex-wrap gap-2">
-        {policy.renewedByLeadId ? (
-          <ButtonLink href={`/leads/${policy.renewedByLeadId}`}>{t("lead.policy.openRenewal")}</ButtonLink>
+        {policy.renewalPublicId ? (
+          <ButtonLink href={leadPath(policy.renewalPublicId)}>{t("lead.policy.openRenewal")}</ButtonLink>
         ) : (
           policy.status === "active" &&
           can(user, "policies:renew") && (
@@ -148,7 +150,16 @@ export async function PolicyTab({ leadId }: { leadId: number }) {
         {policy.status !== "cancelled" && can(user, "policies:cancel") && (
           <form action={cancelPolicy}>
             <Hidden name="policyId" value={policy.id} />
-            <Button variant="danger">{t("lead.policy.cancelPolicy")}</Button>
+            <AlertDialog
+              trigger={
+                <Button type="button" variant="danger">
+                  {t("lead.policy.cancelPolicy")}
+                </Button>
+              }
+              title={t("lead.policy.cancelTitle", { number: policy.policyNumber })}
+              description={t("lead.policy.cancelBody")}
+              confirmLabel={t("lead.policy.cancelPolicy")}
+            />
           </form>
         )}
       </div>

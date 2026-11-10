@@ -3,8 +3,9 @@ import { useTranslations } from "next-intl";
 import { EmptyState, Panel } from "@/components/ui";
 import { RENEWAL_WINDOW_DAYS } from "@/constants/config";
 import { shortDate } from "@/lib/format";
+import { leadPath } from "@/lib/reference";
 
-type Renewal = { id: number; policyNumber: string; endDate: string; customerName: string; leadId: number };
+type Renewal = { id: number; policyNumber: string; endDate: string; customerName: string; leadPublicId: string };
 
 export function RenewalsCard({ renewals }: { renewals: Renewal[] }) {
   const t = useTranslations("dashboard");
@@ -17,7 +18,7 @@ export function RenewalsCard({ renewals }: { renewals: Renewal[] }) {
           {renewals.map((r) => (
             <li key={r.id}>
               <Link
-                href={`/leads/${r.leadId}?tab=policy`}
+                href={leadPath(r.leadPublicId, "policy")}
                 className="flex items-center justify-between gap-3 px-5 py-3 text-sm hover:bg-paper/60"
               >
                 <span className="min-w-0">

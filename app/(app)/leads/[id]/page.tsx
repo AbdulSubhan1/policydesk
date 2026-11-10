@@ -47,8 +47,8 @@ export default async function LeadPage({
   const user = await requireUser();
   if (scopeOf(user, "leads") === "none") return <Forbidden permission="leads:view_own" />;
 
-  const leadId = Number((await params).id);
-  const { lead, opportunity, departmentKey, advisorName, closed } = await getLeadContext(leadId);
+  const { lead, opportunity, departmentKey, advisorName, closed } = await getLeadContext((await params).id);
+  const leadId = lead.id;
   const [quotes, kyc, docs, policy, previous, t] = await Promise.all([
     getQuotes(leadId),
     getKyc(leadId),
@@ -110,6 +110,7 @@ export default async function LeadPage({
         })}
         action={
           <div className="flex flex-wrap gap-1.5">
+            <Badge tone="grey">{lead.reference}</Badge>
             <Badge status={lead.type} />
             <Badge status={lead.stage} />
           </div>

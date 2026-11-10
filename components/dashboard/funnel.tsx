@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Panel, ProgressBar } from "@/components/ui";
+import { Panel, Progress } from "@/components/ui";
 
 /** Counts per status with a bar each; every row links to the filtered list. */
 export function Funnel({
@@ -26,7 +26,7 @@ export function Funnel({
               className="grid grid-cols-[minmax(0,8rem)_1fr_2rem] items-center gap-3 text-sm hover:text-brand"
             >
               <span className="truncate">{t(`status.${s}`)}</span>
-              <ProgressBar value={counts[s] ?? 0} total={total} />
+              <Progress value={counts[s] ?? 0} max={total} />
               <span className="text-end font-medium">{counts[s] ?? 0}</span>
             </Link>
           </li>

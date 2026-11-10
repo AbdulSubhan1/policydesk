@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Field, FormError, Input } from "@/components/ui";
+import { Button, Field, FormError, Input, PasswordInput } from "@/components/ui";
 import { loginSchema } from "@/schemas/login";
 import { login } from "@/server/actions/auth";
 import { useActionForm } from "./use-action-form";
@@ -47,7 +47,7 @@ export function LoginForm({
           <Input type="email" autoComplete="email" placeholder="name@policydesk.dev" {...form.register("email")} />
         </Field>
         <Field label={t("password")} error={errorOf("password")}>
-          <Input type="password" autoComplete="current-password" {...form.register("password")} />
+          <PasswordInput autoComplete="current-password" {...form.register("password")} />
         </Field>
         <FormError message={rootError} />
         <Button variant="primary" disabled={pending}>

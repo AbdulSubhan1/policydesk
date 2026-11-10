@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { PAYMENT_METHODS } from "@/constants/statuses";
+import { leadPath, leadReference } from "@/lib/reference";
 import { id, option, optionalText } from "@/schemas/fields";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
@@ -14,9 +15,10 @@ import { missingRequiredDocuments } from "@/server/queries/documents";
 const { policies, leads, kycRecords, users } = schema;
 const DAY = 86_400_000;
 
-function refresh(leadId: number) {
+/** Every lead page and the policy list show policy state. */
+function refresh() {
   revalidatePath("/policies");
-  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/leads/[id]", "page");
 }
 
 export async function issuePolicy(formData: FormData) {
@@ -52,7 +54,7 @@ export async function issuePolicy(formData: FormData) {
     leadId: lead.id,
     details: policy.policyNumber,
   });
-  refresh(lead.id);
+  refresh();
 }
 
 const paymentSchema = z.object({
@@ -87,7 +89,7 @@ export async function recordPayment(formData: FormData) {
     leadId: lead.id,
     details: [policy.policyNumber, data.paymentReference].filter(Boolean).join(", "),
   });
-  refresh(lead.id);
+  refresh();
 }
 
 export async function cancelPolicy(formData: FormData) {
@@ -101,12 +103,18 @@ export async function cancelPolicy(formData: FormData) {
     leadId: lead.id,
     details: policy.policyNumber,
   });
-  refresh(lead.id);
+  refresh();
 }
 
 export async function startRenewal(formData: FormData) {
-  const { user, policy, lead } = await requirePolicy("policies:renew", id.parse(formData.get("policyId")));
-  if (policy.renewedByLeadId) redirect(`/leads/${policy.renewedByLeadId}`);
+  const { user, policy, lead, opportunity } = await requirePolicy("policies:renew", id.parse(formData.get("policyId")));
+  if (policy.renewedByLeadId) {
+    const [renewed] = await db
+      .select({ publicId: leads.publicId })
+      .from(leads)
+      .where(eq(leads.id, policy.renewedByLeadId));
+    redirect(leadPath(renewed.publicId));
+  }
   if (policy.status !== "active") throw new Error("Only active policies can be renewed");
 
   // Keep the same advisor while they are active; otherwise the manager assigns one
@@ -117,6 +125,7 @@ export async function startRenewal(formData: FormData) {
     .insert(leads)
     .values({
       opportunityId: lead.opportunityId,
+      reference: leadReference(opportunity.product),
       departmentId: lead.departmentId,
       advisorId: advisor?.active ? lead.advisorId : null,
       type: "renewal",
@@ -157,7 +166,7 @@ export async function startRenewal(formData: FormData) {
     entity: "policy",
     entityId: policy.id,
     leadId: lead.id,
-    details: `#${renewal.id}`,
+    details: renewal.reference,
   });
   await logAudit({
     userId: user.id,
@@ -167,5 +176,5 @@ export async function startRenewal(formData: FormData) {
     leadId: renewal.id,
     details: policy.policyNumber,
   });
-  redirect(`/leads/${renewal.id}`);
+  redirect(leadPath(renewal.publicId));
 }

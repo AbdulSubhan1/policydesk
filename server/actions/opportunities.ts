@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { departmentOf } from "@/constants/products";
 import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
 import { can, type Permission } from "@/lib/rbac";
+import { leadPath, leadReference } from "@/lib/reference";
 import type { ActionResult } from "@/schemas/action-result";
 import { id, option } from "@/schemas/fields";
 import { opportunitySchema, type OpportunityInput } from "@/schemas/opportunity";
@@ -100,7 +101,12 @@ export async function convertToLead(formData: FormData) {
 
   const [lead] = await db
     .insert(leads)
-    .values({ opportunityId: opp.id, departmentId: opp.departmentId, advisorId: advisor.id })
+    .values({
+      opportunityId: opp.id,
+      reference: leadReference(opp.product),
+      departmentId: opp.departmentId,
+      advisorId: advisor.id,
+    })
     .returning();
   await db.insert(kycRecords).values({ leadId: lead.id });
   await db
@@ -115,5 +121,5 @@ export async function convertToLead(formData: FormData) {
     leadId: lead.id,
     details: advisor.name,
   });
-  redirect(`/leads/${lead.id}`);
+  redirect(leadPath(lead.publicId));
 }

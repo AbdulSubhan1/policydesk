@@ -6,6 +6,7 @@
     "app/(app)/admin/users/page.tsx",
     "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/policies/page.tsx",
@@ -25,8 +26,9 @@
     "components/leads/quotes-tab.tsx"
   ],
   "ButtonLink": [
+    "app/(app)/design-system/[name]/page.tsx",
+    "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
-    "app/(app)/opportunities/page.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/policy-tab.tsx"
   ],
@@ -42,39 +44,6 @@
     "components/forms/role-form.tsx",
     "components/forms/upload-form.tsx",
     "components/leads/policy-tab.tsx"
-  ],
-  "Input": [
-    "app/(app)/admin/plans/page.tsx",
-    "app/(app)/kyc/page.tsx",
-    "components/forms/document-type-form.tsx",
-    "components/forms/insurer-form.tsx",
-    "components/forms/kyc-form.tsx",
-    "components/forms/login-form.tsx",
-    "components/forms/opportunity-form.tsx",
-    "components/forms/plan-form.tsx",
-    "components/forms/quote-form.tsx",
-    "components/forms/role-form.tsx",
-    "components/forms/upload-form.tsx",
-    "components/leads/policy-tab.tsx"
-  ],
-  "Autocomplete": [
-    "app/(app)/admin/users/page.tsx",
-    "app/(app)/leads/[id]/page.tsx",
-    "app/(app)/opportunities/[id]/page.tsx",
-    "components/forms/form-autocomplete.tsx",
-    "components/leads/policy-tab.tsx"
-  ],
-  "PhoneInput": [
-    "components/forms/opportunity-form.tsx"
-  ],
-  "Textarea": [
-    "components/forms/opportunity-form.tsx"
-  ],
-  "Checkbox": [
-    "app/(app)/admin/roles/page.tsx"
-  ],
-  "Radio": [
-    "app/(app)/admin/documents/page.tsx"
   ],
   "InlineForm": [
     "app/(app)/admin/plans/page.tsx",
@@ -107,20 +76,128 @@
     "components/leads/policy-tab.tsx",
     "components/leads/quotes-tab.tsx"
   ],
+  "Input": [
+    "app/(app)/admin/plans/page.tsx",
+    "app/(app)/kyc/page.tsx",
+    "components/forms/document-type-form.tsx",
+    "components/forms/insurer-form.tsx",
+    "components/forms/kyc-form.tsx",
+    "components/forms/login-form.tsx",
+    "components/forms/opportunity-form.tsx",
+    "components/forms/plan-form.tsx",
+    "components/forms/role-form.tsx",
+    "components/leads/policy-tab.tsx"
+  ],
+  "PasswordInput": [
+    "components/forms/login-form.tsx"
+  ],
+  "NumberInput": [
+    "components/forms/plan-form.tsx",
+    "components/forms/quote-form.tsx"
+  ],
+  "PhoneInput": [
+    "components/forms/opportunity-form.tsx"
+  ],
+  "OtpInput": [],
+  "Textarea": [
+    "components/forms/opportunity-form.tsx"
+  ],
+  "FileUpload": [
+    "components/forms/upload-form.tsx"
+  ],
+  "Autocomplete": [
+    "app/(app)/admin/users/page.tsx",
+    "app/(app)/leads/[id]/page.tsx",
+    "app/(app)/opportunities/[id]/page.tsx",
+    "components/forms/form-autocomplete.tsx",
+    "components/leads/policy-tab.tsx"
+  ],
+  "MultiSelect": [],
+  "Checkbox": [
+    "app/(app)/admin/roles/page.tsx"
+  ],
+  "Radio": [
+    "app/(app)/admin/documents/page.tsx"
+  ],
+  "RadioGroup": [],
+  "Switch": [],
+  "SegmentGroup": [],
+  "Rating": [],
+  "DatePicker": [
+    "components/forms/kyc-form.tsx"
+  ],
+  "Dialog": [],
+  "AlertDialog": [
+    "app/(app)/admin/users/page.tsx",
+    "components/leads/documents-tab.tsx",
+    "components/leads/policy-tab.tsx"
+  ],
+  "Popover": [],
+  "Tooltip": [],
+  "DropdownMenu": [
+    "app/(app)/leads/(list)/page.tsx"
+  ],
+  "ActionBar": [
+    "app/(app)/leads/(list)/page.tsx"
+  ],
+  "Tabs": [
+    "app/(app)/leads/[id]/page.tsx"
+  ],
+  "PillNav": [
+    "app/(app)/admin/documents/page.tsx",
+    "app/(app)/admin/plans/page.tsx",
+    "app/(app)/design-system/[name]/page.tsx",
+    "app/(app)/kb/[[...slug]]/page.tsx",
+    "app/(app)/kyc/page.tsx"
+  ],
+  "Alert": [],
+  "Toast": [],
+  "EmptyState": [
+    "app/(app)/error.tsx",
+    "app/(app)/kyc/page.tsx",
+    "components/dashboard/renewals-card.tsx",
+    "components/leads/activity-feed.tsx",
+    "components/leads/kyc-tab.tsx",
+    "components/leads/policy-tab.tsx"
+  ],
+  "Skeleton": [
+    "app/(app)/leads/[id]/loading.tsx",
+    "components/layout/list-skeleton.tsx"
+  ],
+  "Spinner": [],
+  "Progress": [
+    "components/dashboard/funnel.tsx"
+  ],
+  "Forbidden": [
+    "app/(app)/admin/documents/page.tsx",
+    "app/(app)/admin/plans/page.tsx",
+    "app/(app)/admin/roles/page.tsx",
+    "app/(app)/admin/users/page.tsx",
+    "app/(app)/audit/page.tsx",
+    "app/(app)/kyc/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
+    "app/(app)/leads/[id]/page.tsx",
+    "app/(app)/opportunities/(list)/page.tsx",
+    "app/(app)/opportunities/[id]/page.tsx",
+    "app/(app)/opportunities/new/page.tsx",
+    "app/(app)/page.tsx",
+    "app/(app)/policies/page.tsx"
+  ],
   "PageHeader": [
     "app/(app)/admin/documents/page.tsx",
     "app/(app)/admin/plans/page.tsx",
     "app/(app)/admin/roles/page.tsx",
     "app/(app)/admin/users/page.tsx",
     "app/(app)/audit/page.tsx",
+    "app/(app)/design-system/[name]/page.tsx",
     "app/(app)/design-system/page.tsx",
     "app/(app)/kb/[[...slug]]/page.tsx",
     "app/(app)/kyc/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
     "app/(app)/leads/[id]/page.tsx",
-    "app/(app)/leads/page.tsx",
+    "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/opportunities/new/page.tsx",
-    "app/(app)/opportunities/page.tsx",
     "app/(app)/page.tsx",
     "app/(app)/policies/page.tsx"
   ],
@@ -128,9 +205,11 @@
     "app/(app)/admin/documents/page.tsx",
     "app/(app)/admin/plans/page.tsx",
     "app/(app)/admin/roles/page.tsx",
+    "app/(app)/design-system/[name]/page.tsx",
     "app/(app)/design-system/page.tsx",
     "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
+    "app/(app)/leads/[id]/loading.tsx",
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/login/page.tsx",
@@ -138,9 +217,11 @@
     "components/dashboard/renewals-card.tsx",
     "components/forms/opportunity-form.tsx",
     "components/forms/role-form.tsx",
-    "components/kb/kb-article.tsx"
+    "components/kb/kb-article.tsx",
+    "components/layout/list-skeleton.tsx"
   ],
   "PanelSection": [
+    "components/leads/activity-feed.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/kyc-tab.tsx",
     "components/leads/policy-tab.tsx",
@@ -158,8 +239,9 @@
     "app/(app)/admin/plans/page.tsx",
     "app/(app)/admin/users/page.tsx",
     "app/(app)/audit/page.tsx",
-    "app/(app)/leads/page.tsx",
-    "app/(app)/opportunities/page.tsx",
+    "app/(app)/design-system/[name]/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
+    "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/quotes-tab.tsx"
@@ -168,8 +250,8 @@
     "app/(app)/admin/documents/page.tsx",
     "app/(app)/admin/plans/page.tsx",
     "app/(app)/admin/users/page.tsx",
-    "app/(app)/leads/page.tsx",
-    "app/(app)/opportunities/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
+    "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/quotes-tab.tsx"
@@ -181,12 +263,12 @@
   "Badge": [
     "app/(app)/admin/plans/page.tsx",
     "app/(app)/admin/roles/page.tsx",
-    "app/(app)/design-system/page.tsx",
+    "app/(app)/design-system/[name]/page.tsx",
     "app/(app)/kyc/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
     "app/(app)/leads/[id]/page.tsx",
-    "app/(app)/leads/page.tsx",
+    "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
-    "app/(app)/opportunities/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/policy-tab.tsx",
@@ -196,45 +278,28 @@
   "Stat": [
     "app/(app)/page.tsx"
   ],
-  "ProgressBar": [
-    "components/dashboard/funnel.tsx"
+  "Timeline": [
+    "components/leads/activity-feed.tsx"
   ],
+  "Avatar": [
+    "app/(app)/admin/users/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
+    "components/layout/sidebar.tsx"
+  ],
+  "AvatarGroup": [],
   "Icon": [
+    "app/(app)/design-system/[name]/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
     "components/layout/locale-switch.tsx",
     "components/layout/nav-link.tsx",
     "components/leads/progress-rail.tsx"
   ],
-  "PillNav": [
-    "app/(app)/admin/documents/page.tsx",
-    "app/(app)/admin/plans/page.tsx",
-    "app/(app)/design-system/page.tsx",
-    "app/(app)/kb/[[...slug]]/page.tsx",
-    "app/(app)/kyc/page.tsx"
+  "MotionHighlight": [
+    "components/layout/sidebar.tsx"
   ],
-  "Tabs": [
-    "app/(app)/leads/[id]/page.tsx"
+  "NumberTicker": [
+    "app/(app)/page.tsx"
   ],
-  "EmptyState": [
-    "app/(app)/error.tsx",
-    "app/(app)/kyc/page.tsx",
-    "components/dashboard/renewals-card.tsx",
-    "components/leads/activity-feed.tsx",
-    "components/leads/kyc-tab.tsx",
-    "components/leads/policy-tab.tsx"
-  ],
-  "Forbidden": [
-    "app/(app)/admin/documents/page.tsx",
-    "app/(app)/admin/plans/page.tsx",
-    "app/(app)/admin/roles/page.tsx",
-    "app/(app)/admin/users/page.tsx",
-    "app/(app)/audit/page.tsx",
-    "app/(app)/kyc/page.tsx",
-    "app/(app)/leads/[id]/page.tsx",
-    "app/(app)/leads/page.tsx",
-    "app/(app)/opportunities/[id]/page.tsx",
-    "app/(app)/opportunities/new/page.tsx",
-    "app/(app)/opportunities/page.tsx",
-    "app/(app)/page.tsx",
-    "app/(app)/policies/page.tsx"
-  ]
+  "SpotlightCard": [],
+  "ShimmerText": []
 }

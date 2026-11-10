@@ -1,14 +1,15 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { UploadForm } from "@/components/forms/upload-form";
-import { Badge, Button, ButtonLink, CellText, DataTable, Hidden, PanelSection } from "@/components/ui";
+import { AlertDialog, Badge, Button, ButtonLink, CellText, DataTable, Hidden, PanelSection } from "@/components/ui";
 import { shortDate } from "@/lib/format";
 import { localized } from "@/lib/i18n";
 import { can } from "@/lib/rbac";
+import { leadPath } from "@/lib/reference";
 import { deleteDocument } from "@/server/actions/documents";
 import { getDocuments, getLeadContext, getPolicy } from "@/server/queries/lead-details";
 
 export async function DocumentsTab({ leadId }: { leadId: number }) {
-  const [{ user, closed }, { files, checklist, uploaded }, policy, t, locale] = await Promise.all([
+  const [{ user, lead, closed }, { files, checklist, uploaded }, policy, t, locale] = await Promise.all([
     getLeadContext(leadId),
     getDocuments(leadId),
     getPolicy(leadId),
@@ -29,7 +30,7 @@ export async function DocumentsTab({ leadId }: { leadId: number }) {
       </PanelSection>
       <DataTable
         embedded
-        path={`/leads/${leadId}`}
+        path={leadPath(lead.publicId)}
         rows={files}
         rowKey={(d) => d.id}
         minWidth="sm"
@@ -58,16 +59,27 @@ export async function DocumentsTab({ leadId }: { leadId: number }) {
             cell: (d) => (
               <span className="inline-flex gap-2">
                 {can(user, "documents:download") && (
-                  <ButtonLink size="sm" href={`/leads/${leadId}/documents/${d.id}`} target="_blank" prefetch={false}>
+                  <ButtonLink
+                    size="sm"
+                    href={`${leadPath(lead.publicId)}/documents/${d.id}`}
+                    target="_blank"
+                    prefetch={false}
+                  >
                     {t("view")}
                   </ButtonLink>
                 )}
                 {can(user, "documents:upload") && !policy && (
                   <form action={deleteDocument}>
                     <Hidden name="documentId" value={d.id} />
-                    <Button size="sm" variant="danger">
-                      {t("delete")}
-                    </Button>
+                    <AlertDialog
+                      trigger={
+                        <Button type="button" size="sm" variant="danger">
+                          {t("delete")}
+                        </Button>
+                      }
+                      title={t("deleteTitle", { name: d.fileName })}
+                      confirmLabel={t("delete")}
+                    />
                   </form>
                 )}
               </span>

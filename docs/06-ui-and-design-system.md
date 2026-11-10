@@ -1,6 +1,41 @@
 # UI and design system
 
-The app is built only from our own UI library in `components/ui/`. The **Component library** page in the app shows every component live, with its props, a code example and the files that use it.
+The app is built only from our own UI library in `components/ui/`. The **Component library** (`/design-system`) works like a documentation site: a sidebar with every component grouped into 13 categories and a search box, an overview with the tokens, and one page per component (`/design-system/Button`) with named demos, a preview width switch (full, tablet, mobile), the code, the props, the keyboard keys and the files that use it.
+
+```mermaid
+flowchart LR
+  R[registry.ts] --> N[Sidebar and overview]
+  R --> P["/design-system/[name]"]
+  D[demos/*.tsx] --> P
+  U[usage.json] --> P
+  S[scripts/ui-usage.ts] --> U
+```
+
+## Categories
+
+| Category   | Components                                                                           |
+| ---------- | ------------------------------------------------------------------------------------ |
+| Buttons    | Button, ButtonLink                                                                   |
+| Forms      | Field, InlineForm, FormError, Hidden                                                 |
+| Inputs     | Input, PasswordInput, NumberInput, PhoneInput, OtpInput, Textarea, FileUpload        |
+| Selection  | Autocomplete, MultiSelect, Checkbox, Radio, RadioGroup, Switch, SegmentGroup, Rating |
+| Dates      | DatePicker                                                                           |
+| Overlays   | Dialog (and side sheet), AlertDialog, Popover, Tooltip                               |
+| Menus      | DropdownMenu (icons, shortcuts, checks, submenus), ActionBar                         |
+| Navigation | Tabs, PillNav                                                                        |
+| Feedback   | Alert, Toast, EmptyState, Skeleton, Spinner, Progress, Forbidden                     |
+| Layout     | PageHeader, Panel, PanelSection, DetailList                                          |
+| Data       | DataTable (with row selection), CellText, ListRow, Badge, Stat, Timeline             |
+| Media      | Avatar, AvatarGroup, Icon                                                            |
+| Effects    | MotionHighlight, NumberTicker, SpotlightCard, ShimmerText                            |
+
+## Where the app uses them
+
+- **Leads list:** tick rows and the ActionBar rises with "Move to stage"; advisors show as avatars.
+- **Lead page:** KYC dates use DatePicker, documents use the FileUpload drop zone, the activity trail is a Timeline, and cancelling a policy or deleting a document asks first with AlertDialog.
+- **Dashboard:** numbers count up with NumberTicker. **Sidebar and pill filters:** MotionHighlight glides to the hovered link.
+- **Users:** avatars, and deactivating asks first. **Login:** PasswordInput. **Quotes and plans:** NumberInput for premiums.
+- **Every form** shows a toast when it saves, and list pages and the lead page show a Skeleton while they load.
 
 ## Tokens
 
@@ -41,16 +76,23 @@ Fonts: Hanken Grotesk for Latin script, IBM Plex Sans Arabic for Arabic, IBM Ple
 - Validation rules live once in `schemas/fields.ts`: `email`, `phone`, `firstName`, `lastName`, `fullName`, `requiredText`, `optionalText`, `amount`, `date`, `option`. The Field preview on the Component library page runs them live.
 - Every empty field shows a placeholder from `messages` (`placeholders.*`).
 
+## Motion
+
+Motion tokens live in `app/globals.css` (`animate-fade-in`, `scale-in`, `slide-up`, `slide-in-end`, `shimmer`). Overlays animate in when they open; effects are used once per screen at most. Everything respects reduced motion.
+
+Effects are the only code that sets CSS variables from JavaScript (never a `style` attribute), for positions that classes can't know in advance.
+
 ## Testing components
 
-`e2e/04-ui-library.spec.ts` opens the Component library page and checks that every registry entry renders. It also tests Autocomplete filtering, keyboard use and selection, and Checkbox toggling. Add a test there when you add a component with behaviour.
+`e2e/04-ui-library.spec.ts` opens every component's page and checks its demos render. It also tests Autocomplete, MultiSelect, Checkbox, DataTable with the ActionBar, DropdownMenu submenus, Dialog, DatePicker, Toast, PhoneInput and the shared validation rules. `e2e/05-bulk-actions.spec.ts` moves leads in bulk. Add a test when you add a component with behaviour.
 
 ## Adding a component
 
 1. Create `components/ui/<name>.tsx` with one exported component and `data-ui`.
 2. Export it from `components/ui/index.ts`.
-3. Add it to `registry.ts` and to `components/design-system/previews.tsx`.
-4. Run `npm run ui:usage`.
+3. Add it to `registry.ts` with its category and keyboard keys.
+4. Add named demos to its category file in `components/design-system/demos/`.
+5. Run `npm run ui:usage`.
 
 `npm run check` fails if a component file is missing from the registry or if `usage.json` is out of date.
 

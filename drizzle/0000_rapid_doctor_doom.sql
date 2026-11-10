@@ -67,6 +67,8 @@ CREATE TABLE "kyc_records" (
 --> statement-breakpoint
 CREATE TABLE "leads" (
 	"id" serial PRIMARY KEY NOT NULL,
+	"public_id" uuid DEFAULT gen_random_uuid() NOT NULL,
+	"reference" text NOT NULL,
 	"opportunity_id" integer NOT NULL,
 	"type" text DEFAULT 'new_business' NOT NULL,
 	"previous_policy_id" integer,
@@ -74,7 +76,9 @@ CREATE TABLE "leads" (
 	"advisor_id" integer,
 	"stage" text DEFAULT 'needs_analysis' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "leads_public_id_unique" UNIQUE("public_id"),
+	CONSTRAINT "leads_reference_unique" UNIQUE("reference")
 );
 --> statement-breakpoint
 CREATE TABLE "opportunities" (
@@ -133,6 +137,7 @@ CREATE TABLE "product_documents" (
 --> statement-breakpoint
 CREATE TABLE "quotes" (
 	"id" serial PRIMARY KEY NOT NULL,
+	"reference" text NOT NULL,
 	"lead_id" integer NOT NULL,
 	"plan_id" integer,
 	"insurer" text NOT NULL,
@@ -141,7 +146,8 @@ CREATE TABLE "quotes" (
 	"premium" integer NOT NULL,
 	"status" text DEFAULT 'sent' NOT NULL,
 	"created_by" integer,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "quotes_reference_unique" UNIQUE("reference")
 );
 --> statement-breakpoint
 CREATE TABLE "role_permissions" (

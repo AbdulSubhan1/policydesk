@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Field, FormError, Input } from "@/components/ui";
+import { Button, Field, FormError, Input, NumberInput } from "@/components/ui";
 import { PRODUCT_COVERS, type Product } from "@/constants/products";
 import { coverOptions, productOptions } from "@/lib/options";
 import { planSchema } from "@/schemas/plan";
@@ -63,16 +63,10 @@ export function PlanForm({ insurers, product }: { insurers: { id: number; name: 
         <Input dir="rtl" placeholder={t("placeholders.planNameAr")} {...form.register("nameAr")} />
       </Field>
       <Field label={t("plans.basePremium")} error={errorOf("basePremium")}>
-        <Input
-          type="number"
-          min={1}
-          inputMode="numeric"
-          placeholder={t("placeholders.premium")}
-          {...form.register("basePremium")}
-        />
+        <NumberInput min={1} step={50} placeholder={t("placeholders.premium")} {...form.register("basePremium")} />
       </Field>
       <Field label={t("plans.excess")} error={errorOf("excess")}>
-        <Input type="number" min={0} inputMode="numeric" {...form.register("excess")} />
+        <NumberInput min={0} step={50} {...form.register("excess")} />
       </Field>
       <Field label={t("plans.benefits")} error={errorOf("benefits")} className="md:col-span-2">
         <Input placeholder={t("placeholders.benefits")} {...form.register("benefits")} />
