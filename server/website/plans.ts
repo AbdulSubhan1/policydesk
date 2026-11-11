@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, ne, or } from "drizzle-orm";
 import type { AddOnKind } from "@/constants/add-ons";
 import type { Product } from "@/constants/products";
 import { money } from "@/lib/format";
@@ -63,16 +63,13 @@ function sellablePlans(product: Product) {
   return and(eq(plans.product, product), eq(plans.active, true), eq(insurers.active, true));
 }
 
-export async function getWebsitePlans(publicId: string): Promise<{ ok: true; plans: WebsitePlan[] } | Failure> {
-  const found = await websiteLead(publicId);
-  if (!found) return NOT_FOUND;
-  if (!found.lead) return NO_LEAD;
-
+/** Sellable plans for a product, cheapest first, each with its active add-ons. */
+export async function loadSellablePlans(product: Product) {
   const rows = await db
     .select({ plan: plans, insurer: insurers.name })
     .from(plans)
     .innerJoin(insurers, eq(plans.insurerId, insurers.id))
-    .where(sellablePlans(found.product))
+    .where(sellablePlans(product))
     .orderBy(asc(plans.basePremium), asc(plans.id));
   const addOns = rows.length
     ? await db
@@ -89,10 +86,18 @@ export async function getWebsitePlans(publicId: string): Promise<{ ok: true; pla
         )
         .orderBy(asc(planAddOns.id))
     : [];
+  return rows.map((r) => ({ ...r, addOns: addOns.filter((a) => a.planId === r.plan.id) }));
+}
 
+export async function getWebsitePlans(publicId: string): Promise<{ ok: true; plans: WebsitePlan[] } | Failure> {
+  const found = await websiteLead(publicId);
+  if (!found) return NOT_FOUND;
+  if (!found.lead) return NO_LEAD;
+
+  const rows = await loadSellablePlans(found.product);
   return {
     ok: true,
-    plans: rows.map(({ plan, insurer }) => ({
+    plans: rows.map(({ plan, insurer, addOns }) => ({
       id: plan.id,
       insurer,
       name: plan.name.en,
@@ -101,19 +106,17 @@ export async function getWebsitePlans(publicId: string): Promise<{ ok: true; pla
       excess: plan.excess,
       basePremium: plan.basePremium,
       benefits: plan.benefits,
-      addOns: addOns
-        .filter((a) => a.planId === plan.id)
-        .map((a) => ({ id: a.id, key: a.key, name: a.name.en, kind: a.kind, price: a.price })),
+      addOns: addOns.map((a) => ({ id: a.id, key: a.key, name: a.name.en, kind: a.kind, price: a.price })),
     })),
   };
 }
 
-/** The lead's one open website quote: made by nobody (the website) and still waiting for the customer. */
-export async function openWebsiteQuote(leadId: number) {
+/** The lead's one open online quote: picked on the website or by the coordinator, still waiting to be paid. */
+export async function openOnlineQuote(leadId: number) {
   const [quote] = await db
     .select()
     .from(quotes)
-    .where(and(eq(quotes.leadId, leadId), isNull(quotes.createdBy), eq(quotes.status, "sent")))
+    .where(and(eq(quotes.leadId, leadId), eq(quotes.online, true), eq(quotes.status, "sent")))
     .orderBy(desc(quotes.id))
     .limit(1);
   return quote;
@@ -140,7 +143,7 @@ function toSelection(quote: typeof quotes.$inferSelect, addOnIds: number[]): Web
 
 /** The saved selection for a lead, or null. Add-on ids are looked up again by key from the quote's snapshot. */
 export async function getWebsiteSelection(leadId: number): Promise<WebsiteSelection | null> {
-  const quote = await openWebsiteQuote(leadId);
+  const quote = await openOnlineQuote(leadId);
   if (!quote) return null;
 
   const ticked = quote.addOns.filter((a) => a.kind !== "included").map((a) => a.key);
@@ -160,19 +163,28 @@ export async function getWebsiteSelection(leadId: number): Promise<WebsiteSelect
   );
 }
 
-/**
- * Prices the visitor's choice and saves it as the lead's website quote. Choosing again updates that same
- * quote (same reference), so a lead never has more than one open website selection.
- */
+/** The website's choice for its visitor: priced and saved like a coordinator's, with no user. */
 export async function saveWebsiteSelection(
   publicId: string,
   input: WebsiteSelectionInput,
 ): Promise<{ ok: true; selection: WebsiteSelection } | Failure> {
   const found = await websiteLead(publicId);
   if (!found) return NOT_FOUND;
-  const { lead, product } = found;
-  if (!lead) return NO_LEAD;
+  if (!found.lead) return NO_LEAD;
+  return saveOnlineSelection(found.lead, found.product, input, null);
+}
 
+/**
+ * Prices a plan and its ticked add-ons and saves them as the lead's online quote, for the website (userId null) or
+ * a coordinator. Choosing again updates that same quote (same reference), so a lead never has more than one open
+ * online selection; its creator becomes whoever chose last.
+ */
+export async function saveOnlineSelection(
+  lead: typeof leads.$inferSelect,
+  product: Product,
+  input: WebsiteSelectionInput,
+  userId: number | null,
+): Promise<{ ok: true; selection: WebsiteSelection } | Extract<Failure, { status: 400 }>> {
   const [row] = await db
     .select({ plan: plans, insurer: insurers.name })
     .from(plans)
@@ -203,8 +215,9 @@ export async function saveWebsiteSelection(
     cover: plan.cover,
     premium: priced.total,
     addOns: priced.addOns,
+    createdBy: userId,
   };
-  const existing = await openWebsiteQuote(lead.id);
+  const existing = await openOnlineQuote(lead.id);
   let quote: typeof quotes.$inferSelect;
   if (existing) {
     [quote] = await db.update(quotes).set(values).where(eq(quotes.id, existing.id)).returning();
@@ -213,14 +226,14 @@ export async function saveWebsiteSelection(
     const [{ made }] = await db.select({ made: count() }).from(quotes).where(eq(quotes.leadId, lead.id));
     [quote] = await db
       .insert(quotes)
-      .values({ ...values, leadId: lead.id, reference: quoteReference(lead.reference, made + 1), createdBy: null })
+      .values({ ...values, leadId: lead.id, reference: quoteReference(lead.reference, made + 1), online: true })
       .returning();
   }
   if (lead.stage === "needs_analysis") {
     await db.update(leads).set({ stage: "quoted", updatedAt: new Date() }).where(eq(leads.id, lead.id));
   }
   await logAudit({
-    userId: null,
+    userId,
     action: "select",
     entity: "quote",
     entityId: quote.id,

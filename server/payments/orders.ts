@@ -6,7 +6,7 @@ import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import type { OrderLine } from "@/server/db/schema";
 import { assignByRole } from "@/server/website/assign";
-import { openWebsiteQuote } from "@/server/website/plans";
+import { openOnlineQuote } from "@/server/website/plans";
 import { toCents, toLineItems } from "./line-items";
 import { PaySandboxError, createCheckoutSession, getCheckoutSession, getPayment, paymentsEnabled } from "./paysandbox";
 import type { PaySandboxEvent } from "./webhook";
@@ -100,7 +100,7 @@ export async function getPaymentSummary(publicId: string): Promise<{ ok: true; p
       },
     };
   }
-  const quote = await openWebsiteQuote(found.lead.id);
+  const quote = await openOnlineQuote(found.lead.id);
   if (!quote) return NO_SELECTION;
   const { lines, totalDollars } = linesOf(quote);
   return {
@@ -129,7 +129,7 @@ export async function startPayment(publicId: string): Promise<{ ok: true; checko
   const { lead, email } = found;
   if (!lead) return NO_LEAD;
   if (await currentOrder(lead.id, ["paid"])) return ALREADY_PAID;
-  const quote = await openWebsiteQuote(lead.id);
+  const quote = await openOnlineQuote(lead.id);
   if (!quote) return NO_SELECTION;
   const { lines, totalDollars } = linesOf(quote);
 

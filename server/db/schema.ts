@@ -172,7 +172,10 @@ export const quotes = pgTable("quotes", {
   // Snapshot of the add-ons in the premium, like the plan name above
   addOns: jsonb("add_ons").$type<QuoteAddOn[]>().notNull().default([]),
   status: text("status").$type<QuoteStatus>().notNull().default("sent"),
+  // null = made by the website
   createdBy: integer("created_by").references(() => users.id),
+  // The customer's online choice, paid on the website: picked there or by their coordinator for a pay link
+  online: boolean("online").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -289,6 +292,21 @@ export const orders = pgTable("orders", {
 });
 
 export type OrderLine = { name: string; quantity: 1; amount: number };
+
+/** A private link a coordinator sends so the customer can pay on the website. Only the token's hash is kept. */
+export const paymentLinks = pgTable("payment_links", {
+  id: serial("id").primaryKey(),
+  // sha256 hex of the token; the token itself is shown once and never stored
+  tokenHash: text("token_hash").notNull().unique(),
+  leadId: integer("lead_id")
+    .notNull()
+    .references(() => leads.id, { onDelete: "cascade" }),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+  openedAt: timestamp("opened_at"),
+  revokedAt: timestamp("revoked_at"),
+});
 
 /** PaySandbox webhook ids already handled, so a retried or replayed delivery changes nothing. */
 export const webhookEvents = pgTable("webhook_events", {
