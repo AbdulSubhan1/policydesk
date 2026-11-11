@@ -140,6 +140,8 @@ test.describe.serial("website API", () => {
     await expect(page.getByText("Karachi")).toBeVisible();
 
     await page.getByRole("link", { name: "Open lead" }).click();
+    // The first visit compiles the lead page in dev mode, so allow time for it
+    await expect(page).toHaveURL(/\/leads\//, { timeout: 30_000 });
     await expect(page.getByText(/^Website converted the opportunity into this lead$/)).toBeVisible();
   });
 });

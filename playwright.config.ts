@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 import { E2E_WEBSITE_SECRET } from "./e2e/website-client";
 
-const PORT = 3070;
+// E2E_PORT lets the suite run when 3070 is already taken on this machine
+const PORT = Number(process.env.E2E_PORT ?? 3070);
 
 // Tests share one seeded database and change it as they go, so they run one at a time in file order
 export default defineConfig({
