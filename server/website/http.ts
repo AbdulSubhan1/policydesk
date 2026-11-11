@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import { SIGNATURE_HEADER, TIMESTAMP_HEADER, verifyRequest } from "./signature";
 
 // Shared plumbing for the signed website routes: every error has the same shape, { error: { code, message?, field? } }
@@ -8,6 +8,17 @@ const MAX_BODY_BYTES = 16 * 1024;
 
 export function jsonError(status: number, code: string, extra?: { message?: string; field?: string }) {
   return Response.json({ error: { code, ...extra } }, { status });
+}
+
+/** The error response for a refused server/website result. */
+export function failureResponse(f: { status: number; code: string; field?: string; message?: string }) {
+  return jsonError(f.status, f.code, f.field ? { field: f.field, message: f.message } : undefined);
+}
+
+/** The route's public id, or null when it is not a UUID: a malformed id is just another id we don't have. */
+export async function publicIdParam(params: Promise<{ publicId: string }>) {
+  const parsed = z.uuid().safeParse((await params).publicId);
+  return parsed.success ? parsed.data : null;
 }
 
 /** Reads the raw body and checks the signature. Off (503) until WEBSITE_API_SECRET is set. */
