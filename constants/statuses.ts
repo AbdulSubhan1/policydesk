@@ -4,10 +4,13 @@
 export const OPPORTUNITY_STATUSES = ["new", "contacted", "qualified", "disqualified", "converted"] as const;
 /** Statuses a user may set by hand; "converted" is set by the convert action. */
 export const EDITABLE_OPPORTUNITY_STATUSES = ["new", "contacted", "qualified", "disqualified"] as const;
+/** Still waiting on the coordinator; counts towards their workload in automatic assignment. */
+export const OPEN_OPPORTUNITY_STATUSES = ["new", "contacted", "qualified"] as const;
 export const OPPORTUNITY_SOURCES = ["website", "referral", "phone", "partner", "social"] as const;
 
 export const LEAD_TYPES = ["new_business", "renewal"] as const;
 export const LEAD_STAGES = ["needs_analysis", "quoted", "kyc", "won", "lost"] as const;
+export const CLOSED_LEAD_STAGES = ["won", "lost"] as const;
 /** Stages a user may set by hand; "won" is set when a policy is booked. */
 export const EDITABLE_LEAD_STAGES = ["needs_analysis", "quoted", "kyc", "lost"] as const;
 
