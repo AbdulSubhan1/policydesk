@@ -19,3 +19,5 @@ export const PAGE_SIZE = 15;
 
 /** Automatic assignment picks people by role name, not permission, so extra grants never make someone eligible. */
 export const COORDINATOR_ROLE = "Coordinator";
+/** Picked for a website lead once its online payment succeeds. */
+export const ADVISOR_ROLE = "Advisor";

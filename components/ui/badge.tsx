@@ -39,6 +39,7 @@ const STATUS_TONE: Record<string, BadgeTone> = {
   paid: "green",
   failed: "red",
   refunded: "grey",
+  expired: "grey",
   low: "green",
   medium: "amber",
   high: "red",

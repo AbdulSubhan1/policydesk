@@ -224,6 +224,7 @@
     "components/leads/activity-feed.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/kyc-tab.tsx",
+    "components/leads/online-payment.tsx",
     "components/leads/policy-tab.tsx",
     "components/leads/quotes-tab.tsx"
   ],
@@ -232,6 +233,7 @@
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "components/leads/kyc-tab.tsx",
+    "components/leads/online-payment.tsx",
     "components/leads/policy-tab.tsx"
   ],
   "DataTable": [
@@ -271,6 +273,7 @@
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/leads/documents-tab.tsx",
+    "components/leads/online-payment.tsx",
     "components/leads/policy-tab.tsx",
     "components/leads/quotes-tab.tsx",
     "components/leads/screening-result.tsx"

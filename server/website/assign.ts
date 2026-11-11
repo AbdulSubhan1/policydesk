@@ -12,12 +12,15 @@ export function pickAssignee(candidates: Candidate[]): number | null {
   return first?.id ?? null;
 }
 
-/** Picks a coordinator for a new website opportunity and stamps them, or null when nobody is available. */
-export async function assignCoordinator(departmentId: number) {
-  const candidates = await assignmentCandidates(departmentId, COORDINATOR_ROLE);
+/** Picks someone with this role in the department and stamps them, or null when nobody is available. */
+export async function assignByRole(departmentId: number, roleName: string) {
+  const candidates = await assignmentCandidates(departmentId, roleName);
   const chosen = candidates.find((c) => c.id === pickAssignee(candidates));
   if (!chosen) return null;
 
   await db.update(schema.users).set({ lastAssignedAt: new Date() }).where(eq(schema.users.id, chosen.id));
   return { id: chosen.id, name: chosen.name, email: chosen.email, phone: chosen.phone };
 }
+
+/** The coordinator for a new website opportunity. */
+export const assignCoordinator = (departmentId: number) => assignByRole(departmentId, COORDINATOR_ROLE);

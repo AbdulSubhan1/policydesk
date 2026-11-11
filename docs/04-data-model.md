@@ -22,6 +22,8 @@ erDiagram
   quotes ||--o| policies : "accepted into"
   policies ||--o| leads : "renewed by"
   leads ||--o{ audit_logs : "timeline of"
+  leads ||--o{ orders : "paid online by"
+  quotes ||--o{ orders : "charged as"
 ```
 
 ## Notes
@@ -33,6 +35,7 @@ erDiagram
 - **Multi-language data:** `document_types.name`, `document_types.description` and `plans.name` are `jsonb` of the shape `{ en, ar }`. Read them with `localized(value, locale)`.
 - **Keys, not labels:** departments, products, covers and statuses are stored as keys. Labels come from `messages/`.
 - **Files:** documents are stored base64 in Postgres, up to 2 MB each. This keeps the demo free of extra services. A production system would move them to object storage.
+- **Online payments:** `orders` holds one row per PaySandbox checkout session for a website lead: status (`pending`, `paid`, `expired`), amount in whole dollars, the line items sent, and the PaySandbox session and payment ids. `webhook_events` keeps every PaySandbox webhook id already handled, so a replay changes nothing. See [Website and online payments](/kb/website-and-online-payments).
 - **Audit:** `audit_logs.lead_id` links every lead-related event to its lead's timeline.
 
 ## Changing the schema

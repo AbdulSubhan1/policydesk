@@ -109,7 +109,7 @@ export async function getWebsitePlans(publicId: string): Promise<{ ok: true; pla
 }
 
 /** The lead's one open website quote: made by nobody (the website) and still waiting for the customer. */
-async function openWebsiteQuote(leadId: number) {
+export async function openWebsiteQuote(leadId: number) {
   const [quote] = await db
     .select()
     .from(quotes)

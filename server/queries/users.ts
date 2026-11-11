@@ -1,4 +1,5 @@
 import { and, eq, inArray, notInArray, or, sql } from "drizzle-orm";
+import { ADVISOR_ROLE } from "@/constants/config";
 import { CLOSED_LEAD_STAGES, OPEN_OPPORTUNITY_STATUSES } from "@/constants/statuses";
 import type { Permission } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
@@ -20,21 +21,22 @@ export async function usersWithPermission(departmentId: number, permission: Perm
 
 /**
  * Active, available users with a role in a department, with their open workload for automatic assignment.
- * Open = opportunities still being qualified, plus website opportunities already converted whose lead is not won or lost,
- * so self-serve journeys count too.
+ * Coordinators: opportunities still being qualified, plus website opportunities already converted whose lead is not
+ * won or lost, so self-serve journeys count too. Advisors: their leads that are not won or lost.
  */
 export function assignmentCandidates(departmentId: number, roleName: string) {
-  const websiteLeadOpen = sql`exists (select 1 from ${leads} where ${and(
-    eq(leads.opportunityId, opportunities.id),
-    notInArray(leads.stage, [...CLOSED_LEAD_STAGES]),
-  )})`;
-  const openCount = sql<number>`(select count(*)::int from ${opportunities} where ${and(
-    eq(opportunities.coordinatorId, users.id),
-    or(
-      inArray(opportunities.status, [...OPEN_OPPORTUNITY_STATUSES]),
-      and(eq(opportunities.source, "website"), eq(opportunities.status, "converted"), websiteLeadOpen),
-    ),
-  )})`;
+  const openLead = notInArray(leads.stage, [...CLOSED_LEAD_STAGES]);
+  const websiteLeadOpen = sql`exists (select 1 from ${leads} where ${and(eq(leads.opportunityId, opportunities.id), openLead)})`;
+  const openCount =
+    roleName === ADVISOR_ROLE
+      ? sql<number>`(select count(*)::int from ${leads} where ${and(eq(leads.advisorId, users.id), openLead)})`
+      : sql<number>`(select count(*)::int from ${opportunities} where ${and(
+          eq(opportunities.coordinatorId, users.id),
+          or(
+            inArray(opportunities.status, [...OPEN_OPPORTUNITY_STATUSES]),
+            and(eq(opportunities.source, "website"), eq(opportunities.status, "converted"), websiteLeadOpen),
+          ),
+        )})`;
   return db
     .select({
       id: users.id,

@@ -6,6 +6,14 @@ export const E2E_WEBSITE_SECRET = "e2e-secret";
 
 export const OPPORTUNITIES_PATH = "/api/website/v1/opportunities";
 
+/** The fake PaySandbox (e2e/fake-paysandbox.mjs) and the values it and the test server share; its defaults match. */
+export const FAKE_PAYSANDBOX_PORT = 3072;
+export const E2E_PAYSANDBOX_KEY = "sk_test_e2e";
+/** whsec_ + base64 of the bytes 0..23 */
+export const E2E_WEBHOOK_SECRET = "whsec_AAECAwQFBgcICQoLDA0ODxAREhMUFRYX";
+/** Where Brokwise runs in its E2E: PaySandbox sends the visitor back here */
+export const E2E_WEBSITE_URL = "http://localhost:3100";
+
 /** Calls the website API the way the website does: raw JSON body, timestamp and HMAC signature headers. */
 export function websiteCall(request: APIRequestContext, method: "GET" | "POST" | "PUT", path: string, data?: unknown) {
   const body = data === undefined ? "" : JSON.stringify(data);

@@ -15,6 +15,7 @@ These rules are strict. They apply to every person and every AI model working in
 | `server/actions/`       | `"use server"` files, one per feature                                                     | Read-only queries                            |
 | `server/queries/`       | Database reads, one file per feature                                                      | Mutations                                    |
 | `server/website/`       | Logic behind the signed website API: signature, assignment, records                       | Imports from `components/` or `app/`         |
+| `server/payments/`      | PaySandbox: API client, webhook check, orders                                             | Imports from `components/` or `app/`         |
 | `server/db/`            | Drizzle schema and client                                                                 | Anything else                                |
 | `lib/`                  | Small pure helpers: `cn`, `format`, `rbac`, `kyc`, `i18n`                                 | Database access                              |
 | `messages/`             | `en.json`, `ar.json`. Every user-facing string                                            | Code                                         |
@@ -38,7 +39,7 @@ These rules are strict. They apply to every person and every AI model working in
   - `app/api/website/v1/**`, called by the public website and signed by it (see `server/website/`);
   - `app/api/paysandbox/**`, called by PaySandbox and signed by it.
 
-  Route handlers there only verify the signature, parse with the Zod schema, call `server/website/*` and map the result to JSON. They never touch `db` directly. Code in `server/website/` never imports from `components/` or `app/`.
+  Route handlers there only verify the signature, parse with the Zod schema, call `server/website/*` or `server/payments/*` and map the result to JSON. They never touch `db` directly. Code in `server/website/` and `server/payments/` never imports from `components/` or `app/`.
 
 - Every server action does three things in this order:
   1. Check the permission with `requirePermission`, or with a guard in `server/guards.ts` that also checks the user's scope.

@@ -72,3 +72,6 @@ export type WebsiteOpportunityInput = z.infer<typeof websiteOpportunitySchema>;
 export const websiteSelectionSchema = z.strictObject({ planId: id, addOnIds: z.array(id).max(20) });
 
 export type WebsiteSelectionInput = z.infer<typeof websiteSelectionSchema>;
+
+/** Starting a payment takes nothing: PolicyDesk charges the saved selection, priced by itself. */
+export const websitePaymentStartSchema = z.strictObject({});
