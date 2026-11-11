@@ -19,6 +19,7 @@ import type {
   LeadStage,
   LeadType,
   OpportunityStatus,
+  OrderStatus,
   PaymentMethod,
   PaymentStatus,
   PolicyStatus,
@@ -260,6 +261,40 @@ export const documents = pgTable("documents", {
   data: text("data").notNull(),
   uploadedBy: integer("uploaded_by").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+/** A website payment for a lead's quote: one row per PaySandbox checkout session. Amounts are whole dollars. */
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  publicId: uuid("public_id").notNull().unique().defaultRandom(),
+  leadId: integer("lead_id")
+    .notNull()
+    .references(() => leads.id, { onDelete: "cascade" }),
+  quoteId: integer("quote_id")
+    .notNull()
+    .references(() => quotes.id),
+  status: text("status").$type<OrderStatus>().notNull().default("pending"),
+  amount: integer("amount").notNull(),
+  // What the customer was charged for, as sent to PaySandbox (in dollars here)
+  lineItems: jsonb("line_items").$type<OrderLine[]>().notNull(),
+  // PaySandbox has no metadata field, so webhooks are matched to the order by this id
+  checkoutSessionId: text("checkout_session_id").unique(),
+  checkoutUrl: text("checkout_url"),
+  // When PaySandbox closes the session (24 h); a pending order is reused only before then
+  expiresAt: timestamp("expires_at"),
+  paymentId: text("payment_id"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type OrderLine = { name: string; quantity: 1; amount: number };
+
+/** PaySandbox webhook ids already handled, so a retried or replayed delivery changes nothing. */
+export const webhookEvents = pgTable("webhook_events", {
+  id: text("id").primaryKey(),
+  type: text("type").notNull(),
+  receivedAt: timestamp("received_at").notNull().defaultNow(),
 });
 
 export const auditLogs = pgTable("audit_logs", {

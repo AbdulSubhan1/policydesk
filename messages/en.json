@@ -87,6 +87,7 @@
     "paid": "Paid",
     "failed": "Failed",
     "refunded": "Refunded",
+    "expired": "Expired",
     "low": "Low risk",
     "medium": "Medium risk",
     "high": "High risk",
@@ -111,7 +112,8 @@
     "card": "Card",
     "bank_transfer": "Bank transfer",
     "cheque": "Cheque",
-    "cash": "Cash"
+    "cash": "Cash",
+    "online": "Online (PaySandbox)"
   },
   "departments": {
     "motor_marine": "Motor & Marine",
@@ -477,9 +479,15 @@
       "failed": "recorded a failed payment",
       "refunded": "recorded a refund"
     },
+    "order": {
+      "checkout": "started an online payment",
+      "paid": "paid online",
+      "payment_failed": "had an online payment declined"
+    },
     "lead": {
       "stage": "changed the stage",
-      "assign": "reassigned the lead"
+      "assign": "reassigned the lead",
+      "auto_assign": "assigned the advisor"
     },
     "other": "{action} {entity}"
   },
