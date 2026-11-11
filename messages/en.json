@@ -444,7 +444,14 @@
       "startRenewal": "Start renewal",
       "cancelPolicy": "Cancel policy",
       "cancelTitle": "Cancel policy {number}?",
-      "cancelBody": "The policy stops covering the customer and can't be reactivated. Start a new quote to insure them again."
+      "cancelBody": "The policy stops covering the customer and can't be reactivated. Start a new quote to insure them again.",
+      "online": {
+        "title": "Online payment",
+        "status": "Status",
+        "amount": "Amount",
+        "paymentId": "PaySandbox payment",
+        "paidAt": "Paid on"
+      }
     }
   },
   "activity": {

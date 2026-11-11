@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -12,7 +12,7 @@ import { db, schema } from "@/server/db";
 import { requirePolicy, requireQuote } from "@/server/guards";
 import { missingRequiredDocuments } from "@/server/queries/documents";
 
-const { policies, leads, kycRecords, users } = schema;
+const { policies, leads, kycRecords, users, orders } = schema;
 const DAY = 86_400_000;
 
 /** Every lead page and the policy list show policy state. */
@@ -33,6 +33,19 @@ export async function issuePolicy(formData: FormData) {
   const [existing] = await db.select({ id: policies.id }).from(policies).where(eq(policies.leadId, lead.id));
   if (existing) throw new Error("A policy was already booked for this lead");
 
+  // Paid online on the website for this quote at this price: the policy is paid from the start, no finance step
+  const [paidOnline] = await db
+    .select()
+    .from(orders)
+    .where(
+      and(
+        eq(orders.leadId, lead.id),
+        eq(orders.quoteId, quote.id),
+        eq(orders.amount, quote.premium),
+        eq(orders.status, "paid"),
+      ),
+    );
+
   const start = new Date();
   const [policy] = await db
     .insert(policies)
@@ -43,6 +56,13 @@ export async function issuePolicy(formData: FormData) {
       premium: quote.premium,
       startDate: start.toISOString().slice(0, 10),
       endDate: new Date(start.getTime() + 365 * DAY).toISOString().slice(0, 10),
+      ...(paidOnline && {
+        status: "active" as const,
+        paymentStatus: "paid" as const,
+        paymentMethod: "online" as const,
+        paymentReference: paidOnline.paymentId,
+        paidAt: paidOnline.paidAt,
+      }),
     })
     .returning();
   await db.update(leads).set({ stage: "won", updatedAt: new Date() }).where(eq(leads.id, lead.id));
@@ -52,7 +72,7 @@ export async function issuePolicy(formData: FormData) {
     entity: "policy",
     entityId: policy.id,
     leadId: lead.id,
-    details: policy.policyNumber,
+    details: paidOnline ? `${policy.policyNumber}, paid online` : policy.policyNumber,
   });
   refresh();
 }

@@ -12,6 +12,7 @@ const ENTITY: Record<string, { icon: IconName; tone: TimelineItem["tone"] }> = {
   document: { icon: "upload", tone: "muted" },
   policy: { icon: "badgeCheck", tone: "brand" },
   payment: { icon: "check", tone: "brand" },
+  order: { icon: "globe", tone: "brand" },
   renewal: { icon: "scroll", tone: "brand" },
 };
 

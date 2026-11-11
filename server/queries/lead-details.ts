@@ -1,4 +1,4 @@
-import { and, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -10,7 +10,7 @@ import { getLead } from "./leads";
 // Everything the lead page shows. Each loader is wrapped in cache(), so the page and every
 // tab can call them directly: one request runs each query once and nothing is passed as props.
 
-const { quotes, kycRecords, documents, policies, auditLogs, users, plans, insurers, leads } = schema;
+const { quotes, kycRecords, documents, policies, auditLogs, users, plans, insurers, leads, orders } = schema;
 const reviewer = alias(users, "reviewer");
 const renewalLead = alias(leads, "renewal_lead");
 
@@ -40,6 +40,17 @@ export const getKyc = cache(async (leadId: number) => {
     .leftJoin(reviewer, eq(kycRecords.reviewedBy, reviewer.id))
     .where(eq(kycRecords.leadId, leadId));
   return row;
+});
+
+/** The lead's website order: the paid one if there is one, otherwise the newest. */
+export const getOrder = cache(async (leadId: number) => {
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.leadId, leadId))
+    .orderBy(sql`${orders.status} = 'paid' desc`, desc(orders.id))
+    .limit(1);
+  return order;
 });
 
 /** The lead's policy, with the link to its renewal lead once renewed. */

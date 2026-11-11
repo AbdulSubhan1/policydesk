@@ -14,6 +14,18 @@ export function dateTime(value: Date | string) {
   return new Date(value).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 }
 
+/** b***s@yopmail.com: enough for the customer to recognise, not enough to read off a screen. */
+export function maskEmail(email: string) {
+  const at = email.lastIndexOf("@");
+  const name = email.slice(0, at);
+  return `${name.charAt(0)}***${name.length > 1 ? name.charAt(name.length - 1) : ""}${email.slice(at)}`;
+}
+
+/** +92 *** ***4568 from an E.164 number (the demo's numbers all start with a 2-digit country code). */
+export function maskPhone(phone: string) {
+  return `${phone.slice(0, 3)} *** ***${phone.slice(-4)}`;
+}
+
 /** Turns a stored value like "needs_analysis" into "Needs analysis". */
 export function label(value: string) {
   const text = value.replaceAll("_", " ");
