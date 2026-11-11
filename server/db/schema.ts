@@ -1,4 +1,17 @@
-import { boolean, date, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  serial,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from "drizzle-orm/pg-core";
+import type { AddOnKind, QuoteAddOn } from "@/constants/add-ons";
 import type { Localized } from "@/constants/i18n";
 import type { DepartmentKey, Product } from "@/constants/products";
 import type {
@@ -124,6 +137,24 @@ export const plans = pgTable("plans", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+/** Extras the customer can add to a plan. The plan's price plus the chosen ones is the quote's premium. */
+export const planAddOns = pgTable(
+  "plan_add_ons",
+  {
+    id: serial("id").primaryKey(),
+    planId: integer("plan_id")
+      .notNull()
+      .references(() => plans.id, { onDelete: "cascade" }),
+    // Stable per plan, so the setup step can tell which add-ons a plan already has
+    key: text("key").notNull(),
+    name: jsonb("name").$type<Localized>().notNull(),
+    kind: text("kind").$type<AddOnKind>().notNull(),
+    price: integer("price").notNull().default(0),
+    active: boolean("active").notNull().default(true),
+  },
+  (t) => [unique().on(t.planId, t.key)],
+);
+
 export const quotes = pgTable("quotes", {
   id: serial("id").primaryKey(),
   // The lead's reference and the quote's number on that lead, e.g. CAR-J2M3HX7-Q2
@@ -137,6 +168,8 @@ export const quotes = pgTable("quotes", {
   planName: jsonb("plan_name").$type<Localized>().notNull(),
   cover: text("cover").notNull(),
   premium: integer("premium").notNull(),
+  // Snapshot of the add-ons in the premium, like the plan name above
+  addOns: jsonb("add_ons").$type<QuoteAddOn[]>().notNull().default([]),
   status: text("status").$type<QuoteStatus>().notNull().default("sent"),
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
