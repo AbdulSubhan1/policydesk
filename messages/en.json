@@ -221,7 +221,9 @@
     "invalidOption": "Pick one of the options",
     "name": "Use letters only",
     "fullName": "Enter a first and last name",
-    "phoneLength": "This number is too short or too long for its country"
+    "phoneLength": "This number is too short or too long for its country",
+    "outOfRange": "Enter a value in the allowed range",
+    "age": "The driver must be 18 to 80 years old"
   },
   "errors": {
     "invalidLogin": "That email and password don't match a user",
@@ -567,7 +569,8 @@
     "details": "Details",
     "lead": "Lead",
     "empty": "Nothing logged yet.",
-    "search": "Search details or people"
+    "search": "Search details or people",
+    "website": "Website"
   },
   "designSystem": {
     "title": "Component library",

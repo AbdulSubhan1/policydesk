@@ -113,12 +113,44 @@ const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permis
   },
 ];
 
-const USER_SEED: { name: string; email: string; role: string; department?: DepartmentKey }[] = [
+// Motor users have made-up phones because the website shows them on its coordinator card
+const USER_SEED: { name: string; email: string; role: string; department?: DepartmentKey; phone?: string }[] = [
   { name: "Sara Admin", email: "admin@policydesk.dev", role: "Admin" },
-  { name: "Omar Siddiqui", email: "manager@policydesk.dev", role: "Department Manager", department: "motor_marine" },
-  { name: "Hina Coordinator", email: "coordinator@policydesk.dev", role: "Coordinator", department: "motor_marine" },
-  { name: "Aisha Khan", email: "advisor@policydesk.dev", role: "Advisor", department: "motor_marine" },
-  { name: "Bilal Ahmed", email: "bilal@policydesk.dev", role: "Advisor", department: "motor_marine" },
+  {
+    name: "Omar Siddiqui",
+    email: "manager@policydesk.dev",
+    role: "Department Manager",
+    department: "motor_marine",
+    phone: "+923001110004",
+  },
+  {
+    name: "Hina Coordinator",
+    email: "coordinator@policydesk.dev",
+    role: "Coordinator",
+    department: "motor_marine",
+    phone: "+923001110001",
+  },
+  {
+    name: "Saad Coordinator",
+    email: "saad@policydesk.dev",
+    role: "Coordinator",
+    department: "motor_marine",
+    phone: "+923001110005",
+  },
+  {
+    name: "Aisha Khan",
+    email: "advisor@policydesk.dev",
+    role: "Advisor",
+    department: "motor_marine",
+    phone: "+923001110002",
+  },
+  {
+    name: "Bilal Ahmed",
+    email: "bilal@policydesk.dev",
+    role: "Advisor",
+    department: "motor_marine",
+    phone: "+923001110003",
+  },
   { name: "Sana Malik", email: "sana@policydesk.dev", role: "Department Manager", department: "health" },
   { name: "Kamran Ali", email: "kamran@policydesk.dev", role: "Coordinator", department: "health" },
   { name: "Zain Raza", email: "zain@policydesk.dev", role: "Advisor", department: "health" },
@@ -416,6 +448,7 @@ async function seed() {
         email: u.email,
         roleId: roleIds.get(u.role)!,
         departmentId: u.department ? deptIds.get(u.department)! : null,
+        phone: u.phone ?? "",
         passwordHash,
       })),
     )

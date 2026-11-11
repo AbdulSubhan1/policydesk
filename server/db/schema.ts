@@ -48,12 +48,20 @@ export const users = pgTable("users", {
     .notNull()
     .references(() => roles.id),
   departmentId: integer("department_id").references(() => departments.id),
+  // E.164; shown to website visitors on the coordinator card
+  phone: text("phone").notNull().default(""),
   active: boolean("active").notNull().default(true),
+  // Off = skipped by automatic assignment (leave, full queue) while still able to sign in
+  available: boolean("available").notNull().default(true),
+  // Breaks ties in automatic assignment: whoever waited longest gets the next one
+  lastAssignedAt: timestamp("last_assigned_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const opportunities = pgTable("opportunities", {
   id: serial("id").primaryKey(),
+  // The website only ever sees this id, never the serial one
+  publicId: uuid("public_id").notNull().unique().defaultRandom(),
   customerName: text("customer_name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
@@ -64,6 +72,8 @@ export const opportunities = pgTable("opportunities", {
   status: text("status").$type<OpportunityStatus>().notNull().default("new"),
   source: text("source").notNull().default("website"),
   notes: text("notes").notNull().default(""),
+  // Product-specific answers from the website form, validated by schemas/website.ts
+  details: jsonb("details").$type<Record<string, string | number | boolean>>().notNull().default({}),
   // The coordinator responsible for qualifying it
   coordinatorId: integer("coordinator_id").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),

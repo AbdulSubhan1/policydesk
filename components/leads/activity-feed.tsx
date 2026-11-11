@@ -31,7 +31,7 @@ export async function ActivityFeed({ leadId }: { leadId: number }) {
             tone: ENTITY[entry.entity]?.tone,
             title: (
               <>
-                {entry.userName ?? t("lead.system")}{" "}
+                {entry.userName ?? t("audit.website")}{" "}
                 <span className="font-normal text-ink-soft">
                   {t.has(key) ? t(key) : t("activity.other", { action: entry.action, entity: entry.entity })}
                 </span>

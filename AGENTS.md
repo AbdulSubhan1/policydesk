@@ -6,7 +6,7 @@ These rules are strict. They apply to every person and every AI model working in
 
 | Folder                  | What goes there                                                                           | Never put here                               |
 | ----------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `app/`                  | Routes only: `page.tsx`, `layout.tsx`, one `route.ts` for file downloads                  | Business logic, queries, reusable components |
+| `app/`                  | Routes only: `page.tsx`, `layout.tsx`, `route.ts` for file downloads and the signed APIs  | Business logic, queries, reusable components |
 | `components/ui/`        | The UI library: one component per file, exported from `index.ts`, listed in `registry.ts` | Data fetching, translations of feature text  |
 | `components/forms/`     | Client forms built with React Hook Form + `useActionForm`                                 | Server code                                  |
 | `components/<feature>/` | Feature sections, e.g. `leads/quotes-tab.tsx`, `dashboard/funnel.tsx`                     | Raw HTML controls                            |
@@ -14,6 +14,7 @@ These rules are strict. They apply to every person and every AI model working in
 | `schemas/`              | Zod schemas shared by forms and server actions                                            | UI code                                      |
 | `server/actions/`       | `"use server"` files, one per feature                                                     | Read-only queries                            |
 | `server/queries/`       | Database reads, one file per feature                                                      | Mutations                                    |
+| `server/website/`       | Logic behind the signed website API: signature, assignment, records                       | Imports from `components/` or `app/`         |
 | `server/db/`            | Drizzle schema and client                                                                 | Anything else                                |
 | `lib/`                  | Small pure helpers: `cn`, `format`, `rbac`, `kyc`, `i18n`                                 | Database access                              |
 | `messages/`             | `en.json`, `ar.json`. Every user-facing string                                            | Code                                         |
@@ -31,7 +32,14 @@ These rules are strict. They apply to every person and every AI model working in
 
 - Use the App Router. Pages are **Server Components** by default. Add `"use client"` only when a file needs state, effects or browser APIs.
 - **Data loading:** server components call functions from `server/queries/`. Use `cache()` from React when several components on one page need the same data, so they don't pass it down as props. Run independent queries with `Promise.all`.
-- **Mutations:** always use **server actions** from `server/actions/`. API routes are not allowed. The one exception is streaming a stored file (`GET` route handler).
+- **Mutations:** always use **server actions** from `server/actions/`. API routes are not allowed. The exceptions:
+
+  - streaming a stored file (`GET` route handler);
+  - `app/api/website/v1/**`, called by the public website and signed by it (see `server/website/`);
+  - `app/api/paysandbox/**`, called by PaySandbox and signed by it.
+
+  Route handlers there only verify the signature, parse with the Zod schema, call `server/website/*` and map the result to JSON. They never touch `db` directly. Code in `server/website/` never imports from `components/` or `app/`.
+
 - Every server action does three things in this order:
   1. Check the permission with `requirePermission`, or with a guard in `server/guards.ts` that also checks the user's scope.
   2. Validate input with the shared Zod schema.

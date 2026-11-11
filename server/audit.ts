@@ -1,7 +1,8 @@
 import { db, schema } from "@/server/db";
 
 export async function logAudit(entry: {
-  userId: number;
+  /** null = done by the website or the system, not a signed-in user */
+  userId: number | null;
   action: string;
   entity: string;
   entityId?: number;
