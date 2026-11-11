@@ -61,7 +61,7 @@ The website shows every active car plan of an active insurer, cheapest first. Ea
 
 **One open website selection per lead.** The first choice adds a quote to the lead (next number, e.g. `CAR-J2M3HX7-Q1`) and moves a lead in _Needs analysis_ to _Quoted_. Choosing again updates that same quote (same reference) for as long as it is still _Sent_. The quote keeps a copy of the plan and add-ons, like quotes made by advisors.
 
-On the lead's **Quotes** tab, each quote lists its add-ons under the plan: "Included" or the price. Quotes made by the website show **Website** as their creator, and the timeline shows each choice as _Website picked a plan on the website_ with the insurer, plan and total.
+On the lead's **Quotes** tab, each quote lists its add-ons under the plan: "Included" or the price. Quotes made by the website show **Website** as their creator, and the timeline shows each choice as _Website picked a plan_ with the insurer, plan and total.
 
 Add-ons are seeded data for now (no editing screen). Car plans get a fixed set by cover:
 
