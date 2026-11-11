@@ -299,12 +299,15 @@ test.describe.serial("website payments", () => {
       await expect(page.locator(`a[href^="${leadUrl}/documents/"]`)).toHaveCount(i + 1);
     }
 
+    // Four-eyes rule: whoever sent the KYC can't approve it, so a compliance officer reviews it
+    await loginAs(page, "compliance");
     await page.goto("/kyc");
     const card = page.locator('[data-ui="Panel"]', { has: page.getByRole("link", { name: main.name }) });
     await card.getByLabel("Note").fill("Paid online, ID verified");
     await card.getByRole("button", { name: "Approve" }).click();
     await expect(page.getByRole("link", { name: main.name })).toHaveCount(0);
 
+    await loginAs(page, "admin");
     await page.goto(`${leadUrl}?tab=policy`);
     await expect(page.getByText("Online payment", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Book policy" }).click();
