@@ -453,7 +453,7 @@
       "create": "added a quote",
       "accepted": "marked a quote accepted",
       "rejected": "marked a quote declined",
-      "select": "picked a plan on the website"
+      "select": "picked a plan"
     },
     "kyc": {
       "submit": "sent KYC to compliance",
