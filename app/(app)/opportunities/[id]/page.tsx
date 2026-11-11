@@ -14,7 +14,7 @@ import {
   Panel,
 } from "@/components/ui";
 import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
-import { shortDate } from "@/lib/format";
+import { money, shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
 import { can, scopeOf } from "@/lib/rbac";
 import { leadPath } from "@/lib/reference";
@@ -39,6 +39,18 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
     getTranslations(),
   ]);
   const department = t(`departments.${row.departmentKey}`);
+  // Answers from the website form; each product keeps its own fields, labelled from messages
+  const details = Object.entries(opp.details).map(([key, value]) => ({
+    label: t.has(`opportunities.details.${key}`) ? t(`opportunities.details.${key}`) : key,
+    value:
+      typeof value === "boolean"
+        ? t(value ? "common.yes" : "common.no")
+        : key === "carValue"
+          ? money(Number(value))
+          : key === "dateOfBirth"
+            ? shortDate(String(value))
+            : String(value),
+  }));
 
   return (
     <>
@@ -67,6 +79,12 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
         </Panel>
 
         <div className="grid content-start gap-6">
+          {details.length > 0 && (
+            <Panel title={t("opportunities.detailsTitle", { product: t(`products.${opp.product}`) })}>
+              <DetailList columns={2} items={details} />
+            </Panel>
+          )}
+
           {!open && row.leadPublicId && (
             <Panel
               title={t("opportunities.convertedNote")}
