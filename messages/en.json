@@ -243,7 +243,18 @@
     "notFound": "This record does not exist or you can't see it",
     "generalTitle": "That didn't work",
     "generalBody": "Something was missing or no longer allowed. Check your choices and try again.",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "detailsMissing": {
+      "make": "Complete the car make before converting",
+      "model": "Complete the car model before converting",
+      "year": "Complete the car's year before converting",
+      "gccSpec": "Complete GCC spec before converting",
+      "carValue": "Complete the car value before converting",
+      "dateOfBirth": "Complete the driver's date of birth before converting",
+      "nationality": "Complete the nationality before converting",
+      "city": "Complete the city before converting",
+      "yearsLicensed": "Complete years licensed before converting"
+    }
   },
   "login": {
     "title": "Sign in",
@@ -329,6 +340,16 @@
       "nationality": "Nationality",
       "city": "City",
       "yearsLicensed": "Years licensed"
+    },
+    "website": {
+      "detailsBody": "Complete what the customer didn't send on the short form while you are on the call. Everything is needed before you convert.",
+      "saveDetails": "Save details",
+      "saving": "Saving…",
+      "detailsSaved": "Details saved",
+      "convertBody": "Creates the lead. The advisor is assigned automatically after the customer pays.",
+      "converting": "Converting…",
+      "converted": "Converted. Choose the plan with the customer next.",
+      "convertedNote": "This opportunity is now a lead. The advisor is assigned after the customer pays."
     }
   },
   "leads": {
@@ -696,7 +717,15 @@
     "method": "Pick a method…",
     "note": "Write a short note…",
     "firstName": "Ahmed",
-    "lastName": "Rahman"
+    "lastName": "Rahman",
+    "make": "e.g. Toyota",
+    "model": "e.g. Corolla",
+    "year": "e.g. 2022",
+    "gccSpec": "Yes or no…",
+    "carValue": "e.g. 18000",
+    "nationalityText": "e.g. Pakistan",
+    "city": "e.g. Karachi",
+    "yearsLicensed": "e.g. 5"
   },
   "table": {
     "all": "All",

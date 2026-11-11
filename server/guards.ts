@@ -3,8 +3,16 @@ import type { Permission } from "@/lib/rbac";
 import { requirePermission } from "@/server/auth";
 import { db, schema } from "@/server/db";
 import { getLead } from "@/server/queries/leads";
+import { getOpportunity } from "@/server/queries/opportunities";
 
 // Guards for server actions: check the permission, then load the record only if it is inside the user's scope.
+
+export async function requireOpportunity(permission: Permission, opportunityId: number) {
+  const user = await requirePermission(permission);
+  const row = await getOpportunity(user, opportunityId);
+  if (!row) throw new Error("errors.notFound");
+  return { user, ...row };
+}
 
 export async function requireLead(permission: Permission, leadId: number) {
   const user = await requirePermission(permission);

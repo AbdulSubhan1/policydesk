@@ -13,6 +13,8 @@ import {
   PageHeader,
   Panel,
 } from "@/components/ui";
+import { WebsiteConvertForm } from "@/components/forms/website-convert-form";
+import { WebsiteDetailsForm } from "@/components/forms/website-details-form";
 import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
 import { money, shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
@@ -22,6 +24,7 @@ import { assignCoordinator, convertToLead, updateOpportunityStatus } from "@/ser
 import { requireUser } from "@/server/auth";
 import { getOpportunity } from "@/server/queries/opportunities";
 import { usersWithPermission } from "@/server/queries/users";
+import { isWebsiteCarOpportunity } from "@/server/website/opportunities";
 
 export default async function OpportunityPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -32,10 +35,15 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
   if (!row) notFound();
   const opp = row.opportunity;
   const open = opp.status !== "converted";
+  // Website opportunities are completed and converted by their coordinator; the advisor comes after payment
+  const website = isWebsiteCarOpportunity(opp);
+  const editDetails = open && website && can(user, "opportunities:convert");
 
   const [coordinators, advisors, t] = await Promise.all([
     open && can(user, "opportunities:assign") ? usersWithPermission(opp.departmentId, "opportunities:convert") : [],
-    open && can(user, "opportunities:convert") ? usersWithPermission(opp.departmentId, "quotes:create") : [],
+    open && !website && can(user, "opportunities:convert")
+      ? usersWithPermission(opp.departmentId, "quotes:create")
+      : [],
     getTranslations(),
   ]);
   const department = t(`departments.${row.departmentKey}`);
@@ -79,15 +87,24 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
         </Panel>
 
         <div className="grid content-start gap-6">
-          {details.length > 0 && (
-            <Panel title={t("opportunities.detailsTitle", { product: t(`products.${opp.product}`) })}>
-              <DetailList columns={2} items={details} />
+          {editDetails ? (
+            <Panel
+              title={t("opportunities.detailsTitle", { product: t(`products.${opp.product}`) })}
+              description={t("opportunities.website.detailsBody")}
+            >
+              <WebsiteDetailsForm id={opp.id} details={opp.details} />
             </Panel>
+          ) : (
+            details.length > 0 && (
+              <Panel title={t("opportunities.detailsTitle", { product: t(`products.${opp.product}`) })}>
+                <DetailList columns={2} items={details} />
+              </Panel>
+            )
           )}
 
           {!open && row.leadPublicId && (
             <Panel
-              title={t("opportunities.convertedNote")}
+              title={t(website ? "opportunities.website.convertedNote" : "opportunities.convertedNote")}
               description={row.leadReference}
               actions={
                 <ButtonLink href={leadPath(row.leadPublicId)} variant="primary">
@@ -134,12 +151,15 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
             <Panel
               title={t("opportunities.convertTitle")}
               description={
-                opp.status === "qualified"
-                  ? t("opportunities.convertBody", { department })
-                  : t("opportunities.convertNeedsQualified")
+                opp.status !== "qualified"
+                  ? t("opportunities.convertNeedsQualified")
+                  : website
+                    ? t("opportunities.website.convertBody")
+                    : t("opportunities.convertBody", { department })
               }
             >
-              {opp.status === "qualified" && (
+              {opp.status === "qualified" && website && <WebsiteConvertForm id={opp.id} />}
+              {opp.status === "qualified" && !website && (
                 <form
                   action={convertToLead}
                   className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
