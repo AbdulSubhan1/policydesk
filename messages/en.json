@@ -386,7 +386,9 @@
       "adding": "Adding…",
       "excess": "Excess {amount}",
       "noPlans": "No active plans for this product. An admin can add them under Insurers & plans.",
-      "emptyTitle": "No quotes yet"
+      "emptyTitle": "No quotes yet",
+      "included": "Included",
+      "createdBy": "Created by"
     },
     "kyc": {
       "none": "No KYC record",
@@ -450,7 +452,8 @@
     "quote": {
       "create": "added a quote",
       "accepted": "marked a quote accepted",
-      "rejected": "marked a quote declined"
+      "rejected": "marked a quote declined",
+      "select": "picked a plan on the website"
     },
     "kyc": {
       "submit": "sent KYC to compliance",

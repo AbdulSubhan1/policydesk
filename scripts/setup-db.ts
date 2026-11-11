@@ -2,6 +2,7 @@
  * Creates the tables and fills them with demo data.
  *   npm run db:setup            -> migrate, seed only if empty
  *   npm run db:setup -- --reset -> wipe everything and seed again
+ * Both then give car plans without add-ons their default set (safe to repeat on live data).
  */
 import bcrypt from "bcryptjs";
 import { sql } from "drizzle-orm";
@@ -23,6 +24,7 @@ import { screenCustomer } from "@/lib/kyc";
 import { leadReference, quoteReference } from "@/lib/reference";
 import { ALL_PERMISSIONS, type Permission } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
+import { ensureCarAddOns } from "@/server/website/catalogue";
 
 const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permissions: Permission[] }[] = [
   {
@@ -265,7 +267,7 @@ async function migrate() {
 
 async function wipe() {
   await db.execute(
-    sql`TRUNCATE audit_logs, plans, insurers, documents, product_documents, document_types, policies, kyc_records, quotes, leads, opportunities, users, role_permissions, roles, departments RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE audit_logs, plan_add_ons, plans, insurers, documents, product_documents, document_types, policies, kyc_records, quotes, leads, opportunities, users, role_permissions, roles, departments RESTART IDENTITY CASCADE`,
   );
 }
 
@@ -678,6 +680,8 @@ async function main() {
   } else {
     console.log("Database already has data. Use --reset to wipe and reseed.");
   }
+  // Runs on existing databases too: this is how the live plans get their add-ons
+  console.log(`Car add-ons added: ${await ensureCarAddOns()}`);
   process.exit(0);
 }
 

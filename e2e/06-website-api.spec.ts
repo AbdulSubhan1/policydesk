@@ -1,42 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers";
-import { OPPORTUNITIES_PATH, websiteCall } from "./website-client";
+import { OPPORTUNITIES_PATH, customerName, fullForm, shortForm, websiteCall } from "./website-client";
 
 // The signed API the Brokwise website calls. Requests are signed like the website signs them (e2e/website-client.ts).
-
-/** Names allow letters only, so make them unique with random letters. */
-function customerName() {
-  const letters = Array.from({ length: 6 }, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join("");
-  return `Webform ${letters[0].toUpperCase()}${letters.slice(1)}`;
-}
-
-function shortForm(name = customerName()) {
-  return {
-    form: "short",
-    product: "car",
-    customerName: name,
-    email: `${name.replace(" ", ".").toLowerCase()}@example.com`,
-    phone: "+923001234567",
-    details: { make: "Toyota", model: "Corolla", year: 2022 },
-  };
-}
-
-function fullForm(name = customerName()) {
-  const short = shortForm(name);
-  return {
-    ...short,
-    form: "full",
-    details: {
-      ...short.details,
-      gccSpec: true,
-      carValue: 18000,
-      dateOfBirth: "1990-04-12",
-      nationality: "Pakistan",
-      city: "Karachi",
-      yearsLicensed: 8,
-    },
-  };
-}
 
 const COORDINATORS = ["Hina Coordinator", "Saad Coordinator"];
 

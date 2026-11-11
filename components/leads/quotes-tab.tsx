@@ -26,11 +26,27 @@ export async function QuotesTab({ leadId }: { leadId: number }) {
       key: "plan",
       header: t("lead.quotes.insurerPlan"),
       cell: (q) => (
-        <CellText
-          primary={q.insurer}
-          secondary={`${q.reference}, ${localized(q.planName, locale)}, ${t(`covers.${q.cover}`)}`}
-        />
+        <>
+          <CellText
+            primary={q.insurer}
+            secondary={`${q.reference}, ${localized(q.planName, locale)}, ${t(`covers.${q.cover}`)}`}
+          />
+          {q.addOns.length > 0 && (
+            <ul className="mt-1 text-xs text-muted">
+              {q.addOns.map((a) => (
+                <li key={a.key}>
+                  {localized(a.name, locale)} · {a.kind === "included" ? t("lead.quotes.included") : money(a.price)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       ),
+    },
+    {
+      key: "createdBy",
+      header: t("lead.quotes.createdBy"),
+      cell: (q) => q.creatorName ?? t("audit.website"),
     },
     { key: "premium", header: t("lead.quotes.premium"), align: "end", nowrap: true, cell: (q) => money(q.premium) },
     { key: "status", header: t("lead.quotes.status"), cell: (q) => <Badge status={q.status} /> },

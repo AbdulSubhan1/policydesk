@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { amount, date, email, fullName, phone, requiredText } from "./fields";
+import { amount, date, email, fullName, id, phone, requiredText } from "./fields";
 
 // What the public website may send. Strict objects, so an extra key (coordinatorId, status…) is refused, not ignored.
 
@@ -67,3 +67,8 @@ export const websiteOpportunitySchema = z
   });
 
 export type WebsiteOpportunityInput = z.infer<typeof websiteOpportunitySchema>;
+
+/** A plan and the add-ons the visitor ticked. Ids only: PolicyDesk works out every price itself. */
+export const websiteSelectionSchema = z.strictObject({ planId: id, addOnIds: z.array(id).max(20) });
+
+export type WebsiteSelectionInput = z.infer<typeof websiteSelectionSchema>;

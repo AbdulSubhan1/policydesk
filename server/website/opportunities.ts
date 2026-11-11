@@ -7,6 +7,7 @@ import type { WebsiteOpportunityInput } from "@/schemas/website";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import { assignCoordinator } from "./assign";
+import { getWebsiteSelection, type WebsiteSelection } from "./plans";
 
 const { opportunities, leads, kycRecords, departments, users } = schema;
 const coordinator = alias(users, "coordinator");
@@ -16,6 +17,8 @@ export type WebsiteOpportunityView = {
   opportunity: { publicId: string; status: OpportunityStatus; product: Product };
   lead: { reference: string } | null;
   contact: { role: "coordinator"; name: string; email: string; phone: string } | null;
+  /** The plan the visitor picked on the website, once they have */
+  selection: WebsiteSelection | null;
 };
 
 type Person = { name: string; email: string; phone: string };
@@ -24,11 +27,13 @@ function toView(
   opp: { publicId: string; status: OpportunityStatus; product: Product },
   leadRef: string | null,
   person: Person | null,
+  selection: WebsiteSelection | null = null,
 ): WebsiteOpportunityView {
   return {
     opportunity: { publicId: opp.publicId, status: opp.status, product: opp.product },
     lead: leadRef ? { reference: leadRef } : null,
     contact: person ? { role: "coordinator", name: person.name, email: person.email, phone: person.phone } : null,
+    selection,
   };
 }
 
@@ -97,6 +102,7 @@ export async function getWebsiteOpportunity(publicId: string): Promise<WebsiteOp
   const [row] = await db
     .select({
       opportunity: opportunities,
+      leadId: leads.id,
       leadReference: leads.reference,
       coordinatorName: coordinator.name,
       coordinatorEmail: coordinator.email,
@@ -112,5 +118,6 @@ export async function getWebsiteOpportunity(publicId: string): Promise<WebsiteOp
     row.coordinatorName !== null
       ? { name: row.coordinatorName, email: row.coordinatorEmail ?? "", phone: row.coordinatorPhone ?? "" }
       : null;
-  return toView(row.opportunity, row.leadReference, person);
+  const selection = row.leadId ? await getWebsiteSelection(row.leadId) : null;
+  return toView(row.opportunity, row.leadReference, person, selection);
 }

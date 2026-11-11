@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, getTableColumns } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -23,8 +23,14 @@ export const getLeadContext = cache(async (key: number | string) => {
   return { user, ...row, closed: row.lead.stage === "won" || row.lead.stage === "lost" };
 });
 
+/** creatorName is null for quotes the website made. */
 export const getQuotes = cache((leadId: number) =>
-  db.select().from(quotes).where(eq(quotes.leadId, leadId)).orderBy(desc(quotes.createdAt)),
+  db
+    .select({ ...getTableColumns(quotes), creatorName: users.name })
+    .from(quotes)
+    .leftJoin(users, eq(quotes.createdBy, users.id))
+    .where(eq(quotes.leadId, leadId))
+    .orderBy(desc(quotes.createdAt)),
 );
 
 export const getKyc = cache(async (leadId: number) => {
