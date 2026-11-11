@@ -12,7 +12,7 @@ import {
   PageHeader,
 } from "@/components/ui";
 import { can } from "@/lib/rbac";
-import { toggleUserActive, updateUser } from "@/server/actions/users";
+import { toggleUserActive, toggleUserAvailable, updateUser } from "@/server/actions/users";
 import { requireUser } from "@/server/auth";
 import { listDepartments, listRoles, listUsers } from "@/server/queries/users";
 
@@ -48,7 +48,10 @@ export default async function UsersPage() {
             cell: (u) => (
               <span className="flex min-w-0 items-center gap-3">
                 <Avatar name={u.name} />
-                <CellText primary={u.id === user.id ? `${u.name} ${t("users.you")}` : u.name} secondary={u.email} />
+                <CellText
+                  primary={u.id === user.id ? `${u.name} ${t("users.you")}` : u.name}
+                  secondary={u.phone ? `${u.email} · ${u.phone}` : u.email}
+                />
               </span>
             ),
           },
@@ -86,6 +89,26 @@ export default async function UsersPage() {
             cell: (u) => (
               <span className={u.active ? "text-brand-strong" : "text-muted"}>
                 {u.active ? t("users.active") : t("users.deactivated")}
+              </span>
+            ),
+          },
+          {
+            key: "available",
+            header: t("users.available"),
+            // Automatic assignment skips people marked unavailable
+            cell: (u) => (
+              <span className="flex items-center gap-3">
+                <span className={u.available ? "text-brand-strong" : "text-muted"}>
+                  {u.available ? t("common.yes") : t("common.no")}
+                </span>
+                {u.id !== user.id && (
+                  <form action={toggleUserAvailable}>
+                    <Hidden name="userId" value={u.id} />
+                    <Button size="sm" variant="ghost">
+                      {u.available ? t("users.setUnavailable") : t("users.setAvailable")}
+                    </Button>
+                  </form>
+                )}
               </span>
             ),
           },

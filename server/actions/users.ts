@@ -59,3 +59,17 @@ export async function toggleUserActive(formData: FormData) {
   });
   revalidatePath("/admin/users");
 }
+
+/** Unavailable people keep signing in but are skipped by automatic assignment. */
+export async function toggleUserAvailable(formData: FormData) {
+  const { user, target } = await requireOtherUser(formData);
+  await db.update(users).set({ available: !target.available }).where(eq(users.id, target.id));
+  await logAudit({
+    userId: user.id,
+    action: target.available ? "unavailable" : "available",
+    entity: "user",
+    entityId: target.id,
+    details: target.name,
+  });
+  revalidatePath("/admin/users");
+}

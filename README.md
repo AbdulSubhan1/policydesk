@@ -48,5 +48,5 @@ npm run test:e2e     # Playwright (run `npx playwright install chromium` once)
 
 1. Import the repo in Vercel under your own account.
 2. Add a Neon Postgres database under **Storage** with the env prefix `DATABASE`, so it sets `DATABASE_URL`. Put the database and the function region (Settings → Functions) in the same region.
-3. Add `AUTH_SECRET`, for example from `openssl rand -base64 32`.
+3. Add `AUTH_SECRET`, for example from `openssl rand -base64 32`. To accept the Brokwise website's forms, also add `WEBSITE_API_SECRET` with the same value as on the website (see the KB page "Website and online payments"); without it the website API answers 503.
 4. Run `DATABASE_URL=<neon url> npm run db:setup` once.

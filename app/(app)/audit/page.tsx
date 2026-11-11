@@ -35,7 +35,12 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
             nowrap: true,
             cell: (r) => <span className="text-muted">{dateTime(r.createdAt)}</span>,
           },
-          { key: "who", header: t("audit.who"), cell: (r) => r.userName ?? t("lead.system") },
+          {
+            key: "who",
+            header: t("audit.who"),
+            // No user means the website did it, except the seed's own "system" entry
+            cell: (r) => r.userName ?? (r.entity === "system" ? t("lead.system") : t("audit.website")),
+          },
           {
             key: "action",
             header: t("audit.action"),

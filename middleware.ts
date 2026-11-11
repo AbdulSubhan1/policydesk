@@ -9,6 +9,7 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+// The signed APIs authenticate each request themselves, so they skip the login redirect
 export const config = {
-  matcher: ["/((?!login|_next|favicon.ico).*)"],
+  matcher: ["/((?!login|_next|favicon.ico|api/website|api/paysandbox).*)"],
 };

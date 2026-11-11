@@ -16,3 +16,6 @@ export const RENEWAL_WINDOW_DAYS = 45;
 
 /** Rows per page in every DataTable. */
 export const PAGE_SIZE = 15;
+
+/** Automatic assignment picks people by role name, not permission, so extra grants never make someone eligible. */
+export const COORDINATOR_ROLE = "Coordinator";

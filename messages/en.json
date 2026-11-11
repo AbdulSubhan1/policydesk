@@ -40,7 +40,9 @@
     "previous": "Previous",
     "next": "Next",
     "today": "Today",
-    "saved": "Saved"
+    "saved": "Saved",
+    "yes": "Yes",
+    "no": "No"
   },
   "nav": {
     "main": "Main",
@@ -221,7 +223,9 @@
     "invalidOption": "Pick one of the options",
     "name": "Use letters only",
     "fullName": "Enter a first and last name",
-    "phoneLength": "This number is too short or too long for its country"
+    "phoneLength": "This number is too short or too long for its country",
+    "outOfRange": "Enter a value in the allowed range",
+    "age": "The driver must be 18 to 80 years old"
   },
   "errors": {
     "invalidLogin": "That email and password don't match a user",
@@ -311,7 +315,19 @@
     "convertBody": "Creates a lead for an advisor in {department}. Quotes, KYC, documents and the policy happen on the lead.",
     "advisor": "Advisor",
     "convert": "Convert",
-    "search": "Search by name or email"
+    "search": "Search by name or email",
+    "detailsTitle": "{product} details",
+    "details": {
+      "make": "Make",
+      "model": "Model",
+      "year": "Year",
+      "gccSpec": "GCC spec",
+      "carValue": "Car value",
+      "dateOfBirth": "Date of birth",
+      "nationality": "Nationality",
+      "city": "City",
+      "yearsLicensed": "Years licensed"
+    }
   },
   "leads": {
     "title": "Leads",
@@ -546,7 +562,10 @@
     "role": "Role",
     "department": "Department",
     "deactivateTitle": "Deactivate {name}?",
-    "deactivateBody": "They can no longer sign in. Their leads and history stay, and you can activate them again later."
+    "deactivateBody": "They can no longer sign in. Their leads and history stay, and you can activate them again later.",
+    "available": "Available",
+    "setAvailable": "Set available",
+    "setUnavailable": "Set unavailable"
   },
   "roles": {
     "title": "Roles & permissions",
@@ -567,7 +586,8 @@
     "details": "Details",
     "lead": "Lead",
     "empty": "Nothing logged yet.",
-    "search": "Search details or people"
+    "search": "Search details or people",
+    "website": "Website"
   },
   "designSystem": {
     "title": "Component library",
