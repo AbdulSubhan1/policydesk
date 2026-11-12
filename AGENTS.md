@@ -23,9 +23,10 @@ These rules are strict. They apply to every person and every AI model working in
 
 ## 2. Single source of truth
 
-- A value is defined once and imported everywhere else. Statuses: `constants/statuses.ts`. Products, covers, departments: `constants/products.ts`. Permissions: `constants/permissions.ts`. Limits and cookie names: `constants/config.ts`. Sidebar: `constants/navigation.ts`.
+- A value is defined once and imported everywhere else. Statuses: `constants/statuses.ts`. Products, covers, departments: `constants/products.ts`. Permissions: `constants/permissions.ts`. Limits, cookie names and the time zone: `constants/config.ts`. Sidebar: `constants/navigation.ts`.
 - Colours, fonts and radii exist only as tokens in `app/globals.css` (`@theme`). Use the token classes (`bg-brand`, `text-muted`), never hex values.
 - Shared class recipes live in `components/ui/styles.ts`.
+- Dates and money are shown only through `lib/format.ts` (`shortDate`, `dateTime`, `money`). Dates are formatted in `TIME_ZONE` (Asia/Karachi, as on the Brokwise website), never in the server's own zone.
 - Field rules (email, phone, first/last/full name, required text, amount, date) live once in `schemas/fields.ts`. Form schemas in `schemas/` are built only from them, and the form and the server action both use the same schema.
 - If you copy a block of code a second time, extract it.
 
