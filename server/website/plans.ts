@@ -1,6 +1,7 @@
 import { and, asc, count, desc, eq, inArray, ne, or } from "drizzle-orm";
 import type { AddOnKind } from "@/constants/add-ons";
 import type { Product } from "@/constants/products";
+import { isWebsiteProduct } from "@/constants/website";
 import { money } from "@/lib/format";
 import { quoteReference } from "@/lib/reference";
 import messages from "@/messages/en.json";
@@ -8,6 +9,7 @@ import type { WebsiteSelectionInput } from "@/schemas/website";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import { priceSelection, type SelectionLine } from "./pricing";
+import { coverFits, ratePremium } from "./rating";
 
 const { opportunities, leads, plans, insurers, planAddOns, quotes } = schema;
 
@@ -46,12 +48,15 @@ type Failure =
 const NOT_FOUND = { ok: false, status: 404, code: "not_found" } as const;
 const NO_LEAD = { ok: false, status: 409, code: "no_lead" } as const;
 
+/** The website form's answers, stored on the opportunity. */
+type Details = (typeof opportunities.$inferSelect)["details"];
+
 const coverLabel = (cover: string) => (messages.covers as Record<string, string>)[cover] ?? cover;
 
 /** The opportunity's product and its first lead. Only the full form makes a lead, and only leads get plans. */
 async function websiteLead(publicId: string) {
   const [row] = await db
-    .select({ product: opportunities.product, lead: leads })
+    .select({ product: opportunities.product, details: opportunities.details, lead: leads })
     .from(opportunities)
     .leftJoin(leads, and(eq(leads.opportunityId, opportunities.id), eq(leads.type, "new_business")))
     .where(eq(opportunities.publicId, publicId));
@@ -63,8 +68,16 @@ function sellablePlans(product: Product) {
   return and(eq(plans.product, product), eq(plans.active, true), eq(insurers.active, true));
 }
 
-/** Sellable plans for a product, cheapest first, each with its active add-ons. */
-export async function loadSellablePlans(product: Product) {
+/** A plan's price for this customer: rated from their answers for the website's products, as stored otherwise. */
+function premiumFor(product: Product, plan: { cover: string; basePremium: number }, details: Details) {
+  return isWebsiteProduct(product) ? ratePremium(product, plan.cover, plan.basePremium, details) : plan.basePremium;
+}
+
+/**
+ * Sellable plans for a product priced for the customer's answers, cheapest first, each with its active add-ons.
+ * Plans whose cover doesn't suit the answers are left out, unless that would leave none.
+ */
+export async function loadSellablePlans(product: Product, details: Details = {}) {
   const rows = await db
     .select({ plan: plans, insurer: insurers.name })
     .from(plans)
@@ -86,7 +99,14 @@ export async function loadSellablePlans(product: Product) {
         )
         .orderBy(asc(planAddOns.id))
     : [];
-  return rows.map((r) => ({ ...r, addOns: addOns.filter((a) => a.planId === r.plan.id) }));
+  const fitting = isWebsiteProduct(product) ? rows.filter((r) => coverFits(product, r.plan.cover, details)) : rows;
+  return (fitting.length ? fitting : rows)
+    .map((r) => ({
+      ...r,
+      plan: { ...r.plan, basePremium: premiumFor(product, r.plan, details) },
+      addOns: addOns.filter((a) => a.planId === r.plan.id),
+    }))
+    .sort((a, b) => a.plan.basePremium - b.plan.basePremium || a.plan.id - b.plan.id);
 }
 
 export async function getWebsitePlans(publicId: string): Promise<{ ok: true; plans: WebsitePlan[] } | Failure> {
@@ -94,7 +114,7 @@ export async function getWebsitePlans(publicId: string): Promise<{ ok: true; pla
   if (!found) return NOT_FOUND;
   if (!found.lead) return NO_LEAD;
 
-  const rows = await loadSellablePlans(found.product);
+  const rows = await loadSellablePlans(found.product, found.details);
   return {
     ok: true,
     plans: rows.map(({ plan, insurer, addOns }) => ({
@@ -171,17 +191,17 @@ export async function saveWebsiteSelection(
   const found = await websiteLead(publicId);
   if (!found) return NOT_FOUND;
   if (!found.lead) return NO_LEAD;
-  return saveOnlineSelection(found.lead, found.product, input, null);
+  return saveOnlineSelection(found.lead, found, input, null);
 }
 
 /**
- * Prices a plan and its ticked add-ons and saves them as the lead's online quote, for the website (userId null) or
- * a coordinator. Choosing again updates that same quote (same reference), so a lead never has more than one open
+ * Prices a plan for the customer's answers with its ticked add-ons and saves them as the lead's online quote, for the
+ * website (userId null) or a coordinator. Choosing again updates that same quote (same reference), so a lead never has more than one open
  * online selection; its creator becomes whoever chose last.
  */
 export async function saveOnlineSelection(
   lead: typeof leads.$inferSelect,
-  product: Product,
+  { product, details }: { product: Product; details: Details },
   input: WebsiteSelectionInput,
   userId: number | null,
 ): Promise<{ ok: true; selection: WebsiteSelection } | Extract<Failure, { status: 400 }>> {
@@ -205,7 +225,11 @@ export async function saveOnlineSelection(
         : eq(planAddOns.planId, plan.id),
     )
     .orderBy(asc(planAddOns.id));
-  const priced = priceSelection(plan, addOns, input.addOnIds);
+  const priced = priceSelection(
+    { id: plan.id, basePremium: premiumFor(product, plan, details) },
+    addOns,
+    input.addOnIds,
+  );
   if (!priced.ok) return { ...priced, status: 400, code: "invalid_request" };
 
   const values = {

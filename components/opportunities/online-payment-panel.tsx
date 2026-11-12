@@ -26,13 +26,15 @@ export async function OnlinePaymentPanel({
   opportunityId,
   leadId,
   product,
+  details,
 }: {
   opportunityId: number;
   leadId: number;
   product: Product;
+  details: Record<string, string | number | boolean>;
 }) {
   const [{ plans, selection, paid, links }, t, locale] = await Promise.all([
-    getOnlinePayment(leadId, product),
+    getOnlinePayment(leadId, product, details),
     getTranslations(),
     getLocale(),
   ]);
