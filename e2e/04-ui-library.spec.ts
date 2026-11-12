@@ -77,7 +77,7 @@ test.describe("UI library", () => {
     await page.getByRole("main").getByRole("link", { name: "Quoted" }).click();
     await expect(page).toHaveURL(/filter=quoted/);
     await expect(page.getByRole("main").getByText(/of 8$/)).toBeVisible();
-    const search = page.getByPlaceholder(/Search by name or reference/);
+    const search = page.getByPlaceholder(/Search name or/);
     await search.fill("Layla");
     await search.press("Enter");
     await expect(page).toHaveURL(/q=Layla/);

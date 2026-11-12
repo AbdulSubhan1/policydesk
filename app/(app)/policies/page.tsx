@@ -20,13 +20,28 @@ export default async function PoliciesPage({ searchParams }: { searchParams: Pro
   const params = await searchParams;
   const filter = POLICY_FILTERS.find((f) => f === params.filter) as PolicyFilter | undefined;
   const page = pageFrom(params);
-  const [{ rows, total }, t, locale] = await Promise.all([
+  const [{ rows, total, all, filterCounts }, t, locale] = await Promise.all([
     listPolicies(user, { filter, q: params.q, page }),
     getTranslations(),
     getLocale(),
   ]);
   const scope = scopeOf(user, "leads");
   const canRenew = can(user, "policies:renew");
+
+  type Row = (typeof rows)[number];
+  const ends = (p: Row) => (
+    <span className="inline-flex flex-wrap items-center gap-1.5 whitespace-nowrap">
+      {shortDate(p.endDate)}
+      {p.renewalDue && !p.renewalPublicId && <Badge tone="amber">{t("policies.dueSoon")}</Badge>}
+    </span>
+  );
+  // "Booked" already means waiting for payment, so payment gets its own badge only when it failed or was refunded
+  const states = (p: Row) => (
+    <span className="flex flex-wrap gap-1.5">
+      <Badge status={p.status} />
+      {(p.paymentStatus === "failed" || p.paymentStatus === "refunded") && <Badge status={p.paymentStatus} />}
+    </span>
+  );
 
   return (
     <>
@@ -39,45 +54,56 @@ export default async function PoliciesPage({ searchParams }: { searchParams: Pro
         params={params}
         rows={rows}
         rowKey={(p) => p.id}
-        minWidth="lg"
+        rowHref={(p) => leadPath(p.leadPublicId, "policy")}
         search={{ placeholder: t("policies.search") }}
-        filters={{ label: t("policies.status"), options: keyedOptions(t, "status", POLICY_FILTERS) }}
+        filters={{
+          label: t("policies.status"),
+          variant: "tabs",
+          total: all,
+          options: keyedOptions(t, "status", POLICY_FILTERS).map((o) => ({
+            ...o,
+            count: filterCounts[o.value as PolicyFilter],
+          })),
+        }}
         pagination={{ page: page.page, pageSize: page.limit, total }}
         empty={{ title: t("policies.empty"), icon: "shield" }}
+        mobile="rows"
+        summary={(p) => ({
+          title: p.customerName,
+          amount: money(p.premium),
+          meta: [
+            <span key="number" className="font-mono text-xs">
+              {p.policyNumber}
+            </span>,
+            p.insurer,
+            p.advisorName,
+          ],
+          badges: states(p),
+          date: ends(p),
+        })}
         columns={[
-          {
-            key: "policy",
-            header: t("policies.policy"),
-            nowrap: true,
-            cell: (p) => <span className="font-mono text-xs text-ink-soft">{p.policyNumber}</span>,
-          },
           {
             key: "customer",
             header: t("policies.customer"),
             cell: (p) => (
-              <CellText
-                href={leadPath(p.leadPublicId, "policy")}
-                primary={p.customerName}
-                secondary={`${p.reference}, ${p.advisorName ?? t("policies.noAdvisor")}`}
-              />
+              <CellText href={leadPath(p.leadPublicId, "policy")} primary={p.customerName} secondary={p.policyNumber} />
             ),
           },
           {
             key: "insurer",
             header: t("policies.insurer"),
+            priority: 2,
             cell: (p) => <CellText primary={p.insurer} secondary={localized(p.planName, locale)} />,
           },
-          { key: "premium", header: t("policies.premium"), align: "end", nowrap: true, cell: (p) => money(p.premium) },
+          { key: "premium", header: t("policies.premium"), numeric: true, cell: (p) => money(p.premium) },
+          { key: "ends", header: t("policies.ends"), cell: ends },
+          { key: "status", header: t("policies.status"), cell: states },
           {
-            key: "ends",
-            header: t("policies.ends"),
-            nowrap: true,
-            cell: (p) => (
-              <span className={p.renewalDue ? "font-medium text-warn" : undefined}>{shortDate(p.endDate)}</span>
-            ),
+            key: "advisor",
+            header: t("policies.advisor"),
+            priority: 3,
+            cell: (p) => p.advisorName ?? <span className="text-muted">{t("policies.noAdvisor")}</span>,
           },
-          { key: "status", header: t("policies.status"), cell: (p) => <Badge status={p.status} /> },
-          { key: "payment", header: t("policies.payment"), cell: (p) => <Badge status={p.paymentStatus} /> },
           {
             key: "renewal",
             header: "",

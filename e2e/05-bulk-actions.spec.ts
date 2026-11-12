@@ -25,6 +25,7 @@ test("manager moves selected leads to another stage", async ({ page }) => {
 
   for (const reference of references) {
     await page.goto(`/leads?filter=lost&q=${reference}`);
-    await expect(page.getByText(reference)).toBeVisible();
+    // The phone rows repeat each reference (hidden on desktop), so look in the table
+    await expect(page.getByRole("row").filter({ hasText: reference })).toBeVisible();
   }
 });

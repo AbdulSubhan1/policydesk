@@ -17,10 +17,12 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
   const params = await searchParams;
   const status = OPPORTUNITY_STATUSES.find((s) => s === params.filter) as OpportunityStatus | undefined;
   const page = pageFrom(params);
-  const [{ rows, total }, t] = await Promise.all([
+  const [{ rows, total, all, statusCounts }, t] = await Promise.all([
     listOpportunities(user, { status, q: params.q, page }),
     getTranslations(),
   ]);
+  // Sources other than the fixed ones are stored as typed, so they show as they are
+  const source = (s: string) => (t.has(`sources.${s}`) ? t(`sources.${s}`) : s);
 
   return (
     <>
@@ -40,10 +42,26 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
         params={params}
         rows={rows}
         rowKey={(o) => o.id}
+        rowHref={(o) => `/opportunities/${o.id}`}
         search={{ placeholder: t("opportunities.search") }}
-        filters={{ label: t("opportunities.status"), options: keyedOptions(t, "status", OPPORTUNITY_STATUSES) }}
+        filters={{
+          label: t("opportunities.status"),
+          variant: "tabs",
+          total: all,
+          options: keyedOptions(t, "status", OPPORTUNITY_STATUSES).map((o) => ({
+            ...o,
+            count: statusCounts[o.value as OpportunityStatus] ?? 0,
+          })),
+        }}
         pagination={{ page: page.page, pageSize: page.limit, total }}
         empty={{ title: t("opportunities.empty"), icon: "inbox" }}
+        mobile="rows"
+        summary={(o) => ({
+          title: o.customerName,
+          meta: [t(`products.${o.product}`), source(o.source), o.coordinatorName ?? t("common.unassigned")],
+          badges: <Badge status={o.status} />,
+          date: shortDate(o.createdAt),
+        })}
         columns={[
           {
             key: "customer",
@@ -57,13 +75,20 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
               <CellText primary={t(`products.${o.product}`)} secondary={t(`departments.${o.departmentKey}`)} />
             ),
           },
+          { key: "source", header: t("opportunities.source"), priority: 3, cell: (o) => source(o.source) },
           { key: "status", header: t("opportunities.status"), cell: (o) => <Badge status={o.status} /> },
           {
             key: "coordinator",
             header: t("opportunities.coordinator"),
-            cell: (o) => o.coordinatorName ?? t("common.unassigned"),
+            priority: 2,
+            cell: (o) => o.coordinatorName ?? <span className="text-muted">{t("common.unassigned")}</span>,
           },
-          { key: "received", header: t("opportunities.received"), nowrap: true, cell: (o) => shortDate(o.createdAt) },
+          {
+            key: "received",
+            header: t("opportunities.received"),
+            nowrap: true,
+            cell: (o) => <span className="text-muted">{shortDate(o.createdAt)}</span>,
+          },
         ]}
       />
     </>

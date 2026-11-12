@@ -45,16 +45,29 @@ export function LayoutDemos({ name, path, params }: DemoProps) {
     }
     case "PillNav":
       return (
-        <Demo title="Motion highlight" description="Hover the pills: one background glides between them.">
-          <PillNav
-            label={t("plans.product")}
-            items={(["car", "health", "travel", "home", "life"] as const).map((p) => ({
-              href: withParams(path, params, { product: p }),
-              label: t(`products.${p}`),
-              active: (params.product ?? "car") === p,
-            }))}
-          />
-        </Demo>
+        <>
+          <Demo title="Motion highlight" description="Hover the pills: one background glides between them.">
+            <PillNav
+              label={t("plans.product")}
+              items={(["car", "health", "travel", "home", "life"] as const).map((p) => ({
+                href: withParams(path, params, { product: p }),
+                label: t(`products.${p}`),
+                active: (params.product ?? "car") === p,
+              }))}
+            />
+          </Demo>
+          <Demo title="Segment" description="A compact switch, like the dashboard's period.">
+            <PillNav
+              variant="segment"
+              label={t("dashboard.period.label")}
+              items={(["month", "quarter", "year"] as const).map((p) => ({
+                href: withParams(path, params, { period: p }),
+                label: t(`dashboard.period.${p}`),
+                active: (params.period ?? "month") === p,
+              }))}
+            />
+          </Demo>
+        </>
       );
     case "PageHeader":
       return (

@@ -1,37 +1,83 @@
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { Panel, Progress } from "@/components/ui";
+import { EmptyState, Panel, Progress } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
-/** Counts per status with a bar each; every row links to the filtered list. */
+export type FunnelStep = {
+  key: string;
+  label: string;
+  count: number;
+  /** The list behind this bar, filtered to it. */
+  href?: string;
+  /** neutral for plain counts; brand for wins; risk for losses; info for a breakdown such as sources. */
+  tone?: "neutral" | "brand" | "risk" | "info";
+};
+
+const LABEL_TONE = {
+  neutral: undefined,
+  info: undefined,
+  brand: "font-medium text-brand-strong",
+  risk: "font-medium text-risk",
+};
+
+/** Counts as bars, each scaled to the largest; a row links to its filtered list when it has an href. */
 export function Funnel({
   title,
-  href,
+  link,
   steps,
-  counts,
+  note,
+  empty,
 }: {
   title: string;
-  href: string;
-  steps: readonly string[];
-  counts: Partial<Record<string, number>>;
+  /** "All leads" in the corner. */
+  link?: { href: string; label: string };
+  steps: FunnelStep[];
+  /** A line under the bars, e.g. the conversion rate. */
+  note?: React.ReactNode;
+  /** Shown instead of the bars when every count is zero. */
+  empty: string;
 }) {
-  const t = useTranslations();
-  const total = steps.reduce((sum, s) => sum + (counts[s] ?? 0), 0);
+  const max = Math.max(0, ...steps.map((s) => s.count));
   return (
-    <Panel title={title} description={t("dashboard.inTotal", { count: total })}>
-      <ul className="grid gap-3">
-        {steps.map((s) => (
-          <li key={s}>
-            <Link
-              href={`${href}?filter=${s}`}
-              className="grid grid-cols-[minmax(0,8rem)_1fr_2rem] items-center gap-3 text-sm hover:text-brand"
-            >
-              <span className="truncate">{t(`status.${s}`)}</span>
-              <Progress value={counts[s] ?? 0} max={total} />
-              <span className="text-end font-medium">{counts[s] ?? 0}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <Panel
+      title={title}
+      actions={
+        link && (
+          <Link href={link.href} className="text-sm font-medium text-brand hover:text-brand-strong">
+            {link.label}
+          </Link>
+        )
+      }
+    >
+      {max === 0 ? (
+        <EmptyState title={empty} icon="dashboard" />
+      ) : (
+        <>
+          <ul className="grid gap-3">
+            {steps.map((s) => {
+              const row = (
+                <>
+                  <span className={cn("truncate", LABEL_TONE[s.tone ?? "neutral"])}>{s.label}</span>
+                  <Progress value={s.count} max={max} tone={s.tone ?? "neutral"} />
+                  <span className="text-end font-medium tabular-nums">{s.count}</span>
+                </>
+              );
+              const grid = "grid grid-cols-[minmax(0,8rem)_1fr_2.5rem] items-center gap-3 text-sm";
+              return (
+                <li key={s.key}>
+                  {s.href ? (
+                    <Link href={s.href} className={cn(grid, "hover:text-brand")}>
+                      {row}
+                    </Link>
+                  ) : (
+                    <span className={grid}>{row}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          {note && <p className="mt-4 text-sm text-muted">{note}</p>}
+        </>
+      )}
     </Panel>
   );
 }
