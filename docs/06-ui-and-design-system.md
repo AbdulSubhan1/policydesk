@@ -13,27 +13,28 @@ flowchart LR
 
 ## Categories
 
-| Category   | Components                                                                           |
-| ---------- | ------------------------------------------------------------------------------------ |
-| Buttons    | Button, ButtonLink                                                                   |
-| Forms      | Field, InlineForm, FormError, Hidden                                                 |
-| Inputs     | Input, PasswordInput, NumberInput, PhoneInput, OtpInput, Textarea, FileUpload        |
-| Selection  | Autocomplete, MultiSelect, Checkbox, Radio, RadioGroup, Switch, SegmentGroup, Rating |
-| Dates      | DatePicker                                                                           |
-| Overlays   | Dialog (and side sheet), AlertDialog, Popover, Tooltip                               |
-| Menus      | DropdownMenu (icons, shortcuts, checks, submenus), ActionBar                         |
-| Navigation | Tabs, PillNav                                                                        |
-| Feedback   | Alert, Toast, EmptyState, Skeleton, Spinner, Progress, Forbidden                     |
-| Layout     | PageHeader, Panel, PanelSection, DetailList                                          |
-| Data       | DataTable (with row selection), CellText, ListRow, Badge, Stat, Timeline             |
-| Media      | Avatar, AvatarGroup, Icon                                                            |
-| Effects    | MotionHighlight, NumberTicker, SpotlightCard, ShimmerText                            |
+| Category   | Components                                                                             |
+| ---------- | -------------------------------------------------------------------------------------- |
+| Buttons    | Button, ButtonLink                                                                     |
+| Forms      | Field, InlineForm, FormError, Hidden                                                   |
+| Inputs     | Input, PasswordInput, NumberInput, PhoneInput, OtpInput, Textarea, FileUpload          |
+| Selection  | Autocomplete, MultiSelect, Checkbox, Radio, RadioGroup, Switch, SegmentGroup, Rating   |
+| Dates      | DatePicker                                                                             |
+| Overlays   | Dialog (and side sheet), AlertDialog, Popover, Tooltip                                 |
+| Menus      | DropdownMenu (icons, shortcuts, checks, submenus), ActionBar                           |
+| Navigation | Tabs, PillNav                                                                          |
+| Feedback   | Alert, Toast, EmptyState, Skeleton, Spinner, Progress, Forbidden                       |
+| Layout     | PageHeader, Panel, PanelSection, DetailList                                            |
+| Data       | DataTable (with row selection), TableFilters, CellText, ListRow, Badge, Stat, Timeline |
+| Media      | Avatar, AvatarGroup, Icon                                                              |
+| Effects    | MotionHighlight, NumberTicker, SpotlightCard, ShimmerText                              |
 
 ## Where the app uses them
 
-- **Leads list:** tick rows and the ActionBar rises with "Move to stage"; advisors show as avatars.
+- **Leads list:** stage tabs with counts, a Premium column, Advisor (a red "No advisor" badge when nobody works it), filters for advisor, department and "Paid online only", and rows that open the lead. Tick rows and the ActionBar rises with "Move to stage" and "Assign advisor". On phones each lead is a stacked card.
+- **Opportunities and Policies lists:** the same counted tabs, row links and phone cards. Policies mark renewals with a "Due soon" badge next to the end date.
 - **Lead page:** KYC dates use DatePicker, documents use the FileUpload drop zone, the activity trail is a Timeline, and cancelling a policy or deleting a document asks first with AlertDialog.
-- **Dashboard:** numbers count up with NumberTicker. **Sidebar and pill filters:** MotionHighlight glides to the hovered link.
+- **Dashboard:** "Needs you today" cards (Stat with badge and action), a period switch (PillNav `segment`), four KPIs with a comparison or hint line, the lead pipeline and sources as Funnel bars (Progress tones), and the renewals table. Numbers count up with NumberTicker. **Sidebar and pill filters:** MotionHighlight glides to the hovered link.
 - **Users:** avatars, and deactivating asks first. **Login:** PasswordInput. **Quotes and plans:** NumberInput for premiums.
 - **Every form** shows a toast when it saves, and list pages and the lead page show a Skeleton while they load.
 
@@ -63,7 +64,13 @@ Fonts: Hanken Grotesk for Latin script, IBM Plex Sans Arabic for Arabic, IBM Ple
 ## Building blocks
 
 - **PageHeader** opens every page. **Panel** groups content, with `flush` for tables, lists and tabs, and `footer` for an add form. **PanelSection** is a padded block inside a flush panel.
-- **DataTable** is every list. Give it columns; it adds search (`?q=`), pill filters (`?filter=`), pagination (`?page=`) and an EmptyState. Queries return `{ rows, total }` with `pageFrom(params)`.
+- **DataTable** is every list. Give it columns; it adds search (`?q=`), filters (`?filter=`), pagination (`?page=`) and an EmptyState. Queries return `{ rows, total }` with `pageFrom(params)`. Optional props:
+  - `filters.variant: "tabs"` shows the filter as underlined tabs; give each option a `count` and `filters.total` for All.
+  - `refine: { selects, toggles }` adds dropdown and on/off filters beside the search, each its own URL parameter (`?advisor=`, `?paid=1`). They apply at once (TableFilters).
+  - `rowHref` makes the whole row a link. Keep a real link in the row (CellText `href`) for the keyboard; the row-wide one is hidden from screen readers. Buttons and checkboxes in the row still work.
+  - Column `priority: 2 | 3` hides a column while the table is narrower than 56rem / 64rem (container queries), so a laptop never scrolls sideways. Column `numeric` end-aligns amounts with tabular figures.
+  - `mobile="rows"` with `summary(row) => { title, amount, meta, badges, date }` shows each row as a stacked ListRow card while the table is narrower than 42rem (phones).
+- **Stat** takes `hint`, `delta: { value, label }` (green up, red down), `badge` and `action` (link text when `href` is set). **ListRow** takes `href`. **Progress** takes `tone` (`brand`, `neutral`, `risk`, `info`). **PillNav** takes `variant="segment"`.
 - **EmptyState** always says what is missing and what to do next, with an icon and an optional action.
 
 ## Form controls
@@ -84,7 +91,7 @@ Effects are the only code that sets CSS variables from JavaScript (never a `styl
 
 ## Testing components
 
-`e2e/04-ui-library.spec.ts` opens every component's page and checks its demos render. It also tests Autocomplete, MultiSelect, Checkbox, DataTable with the ActionBar, DropdownMenu submenus, Dialog, DatePicker, Toast, PhoneInput and the shared validation rules. `e2e/05-bulk-actions.spec.ts` moves leads in bulk. Add a test when you add a component with behaviour.
+`e2e/04-ui-library.spec.ts` opens every component's page and checks its demos render. It also tests Autocomplete, MultiSelect, Checkbox, DataTable with the ActionBar, DropdownMenu submenus, Dialog, DatePicker, Toast, PhoneInput and the shared validation rules. `e2e/05-bulk-actions.spec.ts` moves leads in bulk. `e2e/12-lists.spec.ts` covers counted tabs, filters, row links, bulk assign, phone rows and the Policies width; `e2e/13-dashboard.spec.ts` covers the task cards, the period switch and what an advisor sees. Add a test when you add a component with behaviour.
 
 ## Adding a component
 

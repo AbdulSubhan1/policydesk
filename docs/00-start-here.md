@@ -60,20 +60,20 @@ Each person signs in with a role. The role decides which menu items and buttons 
 
 ## The screens
 
-| Menu item         | What you do there                                                                              |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| Dashboard         | Counts of your work, the pipeline, and policies to renew soon                                  |
-| Opportunities     | New inquiries. Open one to qualify it, pick a coordinator, and convert it into a lead          |
-| Leads             | Your leads. Tick several rows to move them to another stage at once                            |
-| A lead's page     | A progress bar on top (Quote → KYC → Documents → Booked → Paid) and a tab for each step        |
-| KYC review        | Compliance's queue: approve or reject, with a note                                             |
-| Policies          | Every policy, its payment status, and a Renew button near the end date                         |
-| Insurers & plans  | Admin: add insurers and their plans with prices                                                |
-| Documents         | Admin: the list of document types, and which ones each product needs                           |
-| Users, Roles      | Admin: who works here, their role and department, and what each role may do                    |
-| Audit log         | Every change anyone made, newest first                                                         |
-| Component library | For designers and developers: every button and field the app is built from, with live examples |
-| Knowledge base    | These pages                                                                                    |
+| Menu item         | What you do there                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| Dashboard         | What needs you today, this month / quarter / year against the last, pipeline, renewals          |
+| Opportunities     | New inquiries. Open one to qualify it, pick a coordinator, and convert it into a lead           |
+| Leads             | Your leads by stage. Filter by advisor or paid online; tick rows to move or assign them at once |
+| A lead's page     | A progress bar on top (Quote → KYC → Documents → Booked → Paid) and a tab for each step         |
+| KYC review        | Compliance's queue: approve or reject, with a note                                              |
+| Policies          | Every policy, its status, a "Due soon" badge and a Renew button near the end date               |
+| Insurers & plans  | Admin: add insurers and their plans with prices                                                 |
+| Documents         | Admin: the list of document types, and which ones each product needs                            |
+| Users, Roles      | Admin: who works here, their role and department, and what each role may do                     |
+| Audit log         | Every change anyone made, newest first                                                          |
+| Component library | For designers and developers: every button and field the app is built from, with live examples  |
+| Knowledge base    | These pages                                                                                     |
 
 On a lead's page, the progress bar tells you what is missing. The tab that opens first is always the next unfinished step.
 
