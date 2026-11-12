@@ -18,12 +18,21 @@ export function Tabs({ tabs, current, label }: { tabs: TabItem[]; current: strin
           scroll={false}
           aria-current={tab.id === current ? "page" : undefined}
           className={cn(
-            "shrink-0 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap focus-visible:bg-paper focus-visible:outline-none",
+            "inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap focus-visible:bg-paper focus-visible:outline-none",
             tab.id === current ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink",
           )}
         >
           {tab.label}
-          {tab.count !== undefined && <span className="ms-1.5 text-xs text-muted">{tab.count}</span>}
+          {tab.count !== undefined && (
+            <span
+              className={cn(
+                "rounded-full px-1.5 text-xs leading-5 tabular-nums",
+                tab.id === current ? "bg-brand-soft text-brand-strong" : "bg-ink/5 text-muted",
+              )}
+            >
+              {tab.count}
+            </span>
+          )}
         </Link>
       ))}
     </nav>

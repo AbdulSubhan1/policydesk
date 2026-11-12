@@ -10,6 +10,7 @@
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/policies/page.tsx",
+    "components/dashboard/renewals-card.tsx",
     "components/forms/document-type-form.tsx",
     "components/forms/insurer-form.tsx",
     "components/forms/kyc-form.tsx",
@@ -34,6 +35,7 @@
     "app/(app)/design-system/[name]/page.tsx",
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
+    "app/(app)/page.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/policy-tab.tsx"
   ],
@@ -83,6 +85,7 @@
     "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/policies/page.tsx",
+    "components/dashboard/renewals-card.tsx",
     "components/layout/locale-switch.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/policy-tab.tsx",
@@ -167,7 +170,8 @@
     "app/(app)/admin/plans/page.tsx",
     "app/(app)/design-system/[name]/page.tsx",
     "app/(app)/kb/[[...slug]]/page.tsx",
-    "app/(app)/kyc/page.tsx"
+    "app/(app)/kyc/page.tsx",
+    "app/(app)/page.tsx"
   ],
   "Alert": [
     "app/(app)/leads/[id]/page.tsx"
@@ -178,7 +182,7 @@
   "EmptyState": [
     "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
-    "components/dashboard/renewals-card.tsx",
+    "components/dashboard/funnel.tsx",
     "components/leads/activity-feed.tsx",
     "components/leads/kyc-tab.tsx",
     "components/leads/policy-tab.tsx"
@@ -270,10 +274,12 @@
     "app/(app)/leads/(list)/page.tsx",
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
+    "components/dashboard/renewals-card.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/quotes-tab.tsx",
     "components/opportunities/online-payment-panel.tsx"
   ],
+  "TableFilters": [],
   "CellText": [
     "app/(app)/admin/documents/page.tsx",
     "app/(app)/admin/plans/page.tsx",
@@ -281,6 +287,7 @@
     "app/(app)/leads/(list)/page.tsx",
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
+    "components/dashboard/renewals-card.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/quotes-tab.tsx",
     "components/opportunities/online-payment-panel.tsx"
@@ -299,6 +306,8 @@
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/policies/page.tsx",
+    "components/dashboard/attention.tsx",
+    "components/dashboard/renewals-card.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/online-payment.tsx",
     "components/leads/policy-tab.tsx",
@@ -307,7 +316,8 @@
     "components/opportunities/online-payment-panel.tsx"
   ],
   "Stat": [
-    "app/(app)/page.tsx"
+    "app/(app)/page.tsx",
+    "components/dashboard/attention.tsx"
   ],
   "Timeline": [
     "components/leads/activity-feed.tsx"
