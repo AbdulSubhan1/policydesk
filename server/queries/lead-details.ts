@@ -1,16 +1,18 @@
-import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { requireUser } from "@/server/auth";
 import { db, schema } from "@/server/db";
+import { premiumFor } from "@/server/website/plans";
 import { documentsForProduct } from "./documents";
 import { getLead } from "./leads";
 
 // Everything the lead page shows. Each loader is wrapped in cache(), so the page and every
 // tab can call them directly: one request runs each query once and nothing is passed as props.
 
-const { quotes, kycRecords, documents, policies, auditLogs, users, plans, insurers, leads, orders } = schema;
+const { quotes, kycRecords, documents, policies, auditLogs, users, plans, planAddOns, insurers, leads, orders } =
+  schema;
 const reviewer = alias(users, "reviewer");
 const renewalLead = alias(leads, "renewal_lead");
 
@@ -23,12 +25,13 @@ export const getLeadContext = cache(async (key: number | string) => {
   return { user, ...row, closed: row.lead.stage === "won" || row.lead.stage === "lost" };
 });
 
-/** creatorName is null for quotes the website made. */
+/** creatorName is null for quotes the website made; planExcess is the plan's excess today. */
 export const getQuotes = cache((leadId: number) =>
   db
-    .select({ ...getTableColumns(quotes), creatorName: users.name })
+    .select({ ...getTableColumns(quotes), creatorName: users.name, planExcess: plans.excess })
     .from(quotes)
     .leftJoin(users, eq(quotes.createdBy, users.id))
+    .leftJoin(plans, eq(quotes.planId, plans.id))
     .where(eq(quotes.leadId, leadId))
     .orderBy(desc(quotes.createdAt)),
 );
@@ -92,10 +95,13 @@ export const getDocuments = cache(async (leadId: number) => {
   return { files, checklist, uploaded, required, missing: required.filter((d) => !uploaded.has(d.id)) };
 });
 
-/** Active plans for the lead's product, for the quote form. */
+/**
+ * Active plans for the lead's product, for the quote form: each priced for this customer (rated from the website's
+ * answers where the product has them) with its offered add-ons.
+ */
 export const getPlans = cache(async (leadId: number) => {
   const { opportunity } = await getLeadContext(leadId);
-  return db
+  const rows = await db
     .select({
       id: plans.id,
       name: plans.name,
@@ -103,14 +109,40 @@ export const getPlans = cache(async (leadId: number) => {
       cover: plans.cover,
       basePremium: plans.basePremium,
       excess: plans.excess,
-      benefits: plans.benefits,
     })
     .from(plans)
     .innerJoin(insurers, eq(plans.insurerId, insurers.id))
     .where(and(eq(plans.product, opportunity.product), eq(plans.active, true), eq(insurers.active, true)))
     .orderBy(insurers.name, plans.basePremium);
+  const addOns = rows.length
+    ? await db
+        .select({
+          id: planAddOns.id,
+          planId: planAddOns.planId,
+          name: planAddOns.name,
+          kind: planAddOns.kind,
+          price: planAddOns.price,
+        })
+        .from(planAddOns)
+        .where(
+          and(
+            inArray(
+              planAddOns.planId,
+              rows.map((r) => r.id),
+            ),
+            eq(planAddOns.active, true),
+          ),
+        )
+        .orderBy(asc(planAddOns.id))
+    : [];
+  return rows.map(({ basePremium, ...plan }) => ({
+    ...plan,
+    price: premiumFor(opportunity.product, { cover: plan.cover, basePremium }, opportunity.details),
+    addOns: addOns.filter((a) => a.planId === plan.id).map(({ id, name, kind, price }) => ({ id, name, kind, price })),
+  }));
 });
 
+/** The lead's events, newest first. */
 export const getTimeline = cache((leadId: number) =>
   db
     .select({

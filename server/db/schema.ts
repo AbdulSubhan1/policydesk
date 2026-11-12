@@ -171,6 +171,12 @@ export const quotes = pgTable("quotes", {
   premium: integer("premium").notNull(),
   // Snapshot of the add-ons in the premium, like the plan name above
   addOns: jsonb("add_ons").$type<QuoteAddOn[]>().notNull().default([]),
+  // The plan's own price for this customer when quoted; null on quotes made before it was kept
+  planPremium: integer("plan_premium"),
+  // Taken off the plan and add-ons by the advisor
+  discount: integer("discount").notNull().default(0),
+  // The premium was typed from the insurer's own price instead of worked out from the plan
+  priceOverridden: boolean("price_overridden").notNull().default(false),
   status: text("status").$type<QuoteStatus>().notNull().default("sent"),
   // null = made by the website
   createdBy: integer("created_by").references(() => users.id),

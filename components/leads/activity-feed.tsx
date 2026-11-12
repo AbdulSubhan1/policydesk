@@ -16,10 +16,11 @@ const ENTITY: Record<string, { icon: IconName; tone: TimelineItem["tone"] }> = {
   renewal: { icon: "scroll", tone: "brand" },
 };
 
-/** The lead's own audit trail, newest first. */
-export async function ActivityFeed({ leadId }: { leadId: number }) {
-  const [timeline, t] = await Promise.all([getTimeline(leadId), getTranslations()]);
-  if (timeline.length === 0) return <EmptyState title={t("lead.noActivity")} />;
+/** The lead's own audit trail, newest first; `limit` keeps only the latest events. */
+export async function ActivityFeed({ leadId, limit }: { leadId: number; limit?: number }) {
+  const [all, t] = await Promise.all([getTimeline(leadId), getTranslations()]);
+  if (all.length === 0) return <EmptyState title={t("lead.noActivity")} />;
+  const timeline = limit === undefined ? all : all.slice(0, limit);
 
   return (
     <PanelSection>
