@@ -29,6 +29,13 @@
       "when": 1794422645030,
       "tag": "0003_tricky_infant_terrible",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794426159811,
+      "tag": "0004_complete_hobgoblin",
+      "breakpoints": true
     }
   ]
 }

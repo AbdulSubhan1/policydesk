@@ -76,25 +76,50 @@ export async function createWebsiteOpportunity(input: WebsiteOpportunityInput): 
   });
   if (form === "short") return toView(opp, null, person);
 
+  const { lead, opportunity } = await convertWebsiteOpportunityToLead(opp, null, "");
+  return toView(opportunity, lead.reference, person);
+}
+
+/**
+ * Opportunities from the website's car forms, which their coordinator completes and converts without an advisor.
+ * Others marked "Website" by hand (any product, no car details) keep the manual screens.
+ */
+export const isWebsiteCarOpportunity = (opp: { source: string; product: Product }) =>
+  opp.source === "website" && opp.product === "car";
+
+/**
+ * Makes a website opportunity's lead with an empty KYC file and marks it converted, by the website (userId null) or
+ * by its coordinator. No advisor: one is assigned automatically once the customer pays.
+ */
+export async function convertWebsiteOpportunityToLead(
+  opp: typeof opportunities.$inferSelect,
+  userId: number | null,
+  note: string,
+) {
   const [lead] = await db
     .insert(leads)
-    .values({ opportunityId: opp.id, reference: leadReference(product), departmentId: dept.id, advisorId: null })
+    .values({
+      opportunityId: opp.id,
+      reference: leadReference(opp.product),
+      departmentId: opp.departmentId,
+      advisorId: null,
+    })
     .returning();
   await db.insert(kycRecords).values({ leadId: lead.id });
-  const [converted] = await db
+  const [opportunity] = await db
     .update(opportunities)
     .set({ status: "converted", updatedAt: new Date() })
     .where(eq(opportunities.id, opp.id))
     .returning();
   await logAudit({
-    userId: null,
+    userId,
     action: "convert",
     entity: "opportunity",
     entityId: opp.id,
     leadId: lead.id,
-    details: lead.reference,
+    details: [lead.reference, note].filter(Boolean).join(" · "),
   });
-  return toView(converted, lead.reference, person);
+  return { lead, opportunity };
 }
 
 /** The view for one opportunity by its public id, or null. */

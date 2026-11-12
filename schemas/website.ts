@@ -40,6 +40,26 @@ export const carDetailsSchema = z.strictObject({
 /** The short form leaves these to the coordinator's call; the full form must have them. */
 const FULL_FORM_FIELDS = ["gccSpec", "carValue", "dateOfBirth", "nationality", "city", "yearsLicensed"] as const;
 
+type CarDetails = z.infer<typeof carDetailsSchema>;
+
+/** The rules across fields: the full form needs every field, and the driver must be 18 to 80. */
+function checkCarDetails(details: CarDetails, ctx: z.RefinementCtx, { full, path }: { full: boolean; path: string[] }) {
+  if (full) {
+    for (const field of FULL_FORM_FIELDS) {
+      if (details[field] === undefined) {
+        ctx.addIssue({ code: "custom", message: "validation.required", path: [...path, field] });
+      }
+    }
+  }
+  const { dateOfBirth } = details;
+  if (dateOfBirth) {
+    const age = ageOn(dateOfBirth);
+    if (age < MIN_AGE || age > MAX_AGE) {
+      ctx.addIssue({ code: "custom", message: "validation.age", path: [...path, "dateOfBirth"] });
+    }
+  }
+}
+
 export const websiteOpportunitySchema = z
   .strictObject({
     form: z.enum(["short", "full"], "validation.invalidOption"),
@@ -49,22 +69,39 @@ export const websiteOpportunitySchema = z
     phone,
     details: carDetailsSchema,
   })
-  .superRefine((input, ctx) => {
-    if (input.form === "full") {
-      for (const field of FULL_FORM_FIELDS) {
-        if (input.details[field] === undefined) {
-          ctx.addIssue({ code: "custom", message: "validation.required", path: ["details", field] });
-        }
-      }
-    }
-    const { dateOfBirth } = input.details;
-    if (dateOfBirth) {
-      const age = ageOn(dateOfBirth);
-      if (age < MIN_AGE || age > MAX_AGE) {
-        ctx.addIssue({ code: "custom", message: "validation.age", path: ["details", "dateOfBirth"] });
-      }
-    }
-  });
+  .superRefine((input, ctx) => checkCarDetails(input.details, ctx, { full: input.form === "full", path: ["details"] }));
+
+/** Car details as complete as the full form's: what a website opportunity needs before it becomes a lead. */
+export const fullCarDetailsSchema = carDetailsSchema.superRefine((details, ctx) =>
+  checkCarDetails(details, ctx, { full: true, path: [] }),
+);
+
+/** In a form an empty box (or "Yes"/"No" for GCC spec) stands for what the website sends as a missing key or a boolean. */
+const fromForm = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((v) => (v === "" || v === null ? undefined : v === "yes" ? true : v === "no" ? false : v), schema);
+
+const { make, model, year, gccSpec, carValue, dateOfBirth, nationality, city, yearsLicensed } = carDetailsSchema.shape;
+
+/** The coordinator completing a website opportunity's car details. Fields may stay empty until convert. */
+export const websiteDetailsSchema = z
+  .strictObject({
+    id,
+    make,
+    model,
+    year,
+    gccSpec: fromForm(gccSpec),
+    carValue: fromForm(carValue),
+    dateOfBirth: fromForm(dateOfBirth),
+    nationality: fromForm(nationality),
+    city: fromForm(city),
+    yearsLicensed: fromForm(yearsLicensed),
+  })
+  .superRefine((details, ctx) => checkCarDetails(details, ctx, { full: false, path: [] }));
+
+export type WebsiteDetailsInput = z.input<typeof websiteDetailsSchema>;
+
+/** Converting a website opportunity: only its id; the details are checked as saved. */
+export const websiteConvertSchema = z.strictObject({ id });
 
 export type WebsiteOpportunityInput = z.infer<typeof websiteOpportunitySchema>;
 
@@ -75,3 +112,14 @@ export type WebsiteSelectionInput = z.infer<typeof websiteSelectionSchema>;
 
 /** Starting a payment takes nothing: PolicyDesk charges the saved selection, priced by itself. */
 export const websitePaymentStartSchema = z.strictObject({});
+
+/** A payment link's token as the website passes it on: 43 base64url characters (32 random bytes). */
+export const payTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+
+/** Opening a payment link takes nothing but the token in the path. */
+export const websitePayLinkOpenSchema = z.strictObject({});
+
+/** The coordinator choosing the plan with the customer, on the opportunity page. Priced like the website's choice. */
+export const onlinePlanSchema = websiteSelectionSchema.extend({ id });
+
+export type OnlinePlanInput = z.input<typeof onlinePlanSchema>;

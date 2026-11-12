@@ -29,6 +29,8 @@ export const PAYMENT_STATUSES = ["pending", "paid", "failed", "refunded"] as con
 export const PAYMENT_METHODS = ["card", "bank_transfer", "cheque", "cash", "online"] as const;
 /** A website order: pending until PaySandbox confirms; expired when the visitor changed their plan before paying. */
 export const ORDER_STATUSES = ["pending", "paid", "expired"] as const;
+/** A payment link: revoked when a newer one is made; paid once the lead's order is. */
+export const PAY_LINK_STATES = ["active", "expired", "revoked", "paid"] as const;
 export const POLICY_FILTERS = ["booked", "active", "cancelled", "unpaid", "renewal_due"] as const;
 
 export type OpportunityStatus = (typeof OPPORTUNITY_STATUSES)[number];
@@ -42,3 +44,4 @@ export type PolicyStatus = (typeof POLICY_STATUSES)[number];
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+export type PayLinkState = (typeof PAY_LINK_STATES)[number];

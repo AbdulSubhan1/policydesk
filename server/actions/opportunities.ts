@@ -13,7 +13,7 @@ import { opportunitySchema, type OpportunityInput } from "@/schemas/opportunity"
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";
 import { db, schema } from "@/server/db";
-import { getOpportunity } from "@/server/queries/opportunities";
+import { requireOpportunity } from "@/server/guards";
 import { usersWithPermission } from "@/server/queries/users";
 
 const { opportunities, leads, kycRecords, departments } = schema;
@@ -46,10 +46,8 @@ export async function createOpportunity(input: OpportunityInput): Promise<Action
 }
 
 async function scoped(permission: Permission, formData: FormData) {
-  const user = await requirePermission(permission);
-  const row = await getOpportunity(user, id.parse(formData.get("id")));
-  if (!row) throw new Error("errors.notFound");
-  return { user, opp: row.opportunity };
+  const { user, opportunity } = await requireOpportunity(permission, id.parse(formData.get("id")));
+  return { user, opp: opportunity };
 }
 
 export async function updateOpportunityStatus(formData: FormData) {

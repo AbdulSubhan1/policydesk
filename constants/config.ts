@@ -21,3 +21,6 @@ export const PAGE_SIZE = 15;
 export const COORDINATOR_ROLE = "Coordinator";
 /** Picked for a website lead once its online payment succeeds. */
 export const ADVISOR_ROLE = "Advisor";
+
+/** How long a coordinator's payment link works. */
+export const PAY_LINK_HOURS = 72;

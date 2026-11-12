@@ -267,7 +267,7 @@ async function migrate() {
 
 async function wipe() {
   await db.execute(
-    sql`TRUNCATE audit_logs, webhook_events, orders, plan_add_ons, plans, insurers, documents, product_documents, document_types, policies, kyc_records, quotes, leads, opportunities, users, role_permissions, roles, departments RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE audit_logs, webhook_events, payment_links, orders, plan_add_ons, plans, insurers, documents, product_documents, document_types, policies, kyc_records, quotes, leads, opportunities, users, role_permissions, roles, departments RESTART IDENTITY CASCADE`,
   );
 }
 

@@ -14,16 +14,21 @@
     "components/forms/insurer-form.tsx",
     "components/forms/kyc-form.tsx",
     "components/forms/login-form.tsx",
+    "components/forms/online-plan-form.tsx",
     "components/forms/opportunity-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/quote-form.tsx",
     "components/forms/role-form.tsx",
     "components/forms/upload-form.tsx",
+    "components/forms/website-convert-form.tsx",
+    "components/forms/website-details-form.tsx",
     "components/layout/locale-switch.tsx",
     "components/layout/sidebar.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/policy-tab.tsx",
-    "components/leads/quotes-tab.tsx"
+    "components/leads/quotes-tab.tsx",
+    "components/opportunities/online-payment-panel.tsx",
+    "components/opportunities/pay-link-creator.tsx"
   ],
   "ButtonLink": [
     "app/(app)/design-system/[name]/page.tsx",
@@ -38,12 +43,15 @@
     "components/forms/insurer-form.tsx",
     "components/forms/kyc-form.tsx",
     "components/forms/login-form.tsx",
+    "components/forms/online-plan-form.tsx",
     "components/forms/opportunity-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/quote-form.tsx",
     "components/forms/role-form.tsx",
     "components/forms/upload-form.tsx",
-    "components/leads/policy-tab.tsx"
+    "components/forms/website-details-form.tsx",
+    "components/leads/policy-tab.tsx",
+    "components/opportunities/pay-link-creator.tsx"
   ],
   "InlineForm": [
     "app/(app)/admin/plans/page.tsx",
@@ -56,11 +64,15 @@
     "components/forms/insurer-form.tsx",
     "components/forms/kyc-form.tsx",
     "components/forms/login-form.tsx",
+    "components/forms/online-plan-form.tsx",
     "components/forms/opportunity-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/quote-form.tsx",
     "components/forms/role-form.tsx",
-    "components/forms/upload-form.tsx"
+    "components/forms/upload-form.tsx",
+    "components/forms/website-convert-form.tsx",
+    "components/forms/website-details-form.tsx",
+    "components/opportunities/pay-link-creator.tsx"
   ],
   "Hidden": [
     "app/(app)/admin/documents/page.tsx",
@@ -74,7 +86,8 @@
     "components/layout/locale-switch.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/policy-tab.tsx",
-    "components/leads/quotes-tab.tsx"
+    "components/leads/quotes-tab.tsx",
+    "components/opportunities/online-payment-panel.tsx"
   ],
   "Input": [
     "app/(app)/admin/plans/page.tsx",
@@ -86,14 +99,17 @@
     "components/forms/opportunity-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/role-form.tsx",
-    "components/leads/policy-tab.tsx"
+    "components/forms/website-details-form.tsx",
+    "components/leads/policy-tab.tsx",
+    "components/opportunities/pay-link-creator.tsx"
   ],
   "PasswordInput": [
     "components/forms/login-form.tsx"
   ],
   "NumberInput": [
     "components/forms/plan-form.tsx",
-    "components/forms/quote-form.tsx"
+    "components/forms/quote-form.tsx",
+    "components/forms/website-details-form.tsx"
   ],
   "PhoneInput": [
     "components/forms/opportunity-form.tsx"
@@ -114,7 +130,8 @@
   ],
   "MultiSelect": [],
   "Checkbox": [
-    "app/(app)/admin/roles/page.tsx"
+    "app/(app)/admin/roles/page.tsx",
+    "components/forms/online-plan-form.tsx"
   ],
   "Radio": [
     "app/(app)/admin/documents/page.tsx"
@@ -124,13 +141,15 @@
   "SegmentGroup": [],
   "Rating": [],
   "DatePicker": [
-    "components/forms/kyc-form.tsx"
+    "components/forms/kyc-form.tsx",
+    "components/forms/website-details-form.tsx"
   ],
   "Dialog": [],
   "AlertDialog": [
     "app/(app)/admin/users/page.tsx",
     "components/leads/documents-tab.tsx",
-    "components/leads/policy-tab.tsx"
+    "components/leads/policy-tab.tsx",
+    "components/opportunities/online-payment-panel.tsx"
   ],
   "Popover": [],
   "Tooltip": [],
@@ -151,7 +170,9 @@
     "app/(app)/kyc/page.tsx"
   ],
   "Alert": [],
-  "Toast": [],
+  "Toast": [
+    "components/opportunities/pay-link-creator.tsx"
+  ],
   "EmptyState": [
     "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
@@ -218,7 +239,8 @@
     "components/forms/opportunity-form.tsx",
     "components/forms/role-form.tsx",
     "components/kb/kb-article.tsx",
-    "components/layout/list-skeleton.tsx"
+    "components/layout/list-skeleton.tsx",
+    "components/opportunities/online-payment-panel.tsx"
   ],
   "PanelSection": [
     "components/leads/activity-feed.tsx",
@@ -226,7 +248,8 @@
     "components/leads/kyc-tab.tsx",
     "components/leads/online-payment.tsx",
     "components/leads/policy-tab.tsx",
-    "components/leads/quotes-tab.tsx"
+    "components/leads/quotes-tab.tsx",
+    "components/opportunities/online-payment-panel.tsx"
   ],
   "DetailList": [
     "app/(app)/kyc/page.tsx",
@@ -246,7 +269,8 @@
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/leads/documents-tab.tsx",
-    "components/leads/quotes-tab.tsx"
+    "components/leads/quotes-tab.tsx",
+    "components/opportunities/online-payment-panel.tsx"
   ],
   "CellText": [
     "app/(app)/admin/documents/page.tsx",
@@ -256,7 +280,8 @@
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/leads/documents-tab.tsx",
-    "components/leads/quotes-tab.tsx"
+    "components/leads/quotes-tab.tsx",
+    "components/opportunities/online-payment-panel.tsx"
   ],
   "ListRow": [
     "app/(app)/admin/documents/page.tsx",
@@ -276,7 +301,8 @@
     "components/leads/online-payment.tsx",
     "components/leads/policy-tab.tsx",
     "components/leads/quotes-tab.tsx",
-    "components/leads/screening-result.tsx"
+    "components/leads/screening-result.tsx",
+    "components/opportunities/online-payment-panel.tsx"
   ],
   "Stat": [
     "app/(app)/page.tsx"
