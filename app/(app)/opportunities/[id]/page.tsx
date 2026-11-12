@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import { WebsiteConvertForm } from "@/components/forms/website-convert-form";
 import { WebsiteDetailsForm } from "@/components/forms/website-details-form";
+import { OnlinePaymentPanel } from "@/components/opportunities/online-payment-panel";
 import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
 import { money, shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
@@ -112,6 +113,10 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
                 </ButtonLink>
               }
             />
+          )}
+
+          {!open && website && row.leadId && can(user, "opportunities:convert") && (
+            <OnlinePaymentPanel opportunityId={opp.id} leadId={row.leadId} />
           )}
 
           {open && can(user, "opportunities:edit") && (

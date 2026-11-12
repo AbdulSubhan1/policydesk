@@ -92,7 +92,8 @@
     "medium": "Medium risk",
     "high": "High risk",
     "unpaid": "Unpaid",
-    "renewal_due": "Renewal due"
+    "renewal_due": "Renewal due",
+    "revoked": "Revoked"
   },
   "sources": {
     "website": "Website",
@@ -254,7 +255,11 @@
       "nationality": "Complete the nationality before converting",
       "city": "Complete the city before converting",
       "yearsLicensed": "Complete years licensed before converting"
-    }
+    },
+    "alreadyPaid": "The customer has already paid",
+    "addOnUnavailable": "One of the add-ons can't be chosen for this plan",
+    "noOnlineSelection": "Save a plan first",
+    "payLinksDisabled": "Payment links are off: WEBSITE_URL is not set"
   },
   "login": {
     "title": "Sign in",
@@ -350,6 +355,33 @@
       "converting": "Converting…",
       "converted": "Converted. Choose the plan with the customer next.",
       "convertedNote": "This opportunity is now a lead. The advisor is assigned after the customer pays."
+    },
+    "online": {
+      "title": "Online payment",
+      "body": "Choose the plan with the customer, then send them a payment link. They pay on the website; the advisor is assigned after payment.",
+      "paidBody": "The customer has paid. The advisor takes it from here on the lead.",
+      "plan": "Plan",
+      "addOns": "Add-ons",
+      "total": "Total: {amount}",
+      "saveChoice": "Save choice",
+      "choiceSaved": "Choice saved",
+      "chooseFirst": "Save a plan first to create a payment link.",
+      "linkCharges": "The link charges {total} for {plan}. Change the choice above at any time: the link always charges the latest one.",
+      "create": "Create payment link",
+      "createNew": "Create a new link",
+      "creating": "Creating…",
+      "link": "Payment link",
+      "shownOnce": "Shown once. Create a new link if it's lost.",
+      "copy": "Copy",
+      "copied": "Link copied",
+      "created": "Created",
+      "expires": "Expires",
+      "opened": "Opened",
+      "status": "Status",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke this payment link?",
+      "revokeBody": "The customer can't pay through it any more. Create a new link to send another.",
+      "noLinks": "No payment links yet"
     }
   },
   "leads": {
@@ -517,7 +549,12 @@
       "assign": "reassigned the lead",
       "auto_assign": "assigned the advisor"
     },
-    "other": "{action} {entity}"
+    "other": "{action} {entity}",
+    "payment_link": {
+      "pay_link": "created a payment link",
+      "pay_link_revoked": "revoked a payment link",
+      "pay_link_opened": "opened the payment link"
+    }
   },
   "kycReview": {
     "title": "KYC / AML review",

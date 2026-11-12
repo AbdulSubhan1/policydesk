@@ -112,3 +112,14 @@ export type WebsiteSelectionInput = z.infer<typeof websiteSelectionSchema>;
 
 /** Starting a payment takes nothing: PolicyDesk charges the saved selection, priced by itself. */
 export const websitePaymentStartSchema = z.strictObject({});
+
+/** A payment link's token as the website passes it on: 43 base64url characters (32 random bytes). */
+export const payTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+
+/** Opening a payment link takes nothing but the token in the path. */
+export const websitePayLinkOpenSchema = z.strictObject({});
+
+/** The coordinator choosing the plan with the customer, on the opportunity page. Priced like the website's choice. */
+export const onlinePlanSchema = websiteSelectionSchema.extend({ id });
+
+export type OnlinePlanInput = z.input<typeof onlinePlanSchema>;
