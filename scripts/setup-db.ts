@@ -10,6 +10,7 @@ import { migrate as migrateNeon } from "drizzle-orm/neon-http/migrator";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
 import { DEMO_PASSWORD } from "@/constants/config";
 import type { Localized } from "@/constants/i18n";
+import { planBenefits } from "@/constants/plan-benefits";
 import { NATIONALITIES, OCCUPATIONS } from "@/constants/kyc";
 import {
   DEPARTMENTS,
@@ -238,16 +239,6 @@ const PLAN_TIERS: Localized[] = [
   { en: "Max", ar: "ماكس" },
   { en: "Pro", ar: "برو" },
 ];
-const BENEFITS = [
-  "24/7 claims helpline",
-  "Cashless network",
-  "Free cancellation in 14 days",
-  "Worldwide cover",
-  "Personal accident cover",
-  "Roadside assistance",
-  "Legal expenses",
-  "Emergency evacuation",
-];
 const OPP_STATUSES: OpportunityStatus[] = [
   "new",
   "new",
@@ -435,7 +426,7 @@ async function seed() {
           cover,
           basePremium: premium,
           excess: product === "life" || product === "savings" || product === "travel" ? 0 : Math.round(premium * 0.1),
-          benefits: BENEFITS.filter((_, b) => (b + p + n + c) % 3 === 0).slice(0, 2 + c),
+          benefits: planBenefits(product as Product, cover, insurer.name),
         });
       });
     });
