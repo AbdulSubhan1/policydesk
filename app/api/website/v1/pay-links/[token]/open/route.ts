@@ -1,5 +1,5 @@
 import { payTokenSchema, websitePayLinkOpenSchema } from "@/schemas/website";
-import { failureResponse, jsonError, parseBody, readSigned } from "@/server/website/http";
+import { failureResponse, jsonError, limited, parseBody, readSigned } from "@/server/website/http";
 import { openPayLink } from "@/server/website/pay-links";
 
 // The customer opened a coordinator's payment link on the website: which journey to start, or why not.
@@ -7,6 +7,8 @@ import { openPayLink } from "@/server/website/pay-links";
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const signed = await readSigned(req);
   if (!signed.ok) return signed.response;
+  const limit = await limited(req, "link");
+  if (limit) return limit;
   const token = payTokenSchema.safeParse((await params).token);
   if (!token.success) return jsonError(404, "not_found");
   if (signed.body) {

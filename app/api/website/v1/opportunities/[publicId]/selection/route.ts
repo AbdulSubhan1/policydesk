@@ -1,11 +1,13 @@
 import { websiteSelectionSchema } from "@/schemas/website";
-import { failureResponse, jsonError, parseBody, publicIdParam, readSigned } from "@/server/website/http";
+import { failureResponse, jsonError, limited, parseBody, publicIdParam, readSigned } from "@/server/website/http";
 import { saveWebsiteSelection } from "@/server/website/plans";
 
 // The visitor's plan and ticked add-ons. PolicyDesk prices them; picking again updates the same quote.
 export async function PUT(req: Request, { params }: { params: Promise<{ publicId: string }> }) {
   const signed = await readSigned(req);
   if (!signed.ok) return signed.response;
+  const limit = await limited(req, "select");
+  if (limit) return limit;
   const publicId = await publicIdParam(params);
   if (!publicId) return jsonError(404, "not_found");
   const parsed = parseBody(signed.body, websiteSelectionSchema);

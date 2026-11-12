@@ -1,11 +1,13 @@
 import { websitePaymentStartSchema } from "@/schemas/website";
 import { getPaymentSummary, startPayment } from "@/server/payments/orders";
-import { failureResponse, jsonError, parseBody, publicIdParam, readSigned } from "@/server/website/http";
+import { failureResponse, jsonError, limited, parseBody, publicIdParam, readSigned } from "@/server/website/http";
 
 // What the visitor is about to pay: the saved selection's lines and total, or already_paid.
 export async function GET(req: Request, { params }: { params: Promise<{ publicId: string }> }) {
   const signed = await readSigned(req);
   if (!signed.ok) return signed.response;
+  const limit = await limited(req, "read");
+  if (limit) return limit;
   const publicId = await publicIdParam(params);
   if (!publicId) return jsonError(404, "not_found");
 
@@ -17,6 +19,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ publicId
 export async function POST(req: Request, { params }: { params: Promise<{ publicId: string }> }) {
   const signed = await readSigned(req);
   if (!signed.ok) return signed.response;
+  const limit = await limited(req, "pay");
+  if (limit) return limit;
   const publicId = await publicIdParam(params);
   if (!publicId) return jsonError(404, "not_found");
   const parsed = parseBody(signed.body, websitePaymentStartSchema);

@@ -24,3 +24,8 @@ export const ADVISOR_ROLE = "Advisor";
 
 /** How long a coordinator's payment link works. */
 export const PAY_LINK_HOURS = 72;
+
+/** Website API calls allowed per visitor IP per hour, by endpoint group. Each has an env override (server/website/rate-limit.ts). */
+export const RATE_LIMITS_PER_HOUR = { lead: 5, select: 30, pay: 20, link: 20, read: 600 } as const;
+/** The visitor's IP, sent by the website with each API call. */
+export const CLIENT_IP_HEADER = "x-brokwise-client-ip";
