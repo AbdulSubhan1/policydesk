@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, exists, ilike, or, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { LeadStage } from "@/constants/statuses";
 import type { Page } from "@/lib/pagination";
@@ -6,7 +6,7 @@ import type { SessionUser } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
 import { leadScope } from "./scope";
 
-const { opportunities, leads, users, departments, kycRecords } = schema;
+const { opportunities, leads, users, departments, kycRecords, orders } = schema;
 const advisor = alias(users, "advisor");
 
 /** One page of leads in the user's scope, with the total for pagination. */
@@ -30,6 +30,13 @@ export async function listLeads(user: SessionUser, { stage, q, page }: { stage?:
         advisorName: advisor.name,
         departmentKey: departments.key,
         kycStatus: kycRecords.status,
+        // In the same query, so the list does not look up orders lead by lead
+        paidOnline: exists(
+          db
+            .select({ id: orders.id })
+            .from(orders)
+            .where(and(eq(orders.leadId, leads.id), eq(orders.status, "paid"))),
+        ).mapWith(Boolean),
       })
       .from(leads)
       .innerJoin(opportunities, eq(leads.opportunityId, opportunities.id))

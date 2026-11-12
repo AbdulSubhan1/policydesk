@@ -4,7 +4,7 @@ import { OPPORTUNITIES_PATH, customerName, fullForm, shortForm, websiteCall } fr
 
 // The signed API the Brokwise website calls. Requests are signed like the website signs them (e2e/website-client.ts).
 
-const COORDINATORS = ["Hina Coordinator", "Saad Coordinator"];
+const COORDINATORS = ["Hina Malik", "Saad Raza"];
 
 /** Flips a user's Available toggle on the admin Users page and waits for the new state. */
 async function setAvailable(page: Page, name: string, available: boolean) {

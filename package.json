@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:setup": "tsx scripts/setup-db.ts",
+    "db:clean-demo": "tsx scripts/clean-demo-data.ts",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
