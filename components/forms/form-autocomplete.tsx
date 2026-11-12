@@ -10,12 +10,15 @@ export function FormAutocomplete<T extends FieldValues>({
   options,
   placeholder,
   onPick,
+  "aria-label": ariaLabel,
 }: {
   control: Control<T>;
   name: Path<T>;
   options: AutocompleteOption[];
   placeholder?: string;
   onPick?: (value: string) => void;
+  /** For a field without its own <Field> label, e.g. inside a table row. */
+  "aria-label"?: string;
 }) {
   return (
     <Controller
@@ -33,6 +36,7 @@ export function FormAutocomplete<T extends FieldValues>({
           invalid={fieldState.invalid}
           options={options}
           placeholder={placeholder}
+          aria-label={ariaLabel}
         />
       )}
     />
