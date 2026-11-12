@@ -1,85 +1,102 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import { Controller } from "react-hook-form";
 import { Button, DatePicker, Field, FormError, Input, NumberInput } from "@/components/ui";
-import { websiteDetailsSchema } from "@/schemas/website";
+import { WEBSITE_DETAIL_FIELDS, type DetailField, type WebsiteProduct } from "@/constants/website";
+import { keyedOptions } from "@/lib/options";
+import { websiteDetailsSchemaFor } from "@/schemas/website";
 import { saveWebsiteDetails } from "@/server/actions/website-opportunities";
 import { FormAutocomplete } from "./form-autocomplete";
 import { useActionForm } from "./use-action-form";
 
 type Details = Record<string, string | number | boolean>;
 
-/** The full form's car and driver fields, for the coordinator to complete on the customer's call. Empty = not asked yet. */
-export function WebsiteDetailsForm({ id, details }: { id: number; details: Details }) {
+/** A saved answer as the form holds it: text, "yes"/"no", or empty when not asked yet. */
+function formValue(field: DetailField, value: string | number | boolean | undefined) {
+  if (value === undefined) return field.control === "yesNo" || field.control === "choice" ? undefined : "";
+  if (field.control === "yesNo") return value ? "yes" : "no";
+  return String(value);
+}
+
+/** The product's full-form fields, for the coordinator to complete on the customer's call. Empty = not asked yet. */
+export function WebsiteDetailsForm({
+  id,
+  product,
+  details,
+}: {
+  id: number;
+  product: WebsiteProduct;
+  details: Details;
+}) {
   const t = useTranslations();
-  const text = (key: string) => (details[key] === undefined ? "" : String(details[key]));
-  const { form, pending, onSubmit, errorOf, rootError } = useActionForm(websiteDetailsSchema, saveWebsiteDetails, {
-    defaultValues: {
-      id,
-      make: text("make"),
-      model: text("model"),
-      year: text("year"),
-      gccSpec: details.gccSpec === undefined ? undefined : details.gccSpec ? "yes" : "no",
-      carValue: text("carValue"),
-      dateOfBirth: text("dateOfBirth"),
-      nationality: text("nationality"),
-      city: text("city"),
-      yearsLicensed: text("yearsLicensed"),
-    },
+  const fields = WEBSITE_DETAIL_FIELDS[product];
+  const schema = useMemo(() => websiteDetailsSchemaFor(product), [product]);
+  const { form, pending, onSubmit, errorOf, rootError } = useActionForm(schema, saveWebsiteDetails, {
+    defaultValues: { id, ...Object.fromEntries(fields.map((f) => [f.key, formValue(f, details[f.key])])) },
     success: t("opportunities.website.detailsSaved"),
   });
-  const label = (key: string) => t(`opportunities.details.${key}`);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const control = (field: DetailField, label: string) => {
+    // Dates show the picker's own prompt, so only the other controls have a placeholder key
+    const placeholder = field.control === "date" ? "" : t(`placeholders.${field.placeholder ?? field.key}`);
+    switch (field.control) {
+      case "text":
+        return <Input placeholder={placeholder} {...form.register(field.key)} />;
+      case "number":
+        return <NumberInput min={field.min} max={field.max} placeholder={placeholder} {...form.register(field.key)} />;
+      case "money":
+        return (
+          <NumberInput min={field.min} step={field.step} placeholder={placeholder} {...form.register(field.key)} />
+        );
+      case "yesNo":
+      case "choice":
+        return (
+          <FormAutocomplete
+            control={form.control}
+            name={field.key}
+            options={
+              field.control === "yesNo"
+                ? [
+                    { value: "yes", label: t("common.yes") },
+                    { value: "no", label: t("common.no") },
+                  ]
+                : keyedOptions(t, `opportunities.detailOptions.${field.key}`, field.options)
+            }
+            placeholder={placeholder}
+          />
+        );
+      case "date":
+        return (
+          <Controller
+            control={form.control}
+            name={field.key}
+            render={({ field: input, fieldState }) => (
+              <DatePicker
+                label={label}
+                value={typeof input.value === "string" ? input.value : ""}
+                onChange={input.onChange}
+                {...(field.range === "past" ? { max: today } : { min: today })}
+                invalid={fieldState.invalid}
+              />
+            )}
+          />
+        );
+    }
+  };
 
   return (
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate>
-      <Field label={label("make")} error={errorOf("make")}>
-        <Input placeholder={t("placeholders.make")} {...form.register("make")} />
-      </Field>
-      <Field label={label("model")} error={errorOf("model")}>
-        <Input placeholder={t("placeholders.model")} {...form.register("model")} />
-      </Field>
-      <Field label={label("year")} error={errorOf("year")}>
-        <NumberInput min={1990} placeholder={t("placeholders.year")} {...form.register("year")} />
-      </Field>
-      <Field label={label("gccSpec")} error={errorOf("gccSpec")}>
-        <FormAutocomplete
-          control={form.control}
-          name="gccSpec"
-          options={[
-            { value: "yes", label: t("common.yes") },
-            { value: "no", label: t("common.no") },
-          ]}
-          placeholder={t("placeholders.gccSpec")}
-        />
-      </Field>
-      <Field label={label("carValue")} error={errorOf("carValue")}>
-        <NumberInput min={1} step={500} placeholder={t("placeholders.carValue")} {...form.register("carValue")} />
-      </Field>
-      <Field label={label("dateOfBirth")} error={errorOf("dateOfBirth")} group>
-        <Controller
-          control={form.control}
-          name="dateOfBirth"
-          render={({ field, fieldState }) => (
-            <DatePicker
-              label={label("dateOfBirth")}
-              value={typeof field.value === "string" ? field.value : ""}
-              onChange={field.onChange}
-              max={new Date().toISOString().slice(0, 10)}
-              invalid={fieldState.invalid}
-            />
-          )}
-        />
-      </Field>
-      <Field label={label("nationality")} error={errorOf("nationality")}>
-        <Input placeholder={t("placeholders.nationalityText")} {...form.register("nationality")} />
-      </Field>
-      <Field label={label("city")} error={errorOf("city")}>
-        <Input placeholder={t("placeholders.city")} {...form.register("city")} />
-      </Field>
-      <Field label={label("yearsLicensed")} error={errorOf("yearsLicensed")}>
-        <NumberInput min={0} placeholder={t("placeholders.yearsLicensed")} {...form.register("yearsLicensed")} />
-      </Field>
+      {fields.map((field) => {
+        const label = t(`opportunities.details.${field.key}`);
+        return (
+          <Field key={field.key} label={label} error={errorOf(field.key)} group={field.control === "date"}>
+            {control(field, label)}
+          </Field>
+        );
+      })}
       <div className="grid justify-items-start gap-2 sm:col-span-2">
         <FormError message={rootError} />
         <Button variant="primary" disabled={pending}>

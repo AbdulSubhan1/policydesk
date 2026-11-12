@@ -9,7 +9,7 @@ import { onlinePlanSchema, type OnlinePlanInput } from "@/schemas/website";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import { requireOpportunity } from "@/server/guards";
-import { isWebsiteCarOpportunity } from "@/server/website/opportunities";
+import { isWebsiteOpportunity } from "@/server/website/opportunities";
 import { newPayToken, paidOrderOf, payLinkExpiry } from "@/server/website/pay-links";
 import { openOnlineQuote, saveOnlineSelection } from "@/server/website/plans";
 
@@ -21,7 +21,7 @@ const { leads, paymentLinks } = schema;
 /** A converted website opportunity in the user's scope and its lead. The UI offers nothing else, so anything else throws. */
 async function websiteLead(opportunityId: number) {
   const { user, opportunity } = await requireOpportunity("opportunities:convert", opportunityId);
-  if (!isWebsiteCarOpportunity(opportunity)) throw new Error("Only website opportunities are paid online");
+  if (!isWebsiteOpportunity(opportunity)) throw new Error("Only website opportunities are paid online");
   const [lead] = await db
     .select()
     .from(leads)

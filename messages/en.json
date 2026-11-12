@@ -228,7 +228,14 @@
     "fullName": "Enter a first and last name",
     "phoneLength": "This number is too short or too long for its country",
     "outOfRange": "Enter a value in the allowed range",
-    "age": "The driver must be 18 to 80 years old"
+    "age": "The driver must be 18 to 80 years old",
+    "ageHealth": "The customer must be 18 to 75 years old",
+    "startInPast": "The start date can't be in the past",
+    "endBeforeStart": "The end date must be on or after the start date",
+    "tripTooLong": "A single trip can last at most 180 days",
+    "annualNoEndDate": "An annual policy has no end date; leave it empty",
+    "ownersOnly": "Only owners insure the building; leave it empty for a tenant",
+    "familyOnly": "Children are covered only on a family policy; leave it empty"
   },
   "errors": {
     "invalidLogin": "That email and password don't match a user",
@@ -254,7 +261,20 @@
       "dateOfBirth": "Complete the driver's date of birth before converting",
       "nationality": "Complete the nationality before converting",
       "city": "Complete the city before converting",
-      "yearsLicensed": "Complete years licensed before converting"
+      "yearsLicensed": "Complete years licensed before converting",
+      "destination": "Complete the destination before converting",
+      "tripType": "Complete the trip type before converting",
+      "startDate": "Complete the start date before converting",
+      "endDate": "Complete the end date before converting",
+      "travellers": "Complete the number of travellers before converting",
+      "oldestAge": "Complete the oldest traveller's age before converting",
+      "propertyType": "Complete the property type before converting",
+      "occupancy": "Complete owner or tenant before converting",
+      "buildingValue": "Complete the building value before converting",
+      "contentsValue": "Complete the contents value before converting",
+      "coverFor": "Complete who is covered before converting",
+      "children": "Complete the number of children before converting",
+      "preExisting": "Complete the pre-existing condition answer before converting"
     },
     "alreadyPaid": "The customer has already paid",
     "addOnUnavailable": "One of the add-ons can't be chosen for this plan",
@@ -344,7 +364,47 @@
       "dateOfBirth": "Date of birth",
       "nationality": "Nationality",
       "city": "City",
-      "yearsLicensed": "Years licensed"
+      "yearsLicensed": "Years licensed",
+      "destination": "Destination",
+      "tripType": "Trip type",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "travellers": "Travellers",
+      "oldestAge": "Oldest traveller's age",
+      "propertyType": "Property type",
+      "occupancy": "Owner or tenant",
+      "buildingValue": "Building value",
+      "contentsValue": "Contents value",
+      "coverFor": "Who is covered",
+      "children": "Children",
+      "preExisting": "Pre-existing condition"
+    },
+    "detailOptions": {
+      "destination": {
+        "gcc": "GCC",
+        "asia": "Asia",
+        "europe_schengen": "Europe (Schengen)",
+        "worldwide_ex_us": "Worldwide except the US",
+        "worldwide": "Worldwide"
+      },
+      "tripType": {
+        "single": "Single trip",
+        "annual": "Annual (many trips)"
+      },
+      "propertyType": {
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "townhouse": "Townhouse"
+      },
+      "occupancy": {
+        "owner": "Owner",
+        "tenant": "Tenant"
+      },
+      "coverFor": {
+        "me": "Just me",
+        "me_spouse": "Me and my spouse",
+        "family": "My family"
+      }
     },
     "website": {
       "detailsBody": "Complete what the customer didn't send on the short form while you are on the call. Everything is needed before you convert.",
@@ -762,7 +822,18 @@
     "carValue": "e.g. 18000",
     "nationalityText": "e.g. Pakistan",
     "city": "e.g. Karachi",
-    "yearsLicensed": "e.g. 5"
+    "yearsLicensed": "e.g. 5",
+    "destination": "Pick a region…",
+    "tripType": "Single or annual…",
+    "travellers": "e.g. 2",
+    "oldestAge": "e.g. 45",
+    "propertyType": "Pick a property type…",
+    "occupancy": "Owner or tenant…",
+    "buildingValue": "e.g. 250000",
+    "contentsValue": "e.g. 30000",
+    "coverFor": "Pick who is covered…",
+    "children": "e.g. 2",
+    "preExisting": "Yes or no…"
   },
   "table": {
     "all": "All",
