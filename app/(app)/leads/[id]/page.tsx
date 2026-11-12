@@ -7,6 +7,7 @@ import { PolicyTab } from "@/components/leads/policy-tab";
 import { ProgressRail } from "@/components/leads/progress-rail";
 import { QuotesTab } from "@/components/leads/quotes-tab";
 import {
+  Alert,
   Autocomplete,
   Badge,
   Button,
@@ -19,7 +20,7 @@ import {
   Tabs,
 } from "@/components/ui";
 import { EDITABLE_LEAD_STAGES } from "@/constants/statuses";
-import { shortDate } from "@/lib/format";
+import { money, shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
 import { can, scopeOf } from "@/lib/rbac";
 import { reassignAdvisor, updateLeadStage } from "@/server/actions/leads";
@@ -28,6 +29,7 @@ import {
   getDocuments,
   getKyc,
   getLeadContext,
+  getOrder,
   getPolicy,
   getPolicyById,
   getQuotes,
@@ -49,16 +51,18 @@ export default async function LeadPage({
 
   const { lead, opportunity, departmentKey, advisorName, closed } = await getLeadContext((await params).id);
   const leadId = lead.id;
-  const [quotes, kyc, docs, policy, previous, t] = await Promise.all([
+  const [quotes, kyc, docs, policy, order, previous, t] = await Promise.all([
     getQuotes(leadId),
     getKyc(leadId),
     getDocuments(leadId),
     getPolicy(leadId),
+    getOrder(leadId),
     lead.previousPolicyId ? getPolicyById(lead.previousPolicyId) : undefined,
     getTranslations(),
   ]);
 
   const accepted = quotes.find((q) => q.status === "accepted");
+  const paidOnline = order?.status === "paid" ? order : undefined;
   const kycStatus = kyc?.record.status ?? "pending";
   const steps = [
     {
@@ -83,17 +87,23 @@ export default async function LeadPage({
       detail: policy?.policyNumber ?? t("lead.steps.notYet"),
       done: !!policy,
     },
+    // Before booking, a paid website order is the payment; booking then marks the policy paid from it
     {
       tab: "policy",
       label: t("lead.steps.paid"),
-      detail: policy ? t(`status.${policy.paymentStatus}`) : t("lead.steps.notYet"),
-      done: policy?.paymentStatus === "paid",
+      detail: policy
+        ? t(`status.${policy.paymentStatus}`)
+        : paidOnline
+          ? t("lead.steps.paidOnline", { amount: money(paidOnline.amount) })
+          : t("lead.steps.notYet"),
+      done: policy ? policy.paymentStatus === "paid" : !!paidOnline,
     },
   ];
+  const next = steps.find((s) => !s.done);
 
   // Open the first unfinished step unless a tab was picked
   const requested = (await searchParams).tab;
-  const tab = (requested && requested in TABS ? requested : (steps.find((s) => !s.done)?.tab ?? "policy")) as TabId;
+  const tab = (requested && requested in TABS ? requested : (next?.tab ?? "policy")) as TabId;
   const Section = TABS[tab];
   const advisors =
     can(user, "leads:assign") && !closed ? await usersWithPermission(lead.departmentId, "quotes:create") : [];
@@ -120,6 +130,16 @@ export default async function LeadPage({
         <p className="-mt-3 mb-5 text-sm text-plum">
           {t("lead.renews", { policy: previous.policyNumber, date: shortDate(previous.endDate) })}
         </p>
+      )}
+
+      {paidOnline?.paidAt && !policy && next && (
+        <Alert
+          tone="success"
+          className="mb-4"
+          title={t("lead.paidOnline.title", { amount: money(paidOnline.amount), date: shortDate(paidOnline.paidAt) })}
+        >
+          {t(`lead.paidOnline.next.${next.tab}`)}
+        </Alert>
       )}
 
       <ProgressRail steps={steps} />

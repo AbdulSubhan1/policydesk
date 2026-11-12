@@ -265,12 +265,20 @@ test.describe.serial("website payments", () => {
   test("booking a paid online order makes the policy active with method Online", async ({ page }) => {
     await loginAs(page, "admin");
     await page.goto(`/leads?q=${main.reference}`);
+    await expect(page.getByRole("row").filter({ hasText: main.name }).getByText("Paid online")).toBeVisible();
     await page.getByRole("link", { name: main.name }).click();
     // The first visit compiles the lead page in dev mode, so allow time for it
     await expect(page).toHaveURL(/\/leads\/[0-9a-f-]{36}$/, { timeout: 30_000 });
     const leadUrl = new URL(page.url()).pathname;
     // One advisor assignment, however many times the payment was reported
     await expect(page.getByText("assigned the advisor", { exact: true })).toHaveCount(1);
+    // Paid but not booked: the rail's Paid step is done from the order, and the banner names the next step
+    const amount = `$${main.selection.total.toLocaleString("en-US")}`;
+    await expect(page.getByText(`Paid online · ${amount}`)).toBeVisible();
+    await expect(page.getByText(new RegExp(`^Customer paid \\${amount} online on `))).toBeVisible();
+    await expect(page.getByText("Next: approve KYC.")).toBeVisible();
+    await expect(page.locator('a[href^="mailto:"]')).toHaveCount(1);
+    await expect(page.locator('a[href^="tel:+"]')).toHaveCount(1);
 
     await page.goto(`${leadUrl}?tab=kyc`);
     await page.getByLabel("ID or passport number").fill("ID-778899");
