@@ -57,3 +57,15 @@ The session is a signed JWT (`jose`) in an http-only cookie. `middleware.ts` onl
   keyed hashes and flags brute force, password spraying and a sign-in right after many failures. Sent after the
   response with a 10-second limit nobody waits for (2 seconds silently dropped events when Pulse or its database was
   cold); a lost event leaves a one-line `[pulse]` warning in the Vercel logs. Off until `MONITOR_LOG_TOKEN` is set.
+
+## App settings
+
+App-wide switches live in the `app_settings` table, one row per setting with a JSON value (first one: `demo_mode`).
+No screen or action writes them: they are changed only in the database's SQL editor, behind the owner's Vercel login,
+so no PolicyDesk account can flip them. `lib/settings.ts` lists every known key with its type and default;
+`getSetting()` reads them once per request and falls back to the default when a row is missing or malformed.
+Migrations and missing settings are applied on every production deploy (`npm run db:migrate`, see `vercel.json`).
+
+While `demo_mode` is on, the live demo locks roles, users, document settings, insurers and plans, document uploads and
+deletes, and payment links, for every account. The check is in the server actions (`server/demo-lock.ts`); the screens
+only mirror it (read-only, with a note). Each refused attempt is reported to Pulse as `action_blocked`.

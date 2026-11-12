@@ -6,15 +6,18 @@ import { localized } from "@/lib/i18n";
 import { can } from "@/lib/rbac";
 import { leadPath } from "@/lib/reference";
 import { deleteDocument } from "@/server/actions/documents";
+import { isDemoLocked } from "@/server/demo-lock";
 import { getDocuments, getLeadContext, getPolicy } from "@/server/queries/lead-details";
 
 export async function DocumentsTab({ leadId }: { leadId: number }) {
-  const [{ user, lead, closed }, { files, checklist, uploaded }, policy, t, locale] = await Promise.all([
+  const [{ user, lead, closed }, { files, checklist, uploaded }, policy, t, locale, locked, tDemo] = await Promise.all([
     getLeadContext(leadId),
     getDocuments(leadId),
     getPolicy(leadId),
     getTranslations("lead.documents"),
     getLocale(),
+    isDemoLocked(),
+    getTranslations("demo"),
   ]);
   const typeName = new Map(checklist.map((d) => [d.id, localized(d.name, locale)]));
 
@@ -68,7 +71,7 @@ export async function DocumentsTab({ leadId }: { leadId: number }) {
                     {t("view")}
                   </ButtonLink>
                 )}
-                {can(user, "documents:upload") && !policy && (
+                {can(user, "documents:upload") && !policy && !locked && (
                   <form action={deleteDocument}>
                     <Hidden name="documentId" value={d.id} />
                     <AlertDialog
@@ -89,7 +92,12 @@ export async function DocumentsTab({ leadId }: { leadId: number }) {
       />
       {can(user, "documents:upload") && !closed && checklist.length > 0 && (
         <PanelSection muted>
-          <UploadForm leadId={leadId} types={checklist} />
+          {locked ? (
+            // Files are stored in the database, so the live demo takes none
+            <p className="text-sm text-muted">{tDemo("uploadsOff")}</p>
+          ) : (
+            <UploadForm leadId={leadId} types={checklist} />
+          )}
         </PanelSection>
       )}
     </>

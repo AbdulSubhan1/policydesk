@@ -8,12 +8,15 @@ import { id } from "@/schemas/fields";
 import { roleSchema, type RoleInput } from "@/schemas/role";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";
+import { assertNotDemoLocked, demoLockError } from "@/server/demo-lock";
 import { db, schema } from "@/server/db";
 
 const { roles, rolePermissions } = schema;
 
 export async function createRole(input: RoleInput): Promise<ActionResult> {
   const user = await requirePermission("roles:manage");
+  const locked = await demoLockError("roles", user.email, "/admin/roles");
+  if (locked) return { ok: false, error: locked };
   const parsed = roleSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
 
@@ -32,6 +35,7 @@ export async function createRole(input: RoleInput): Promise<ActionResult> {
 
 export async function saveRolePermissions(formData: FormData) {
   const user = await requirePermission("roles:manage");
+  await assertNotDemoLocked("roles", user.email, "/admin/roles");
   const [role] = await db
     .select()
     .from(roles)

@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { DemoLockedNotice } from "@/components/demo-locked-notice";
 import { InsurerForm } from "@/components/forms/insurer-form";
 import { PlanEditForm } from "@/components/forms/plan-edit-form";
 import { PlanForm } from "@/components/forms/plan-form";
@@ -26,6 +27,7 @@ import { can } from "@/lib/rbac";
 import { withParams } from "@/lib/url";
 import { toggleInsurer, togglePlan } from "@/server/actions/plans";
 import { requireUser } from "@/server/auth";
+import { isDemoLocked } from "@/server/demo-lock";
 import { countPlansByProduct, listInsurers, listPlans } from "@/server/queries/plans";
 
 type Query = { product?: string; insurer?: string; inactive?: string; edit?: string };
@@ -38,15 +40,17 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
   const product: Product = PRODUCTS.find((p) => p === query.product) ?? "car";
   const withInactive = query.inactive === "1";
   const insurerId = Number(query.insurer) || undefined;
-  const [insurers, plans, counts, t, locale] = await Promise.all([
+  const [insurers, plans, counts, t, locale, locked] = await Promise.all([
     listInsurers(),
     listPlans(product, { insurerId, withInactive }),
     countPlansByProduct(withInactive),
     getTranslations(),
     getLocale(),
+    isDemoLocked(),
   ]);
   const params = { product, insurer: query.insurer, inactive: query.inactive };
-  const editing = plans.find((p) => p.plan.id === Number(query.edit));
+  // The live demo shows the catalogue read-only: no edit panel, no add forms, no activate/deactivate
+  const editing = locked ? undefined : plans.find((p) => p.plan.id === Number(query.edit));
   const editHref = (planId?: number) =>
     `${withParams("/admin/plans", params, { edit: planId ? String(planId) : undefined })}${planId ? "#edit-plan" : ""}`;
 
@@ -64,14 +68,17 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         title={t("plans.title")}
         description={t("plans.description")}
         action={
-          <div className="flex flex-wrap gap-2">
-            <ButtonLink href="#add-insurer">{t("plans.addInsurer")}</ButtonLink>
-            <ButtonLink href="#add-plan" variant="primary">
-              {t("plans.addPlan")}
-            </ButtonLink>
-          </div>
+          !locked && (
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink href="#add-insurer">{t("plans.addInsurer")}</ButtonLink>
+              <ButtonLink href="#add-plan" variant="primary">
+                {t("plans.addPlan")}
+              </ButtonLink>
+            </div>
+          )
         }
       />
+      {locked && <DemoLockedNotice className="mb-6" />}
 
       <ul aria-label={t("plans.insurers")} className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {insurers.map((i) => (
@@ -97,25 +104,29 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
                     </span>
                   )}
                 </div>
-                <form id={`insurer-${i.id}`} action={toggleInsurer}>
-                  <Hidden name="insurerId" value={i.id} />
-                </form>
-                <DropdownMenu
-                  label={i.name}
-                  align="end"
-                  items={[
-                    {
-                      label: i.active ? t("common.deactivate") : t("common.activate"),
-                      danger: i.active,
-                      form: `insurer-${i.id}`,
-                    },
-                  ]}
-                  trigger={
-                    <Button type="button" variant="ghost" size="sm" aria-label={i.name}>
-                      <Icon name="more" size={16} />
-                    </Button>
-                  }
-                />
+                {!locked && (
+                  <>
+                    <form id={`insurer-${i.id}`} action={toggleInsurer}>
+                      <Hidden name="insurerId" value={i.id} />
+                    </form>
+                    <DropdownMenu
+                      label={i.name}
+                      align="end"
+                      items={[
+                        {
+                          label: i.active ? t("common.deactivate") : t("common.activate"),
+                          danger: i.active,
+                          form: `insurer-${i.id}`,
+                        },
+                      ]}
+                      trigger={
+                        <Button type="button" variant="ghost" size="sm" aria-label={i.name}>
+                          <Icon name="more" size={16} />
+                        </Button>
+                      }
+                    />
+                  </>
+                )}
               </div>
             </Panel>
           </li>
@@ -173,7 +184,7 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
               cell: ({ plan, insurerActive }) => (
                 <span className="inline-flex items-center gap-2">
                   {!(plan.active && insurerActive) && <Badge tone="grey">{t("common.inactive")}</Badge>}
-                  {editing?.plan.id === plan.id ? (
+                  {locked ? null : editing?.plan.id === plan.id ? (
                     <Badge tone="plum">{t("plans.editing")}</Badge>
                   ) : (
                     <ButtonLink
@@ -219,12 +230,21 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         </Panel>
       )}
 
-      <Panel id="add-plan" title={t("plans.addPlan")} description={t("plans.addPlanHint")} className="mb-6 scroll-mt-6">
-        <PlanForm key={product} product={product} insurers={insurers.filter((i) => i.active)} />
-      </Panel>
-      <Panel id="add-insurer" title={t("plans.addInsurer")} className="scroll-mt-6">
-        <InsurerForm />
-      </Panel>
+      {!locked && (
+        <>
+          <Panel
+            id="add-plan"
+            title={t("plans.addPlan")}
+            description={t("plans.addPlanHint")}
+            className="mb-6 scroll-mt-6"
+          >
+            <PlanForm key={product} product={product} insurers={insurers.filter((i) => i.active)} />
+          </Panel>
+          <Panel id="add-insurer" title={t("plans.addInsurer")} className="scroll-mt-6">
+            <InsurerForm />
+          </Panel>
+        </>
+      )}
     </>
   );
 }

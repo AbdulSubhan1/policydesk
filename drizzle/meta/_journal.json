@@ -57,6 +57,13 @@
       "when": 1794473395721,
       "tag": "0007_quote_price_breakdown",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794488132537,
+      "tag": "0008_app_settings",
+      "breakpoints": true
     }
   ]
 }

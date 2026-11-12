@@ -8,6 +8,7 @@ import { id } from "@/schemas/fields";
 import { onlinePlanSchema, type OnlinePlanInput } from "@/schemas/website";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
+import { assertNotDemoLocked, demoLockError } from "@/server/demo-lock";
 import { requireOpportunity } from "@/server/guards";
 import { isWebsiteOpportunity } from "@/server/website/opportunities";
 import { newPayToken, paidOrderOf, payLinkExpiry } from "@/server/website/pay-links";
@@ -52,6 +53,9 @@ export async function createPayLink(
   formData: FormData,
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   const { user, opportunity, lead } = await websiteLead(id.parse(formData.get("id")));
+  // Each link opens a real PaySandbox checkout, so the live demo makes none
+  const locked = await demoLockError("pay_links", user.email, `/opportunities/${opportunity.id}`);
+  if (locked) return { ok: false, error: locked };
   const websiteUrl = process.env.WEBSITE_URL;
   if (!websiteUrl) return { ok: false, error: "errors.payLinksDisabled" };
   if (await paidOrderOf(lead.id)) return { ok: false, error: "errors.alreadyPaid" };
@@ -81,6 +85,7 @@ export async function createPayLink(
 
 export async function revokePayLink(formData: FormData) {
   const { user, opportunity, lead } = await websiteLead(id.parse(formData.get("id")));
+  await assertNotDemoLocked("pay_links", user.email, `/opportunities/${opportunity.id}`);
   const [link] = await db
     .select()
     .from(paymentLinks)

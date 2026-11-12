@@ -17,12 +17,15 @@ import {
 } from "@/schemas/plan";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";
+import { assertNotDemoLocked, demoLockError } from "@/server/demo-lock";
 import { db, schema } from "@/server/db";
 
 const { insurers, plans, planAddOns } = schema;
 
 export async function createInsurer(input: InsurerInput): Promise<ActionResult> {
   const user = await requirePermission("plans:manage");
+  const locked = await demoLockError("catalogue", user.email, "/admin/plans");
+  if (locked) return { ok: false, error: locked };
   const parsed = insurerSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
 
@@ -40,6 +43,7 @@ export async function createInsurer(input: InsurerInput): Promise<ActionResult> 
 
 export async function toggleInsurer(formData: FormData) {
   const user = await requirePermission("plans:manage");
+  await assertNotDemoLocked("catalogue", user.email, "/admin/plans");
   const [insurer] = await db
     .select()
     .from(insurers)
@@ -59,6 +63,8 @@ export async function toggleInsurer(formData: FormData) {
 
 export async function createPlan(input: PlanInput): Promise<ActionResult> {
   const user = await requirePermission("plans:manage");
+  const locked = await demoLockError("catalogue", user.email, "/admin/plans");
+  if (locked) return { ok: false, error: locked };
   const parsed = planSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
   const { nameEn, nameAr, benefits, ...rest } = parsed.data;
@@ -82,6 +88,7 @@ export async function createPlan(input: PlanInput): Promise<ActionResult> {
 /** Turns a plan off (advisors and the website stop offering it) or on again. */
 export async function togglePlan(formData: FormData) {
   const user = await requirePermission("plans:manage");
+  await assertNotDemoLocked("catalogue", user.email, "/admin/plans");
   const [plan] = await db
     .select()
     .from(plans)
@@ -106,6 +113,8 @@ export async function togglePlan(formData: FormData) {
  */
 export async function savePlan(input: PlanEditInput): Promise<ActionResult> {
   const user = await requirePermission("plans:manage");
+  const locked = await demoLockError("catalogue", user.email, "/admin/plans");
+  if (locked) return { ok: false, error: locked };
   const parsed = planEditSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
   const { planId, basePremium, excess, benefits, addOns } = parsed.data;

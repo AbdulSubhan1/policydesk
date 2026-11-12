@@ -192,7 +192,8 @@
     "app/(app)/page.tsx"
   ],
   "Alert": [
-    "app/(app)/leads/[id]/page.tsx"
+    "app/(app)/leads/[id]/page.tsx",
+    "components/demo-locked-notice.tsx"
   ],
   "Toast": [
     "components/opportunities/pay-link-creator.tsx"
