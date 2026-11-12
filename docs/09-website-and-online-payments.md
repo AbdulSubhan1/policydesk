@@ -126,7 +126,7 @@ sequenceDiagram
 
 **Orders.** Pressing Pay creates an **order** on the lead for the saved website quote: status _Pending_, the total in whole dollars and the line items, and the PaySandbox checkout session (`cs_test_…`, its URL and expiry, 24 hours). PaySandbox has no metadata field, so PolicyDesk matches payments to orders by the session id.
 
-- **Line items:** the plan with its insurer ("Northwind Assurance Northwind Plus"), each included add-on at 0, then each ticked add-on. They add up to the quote's premium. No tax line. PaySandbox gets every amount × 100 (cents), with no currency, so the project's own (USD) is used.
+- **Line items:** the plan, named with its insurer only when the plan name doesn't already start with the insurer's brand ("Northwind Plus", but "Bluepeak Insurance Gold"), each included add-on at 0, then each ticked add-on. They add up to the quote's premium. No tax line. PaySandbox gets every amount × 100 (cents), with no currency, so the project's own (USD) is used.
 - **Pay again:** while the order's session is still open and the selection has not changed, Pay sends the visitor back to the same session. If the session was paid in the meantime, the answer is `already_paid`.
 - **Changed selection:** a different plan or add-ons means a new total, so the pending order is marked _Expired_ and a new order and session are made. A payment that still arrives on the old session is recorded on its own (expired) order and audited, but it does not accept the quote, so the newer selection stays open; the advisor sorts out the difference.
 - **Paid twice is impossible from the website:** once a lead has a paid order, starting a payment answers `already_paid`.
@@ -254,7 +254,7 @@ The order view shows only masked contact details:
   "order": {
     "status": "paid",
     "lines": [
-      { "label": "Northwind Assurance Northwind Plus", "amount": 1110 },
+      { "label": "Northwind Plus", "amount": 1110 },
       { "label": "Roadside assistance", "amount": 0 },
       { "label": "Replacement car", "amount": 60 }
     ],
