@@ -241,6 +241,7 @@
   },
   "errors": {
     "invalidLogin": "That email and password don't match a user",
+    "tooManyAttempts": "Too many failed sign-ins from this network. Try again in 15 minutes.",
     "planUnavailable": "That plan is no longer available for this product",
     "kycAlreadySent": "KYC is already with compliance",
     "fileMissing": "Choose a file to upload",

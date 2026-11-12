@@ -43,3 +43,16 @@ The lead page and each of its tabs call cached loaders in `server/queries/lead-d
 ## Sessions
 
 The session is a signed JWT (`jose`) in an http-only cookie. `middleware.ts` only redirects signed-out visitors. The real check is `requireUser()`, which reads the user and their permissions from the database on every request.
+
+## Login protection and monitoring
+
+- **Password guessing is cut off.** After 10 failed sign-ins from one address in 15 minutes, that address is refused
+  (`errors.tooManyAttempts`) before the database or bcrypt is touched, even with the right password, until the window
+  passes. Counts live in memory (`server/login-guard.ts`), so an attack writes nothing to our database. Accounts are
+  not locked, so nobody can lock a real user out on purpose. The form keeps one message for unknown email, inactive
+  user and wrong password, so it doesn't reveal which emails exist.
+- **Every login is reported to Pulse** (`server/pulse.ts`, my monitor): failures with a reason (`unknown_account`,
+  `inactive`, `wrong_password`), successes, and blocks. Only the first 10 failures per address and window plus one
+  "blocked" event are sent, so an attack of any size costs Pulse about 11 rows. Pulse stores the email and IP only as
+  keyed hashes and flags brute force, password spraying and a sign-in right after many failures. Sent after the
+  response, 2-second timeout, off until `MONITOR_LOG_TOKEN` is set.
