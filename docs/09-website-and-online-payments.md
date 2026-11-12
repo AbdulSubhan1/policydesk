@@ -206,7 +206,7 @@ The view shows only public ids, never internal numbers:
 {
   "opportunity": { "publicId": "3f9c2a1e-…", "status": "converted", "product": "car" },
   "lead": { "reference": "CAR-J2M3HX7" },
-  "contact": { "role": "coordinator", "name": "Hina Coordinator", "email": "…", "phone": "+923001110001" }
+  "contact": { "role": "coordinator", "name": "Hina Malik", "email": "…", "phone": "+923001110001" }
 }
 ```
 

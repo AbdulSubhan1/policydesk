@@ -126,14 +126,14 @@ const USER_SEED: { name: string; email: string; role: string; department?: Depar
     phone: "+923001110004",
   },
   {
-    name: "Hina Coordinator",
+    name: "Hina Malik",
     email: "coordinator@policydesk.dev",
     role: "Coordinator",
     department: "motor_marine",
     phone: "+923001110001",
   },
   {
-    name: "Saad Coordinator",
+    name: "Saad Raza",
     email: "saad@policydesk.dev",
     role: "Coordinator",
     department: "motor_marine",
