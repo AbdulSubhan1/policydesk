@@ -25,14 +25,13 @@ function filterWhere(filter?: PolicyFilter): SQL | undefined {
   return filter ? eq(policies.status, filter) : undefined;
 }
 
-/** One page of policies in the user's scope, soonest to end first, with the total for pagination. */
+/** One page of policies in the user's scope, soonest to end first, the total and the count behind each filter. */
 export async function listPolicies(
   user: SessionUser,
   { filter, q, page }: { filter?: PolicyFilter; q?: string; page: Page },
 ) {
-  const where: SQL | undefined = and(
+  const base: SQL | undefined = and(
     leadScope(user),
-    filterWhere(filter),
     q
       ? or(
           ilike(opportunities.customerName, `%${q}%`),
@@ -41,7 +40,8 @@ export async function listPolicies(
         )
       : undefined,
   );
-  const [rows, [{ total }]] = await Promise.all([
+  const tally = (condition: SQL | undefined) => sql<number>`count(*) filter (where ${condition})::int`;
+  const [rows, [counts]] = await Promise.all([
     db
       .select({
         id: policies.id,
@@ -68,16 +68,24 @@ export async function listPolicies(
       .innerJoin(quotes, eq(policies.quoteId, quotes.id))
       .leftJoin(advisor, eq(leads.advisorId, advisor.id))
       .leftJoin(renewalLead, eq(policies.renewedByLeadId, renewalLead.id))
-      .where(where)
+      .where(and(base, filterWhere(filter)))
       .orderBy(policies.endDate, policies.id)
       .limit(page.limit)
       .offset(page.offset),
     db
-      .select({ total: count() })
+      .select({
+        all: count(),
+        booked: tally(filterWhere("booked")),
+        active: tally(filterWhere("active")),
+        cancelled: tally(filterWhere("cancelled")),
+        unpaid: tally(filterWhere("unpaid")),
+        renewal_due: tally(filterWhere("renewal_due")),
+      })
       .from(policies)
       .innerJoin(leads, eq(policies.leadId, leads.id))
       .innerJoin(opportunities, eq(leads.opportunityId, opportunities.id))
-      .where(where),
+      .where(base),
   ]);
-  return { rows, total };
+  const { all, ...filterCounts } = counts;
+  return { rows, total: filter ? filterCounts[filter] : all, all, filterCounts };
 }

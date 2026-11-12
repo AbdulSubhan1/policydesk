@@ -67,3 +67,45 @@ export async function reassignAdvisor(formData: FormData) {
   });
   revalidatePath("/leads/[id]", "page");
 }
+
+/**
+ * The leads list's bulk form. Row checkboxes can belong to one form only, so the ActionBar's menu items all submit it
+ * and the field they send decides the change: `advisorId` assigns, `stage` moves.
+ */
+export async function updateLeads(formData: FormData) {
+  if (formData.has("advisorId")) await reassignAdvisors(formData);
+  else await updateLeadStages(formData);
+}
+
+/** Gives every selected lead to one advisor. Leads of other departments are skipped. */
+async function reassignAdvisors(formData: FormData) {
+  const advisorId = id.parse(formData.get("advisorId"));
+  const ids = formData.getAll("leadIds").map((v) => id.parse(v));
+  // The advisor must work in the lead's department; look each department up once
+  const inDepartment = new Map<number, { id: number; name: string } | undefined>();
+
+  for (const leadId of ids) {
+    const { user, lead } = await requireLead("leads:assign", leadId);
+    if (lead.advisorId === advisorId) continue;
+    if (!inDepartment.has(lead.departmentId)) {
+      const advisors = await usersWithPermission(lead.departmentId, "quotes:create");
+      inDepartment.set(
+        lead.departmentId,
+        advisors.find((a) => a.id === advisorId),
+      );
+    }
+    const advisor = inDepartment.get(lead.departmentId);
+    if (!advisor) continue;
+
+    await db.update(leads).set({ advisorId: advisor.id, updatedAt: new Date() }).where(eq(leads.id, lead.id));
+    await logAudit({
+      userId: user.id,
+      action: "assign",
+      entity: "lead",
+      entityId: lead.id,
+      leadId: lead.id,
+      details: advisor.name,
+    });
+  }
+  revalidatePath("/leads");
+}
