@@ -17,6 +17,7 @@ import { WebsiteConvertForm } from "@/components/forms/website-convert-form";
 import { WebsiteDetailsForm } from "@/components/forms/website-details-form";
 import { OnlinePaymentPanel } from "@/components/opportunities/online-payment-panel";
 import { EDITABLE_OPPORTUNITY_STATUSES } from "@/constants/statuses";
+import { WEBSITE_DETAIL_FIELDS, isWebsiteProduct, type DetailField } from "@/constants/website";
 import { money, shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
 import { can, scopeOf } from "@/lib/rbac";
@@ -25,7 +26,7 @@ import { assignCoordinator, convertToLead, updateOpportunityStatus } from "@/ser
 import { requireUser } from "@/server/auth";
 import { getOpportunity } from "@/server/queries/opportunities";
 import { usersWithPermission } from "@/server/queries/users";
-import { isWebsiteCarOpportunity } from "@/server/website/opportunities";
+import { isWebsiteOpportunity } from "@/server/website/opportunities";
 
 export default async function OpportunityPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -37,7 +38,7 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
   const opp = row.opportunity;
   const open = opp.status !== "converted";
   // Website opportunities are completed and converted by their coordinator; the advisor comes after payment
-  const website = isWebsiteCarOpportunity(opp);
+  const website = isWebsiteOpportunity(opp);
   const editDetails = open && website && can(user, "opportunities:convert");
 
   const [coordinators, advisors, t] = await Promise.all([
@@ -48,18 +49,30 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
     getTranslations(),
   ]);
   const department = t(`departments.${row.departmentKey}`);
-  // Answers from the website form; each product keeps its own fields, labelled from messages
-  const details = Object.entries(opp.details).map(([key, value]) => ({
-    label: t.has(`opportunities.details.${key}`) ? t(`opportunities.details.${key}`) : key,
-    value:
-      typeof value === "boolean"
-        ? t(value ? "common.yes" : "common.no")
-        : key === "carValue"
-          ? money(Number(value))
-          : key === "dateOfBirth"
-            ? shortDate(String(value))
-            : String(value),
-  }));
+  // Answers from the website form in the product's form order; each product keeps its own fields, labelled from messages
+  const fields: readonly DetailField[] = isWebsiteProduct(opp.product) ? WEBSITE_DETAIL_FIELDS[opp.product] : [];
+  const order = (key: string) => {
+    const at = fields.findIndex((f) => f.key === key);
+    return at === -1 ? fields.length : at;
+  };
+  const details = Object.entries(opp.details)
+    .sort(([a], [b]) => order(a) - order(b))
+    .map(([key, value]) => {
+      const field = fields.find((f) => f.key === key);
+      return {
+        label: t.has(`opportunities.details.${key}`) ? t(`opportunities.details.${key}`) : key,
+        value:
+          typeof value === "boolean"
+            ? t(value ? "common.yes" : "common.no")
+            : field?.control === "money"
+              ? money(Number(value))
+              : field?.control === "date"
+                ? shortDate(String(value))
+                : field?.control === "choice" && t.has(`opportunities.detailOptions.${key}.${value}`)
+                  ? t(`opportunities.detailOptions.${key}.${value}`)
+                  : String(value),
+      };
+    });
 
   return (
     <>
@@ -93,7 +106,7 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
               title={t("opportunities.detailsTitle", { product: t(`products.${opp.product}`) })}
               description={t("opportunities.website.detailsBody")}
             >
-              <WebsiteDetailsForm id={opp.id} details={opp.details} />
+              <WebsiteDetailsForm id={opp.id} product={opp.product} details={opp.details} />
             </Panel>
           ) : (
             details.length > 0 && (
@@ -116,7 +129,7 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
           )}
 
           {!open && website && row.leadId && can(user, "opportunities:convert") && (
-            <OnlinePaymentPanel opportunityId={opp.id} leadId={row.leadId} />
+            <OnlinePaymentPanel opportunityId={opp.id} leadId={row.leadId} product={opp.product} />
           )}
 
           {open && can(user, "opportunities:edit") && (

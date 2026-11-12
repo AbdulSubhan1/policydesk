@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { departmentOf, type Product } from "@/constants/products";
 import type { OpportunityStatus } from "@/constants/statuses";
+import { isWebsiteProduct, type WebsiteProduct } from "@/constants/website";
 import { leadReference } from "@/lib/reference";
 import type { WebsiteOpportunityInput } from "@/schemas/website";
 import { logAudit } from "@/server/audit";
@@ -81,11 +82,12 @@ export async function createWebsiteOpportunity(input: WebsiteOpportunityInput): 
 }
 
 /**
- * Opportunities from the website's car forms, which their coordinator completes and converts without an advisor.
- * Others marked "Website" by hand (any product, no car details) keep the manual screens.
+ * Opportunities from the website's forms (a product it sells), which their coordinator completes and converts
+ * without an advisor. Others marked "Website" by hand (bike, life…) keep the manual screens.
  */
-export const isWebsiteCarOpportunity = (opp: { source: string; product: Product }) =>
-  opp.source === "website" && opp.product === "car";
+export const isWebsiteOpportunity = <T extends { source: string; product: Product }>(
+  opp: T,
+): opp is T & { product: WebsiteProduct } => opp.source === "website" && isWebsiteProduct(opp.product);
 
 /**
  * Makes a website opportunity's lead with an empty KYC file and marks it converted, by the website (userId null) or

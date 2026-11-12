@@ -64,7 +64,7 @@ const linesOf = (quote: Quote) =>
 /** The opportunity's contact details and its first lead (only the full form makes one). */
 async function websiteLead(publicId: string) {
   const [row] = await db
-    .select({ email: opportunities.email, phone: opportunities.phone, lead: leads })
+    .select({ email: opportunities.email, phone: opportunities.phone, product: opportunities.product, lead: leads })
     .from(opportunities)
     .leftJoin(leads, and(eq(leads.opportunityId, opportunities.id), eq(leads.type, "new_business")))
     .where(eq(opportunities.publicId, publicId));
@@ -126,7 +126,7 @@ export async function startPayment(publicId: string): Promise<{ ok: true; checko
   if (!paymentsEnabled() || !websiteUrl) return DISABLED;
   const found = await websiteLead(publicId);
   if (!found) return NOT_FOUND;
-  const { lead, email } = found;
+  const { lead, email, product } = found;
   if (!lead) return NO_LEAD;
   if (await currentOrder(lead.id, ["paid"])) return ALREADY_PAID;
   const quote = await openOnlineQuote(lead.id);
@@ -156,8 +156,9 @@ export async function startPayment(publicId: string): Promise<{ ok: true; checko
     session = await createCheckoutSession({
       amountCents: toCents(totalDollars),
       lineItems: lines.map((l) => ({ ...l, amount: toCents(l.amount) })),
-      successUrl: `${websiteUrl}/car/thank-you`,
-      cancelUrl: `${websiteUrl}/car/payment`,
+      // Each line of business has its pages under its product's slug on the website (/car/…, /travel/…)
+      successUrl: `${websiteUrl}/${product}/thank-you`,
+      cancelUrl: `${websiteUrl}/${product}/payment`,
       customerEmail: email,
       idempotencyKey: `order-${order.publicId}`,
     });

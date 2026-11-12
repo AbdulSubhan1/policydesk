@@ -12,6 +12,7 @@ import {
   PanelSection,
   type Column,
 } from "@/components/ui";
+import type { Product } from "@/constants/products";
 import { dateTime, money } from "@/lib/format";
 import { localized } from "@/lib/i18n";
 import { revokePayLink } from "@/server/actions/website-payments";
@@ -21,9 +22,17 @@ import { PayLinkCreator } from "./pay-link-creator";
 type Link = Awaited<ReturnType<typeof getOnlinePayment>>["links"][number];
 
 /** After convert: the coordinator picks the plan with the customer and sends a payment link for the website. */
-export async function OnlinePaymentPanel({ opportunityId, leadId }: { opportunityId: number; leadId: number }) {
+export async function OnlinePaymentPanel({
+  opportunityId,
+  leadId,
+  product,
+}: {
+  opportunityId: number;
+  leadId: number;
+  product: Product;
+}) {
   const [{ plans, selection, paid, links }, t, locale] = await Promise.all([
-    getOnlinePayment(leadId, "car"),
+    getOnlinePayment(leadId, product),
     getTranslations(),
     getLocale(),
   ]);

@@ -1,17 +1,30 @@
 # Website and online payments
 
-The public broker website, **Brokwise**, sends its car forms to PolicyDesk through a small private API. PolicyDesk keeps all the data and the rules; the website stores nothing except a signed cookie that remembers the visitor's journey. After the full form the visitor picks a plan and its add-ons, which PolicyDesk saves on the lead as a quote, and pays for it on PaySandbox's hosted checkout. PolicyDesk then records the paid order, accepts the quote and assigns an advisor. After the short form the coordinator does those steps with the customer on the phone and sends a private **payment link**; the customer pays through the same pages (see Assisted flow).
+The public broker website, **Brokwise**, sends its forms for **car, travel, home and health** to PolicyDesk through a small private API. PolicyDesk keeps all the data and the rules; the website stores nothing except a signed cookie that remembers the visitor's journey. After the full form the visitor picks a plan and its add-ons, which PolicyDesk saves on the lead as a quote, and pays for it on PaySandbox's hosted checkout. PolicyDesk then records the paid order, accepts the quote and assigns an advisor. After the short form the coordinator does those steps with the customer on the phone and sends a private **payment link**; the customer pays through the same pages (see Assisted flow).
 
 > **Demo data:** PolicyDesk's live demo lets anyone sign in as any role, so anything typed on the website is visible to everyone. The website shows "Demo site: use made-up details" next to every form. Never enter real people's data.
 
 ## What happens when a visitor sends a form
 
-| Form                                                   | PolicyDesk creates                                                                 | Who is assigned                                |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------- | ---------------------------------------------- |
-| **Short form** ("Call me back"): name, contact, car    | An opportunity, status _New_, source _Website_                                     | A coordinator, at once                         |
-| **Full form** ("Get prices now"): car, driver, contact | An opportunity, already _Converted_, and its lead (`CAR-…`) with an empty KYC file | A coordinator; the advisor comes after payment |
+| Form                                                                         | PolicyDesk creates                                                                                            | Who is assigned                                |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **Short form** ("Call me back"): name, contact, the product's quick question | An opportunity, status _New_, source _Website_                                                                | A coordinator, at once                         |
+| **Full form** ("Get prices now"): the product's fields, contact              | An opportunity, already _Converted_, and its lead (`CAR-…`, `TRV-…`, `HOM-…`, `HLT-…`) with an empty KYC file | A coordinator; the advisor comes after payment |
 
-The car answers (make, model, year and, from the full form, GCC spec, car value, date of birth, nationality, city, years licensed) are shown on the opportunity page under **Car details**: read-only once converted, and as a form the coordinator completes while a short-form opportunity is still open. The timeline and the audit log show these steps as done by **Website**.
+The answers are shown on the opportunity page under **Car details**, **Travel details** and so on, in the form's order and with translated choices: read-only once converted, and as a form the coordinator completes while a short-form opportunity is still open. The timeline and the audit log show these steps as done by **Website**.
+
+## Products the website sells
+
+The website sells four products (`constants/website.ts`). Each has its own details schema in `schemas/website.ts`: the quick form sends only its first field(s), the full form sends them all. Every request is checked against the chosen product's schema, so a product the website doesn't sell (`bike`, `life`…) is refused on `product`, and a field of another product (`make` on travel) or a missing one is refused on `details.<field>`. Nothing is written.
+
+| Product  | Department     | Quick form                                                                      | Full form adds                                                                                                                                                                      |
+| -------- | -------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `car`    | Motor & Marine | `make`, `model`, `year`                                                         | `gccSpec` (yes/no), `carValue`, `dateOfBirth` (driver 18 to 80), `nationality`, `city`, `yearsLicensed`                                                                             |
+| `travel` | Home & Travel  | `destination`: `gcc`, `asia`, `europe_schengen`, `worldwide_ex_us`, `worldwide` | `tripType` (`single`, `annual`), `startDate` (today or later), `endDate` (single trips only, on or after the start, at most 180 days), `travellers` (1 to 9), `oldestAge` (0 to 85) |
+| `home`   | Home & Travel  | `city`                                                                          | `propertyType` (`apartment`, `villa`, `townhouse`), `occupancy` (`owner`, `tenant`), `buildingValue` (owners only, $10,000 to $5,000,000), `contentsValue` ($1,000 to $500,000)     |
+| `health` | Health         | `coverFor`: `me`, `me_spouse`, `family`                                         | `children` (0 to 6, family only), `dateOfBirth` (18 to 75), `city`, `preExisting` (yes/no)                                                                                          |
+
+Rules across fields give their own message on the field: `validation.startInPast`, `validation.endBeforeStart`, `validation.tripTooLong`, `validation.annualNoEndDate` (an annual trip has no end date), `validation.ownersOnly` (a tenant sends no building value), `validation.familyOnly` (children only on family cover), `validation.age` / `validation.ageHealth`. Dates are ISO days compared with today in UTC. A new line adds a schema, a field list and add-ons, not tables.
 
 ```mermaid
 sequenceDiagram
@@ -36,7 +49,7 @@ sequenceDiagram
 
 Website opportunities are never assigned by hand. PolicyDesk picks the coordinator itself:
 
-1. **Who can be picked:** users whose role is **Coordinator** (by role name, not permission), who are active and **available**, in the product's department (car → Motor & Marine).
+1. **Who can be picked:** users whose role is **Coordinator** (by role name, not permission), who are active and **available**, in the product's department (car → Motor & Marine, travel and home → Home & Travel, health → Health).
 2. **Fewest open first:** open means their opportunities that are _New_, _Contacted_ or _Qualified_, plus website opportunities already converted whose lead is not yet won or lost.
 3. **Tie:** the one who has waited longest since their last automatic assignment (never assigned comes first), then the lowest user number.
 4. **Nobody available:** the opportunity stays unassigned and shows "Unassigned"; the website shows its help desk card instead of a person.
@@ -45,13 +58,13 @@ Admins switch someone's availability on **Users** with **Set unavailable** / **S
 
 **Advisors** are picked the same way when a website lead's payment succeeds: role **Advisor**, active and available, same department, fewest open leads (assigned to them and not won or lost), then longest wait, then lowest number. The lead's timeline shows _Website assigned the advisor_ with the name, or "No advisor available", in which case the lead stays unassigned until a manager assigns one. A lead that already has an advisor keeps them.
 
-Opportunities from other sources, and older ones marked _Website_ by hand for other products, keep the manual assign and convert screens.
+Opportunities from other sources, and ones marked _Website_ by hand for products the website doesn't sell (bike, life…), keep the manual assign and convert screens.
 
 ## Plans and add-ons
 
 Only visitors who sent the **full form** see plans, because the choice is saved on their lead. Short-form visitors stay with their coordinator.
 
-The website shows every active car plan of an active insurer, cheapest first. Each plan has its own add-ons, of three kinds:
+The website shows every active plan of the lead's product from an active insurer, cheapest first; plans and add-ons of another product never appear, and picking one is refused. Each plan has its own add-ons, of three kinds:
 
 | Kind            | On the plans page              | Price                     |
 | --------------- | ------------------------------ | ------------------------- |
@@ -65,11 +78,14 @@ The website shows every active car plan of an active insurer, cheapest first. Ea
 
 On the lead's **Quotes** tab, each quote lists its add-ons under the plan: "Included" or the price. Quotes made by the website show **Website** as their creator, and the timeline shows each choice as _Website picked a plan_ with the insurer, plan and total.
 
-Add-ons are seeded data for now (no editing screen). Car plans get a fixed set by cover:
+Add-ons are seeded data for now (no editing screen; catalogue in `constants/add-ons.ts`, kinds in `server/website/catalogue.ts`). Each product's plans get a fixed set by cover (yearly USD):
 
-- **Third party:** roadside assistance, driver accident and passenger accident, all optional.
-- **Comprehensive:** roadside assistance included; driver accident preselected; replacement car, windscreen and passenger accident optional; regional cover optional on some plans.
-- **Agency repair:** as comprehensive, with replacement car included.
+- **Car, third party:** roadside assistance, driver accident and passenger accident, all optional.
+- **Car, comprehensive:** roadside assistance included; driver accident preselected; replacement car, windscreen and passenger accident optional; regional cover optional on some plans.
+- **Car, agency repair:** as comprehensive, with replacement car included.
+- **Travel:** trip cancellation $25 (optional; included on annual multi-trip), baggage delay $10 (preselected), adventure sports $30 and COVID-19 cover $15 (optional).
+- **Home:** accidental damage $40 and valuables away from home $35 (optional), alternative accommodation $25 (included on building and contents, otherwise optional), domestic helper cover $20 (preselected).
+- **Health:** dental $90, optical $60 and maternity $150 (optional); a wellness check-up included on every plan.
 
 ## Online payments
 
@@ -129,9 +145,9 @@ The advisor then does KYC and documents as usual and books the policy. **Booking
 
 The short-form visitor never sees plans on the website. Their coordinator does everything before payment on the **opportunity page**; the advisor still comes after payment.
 
-1. **Car details.** While the opportunity is open, the **Car details** panel is a form with the full form's fields (make, model, year, GCC spec, car value, date of birth, nationality, city, years licensed). Fields may stay empty; **Save details** keeps the rest of the details and writes _details_ to the audit log with the fields that changed. The same rules as the website apply (driver 18 to 80, ranges).
-2. **Qualify**, then **Convert to lead.** There is no advisor picker: "The advisor is assigned automatically after the customer pays." Convert checks the saved details against the full form and, if one is missing, says which: "Complete GCC spec before converting" (the first missing field, in the form's order). It then creates the lead (`CAR-…`) with an empty KYC file and no advisor, marks the opportunity _Converted_ and logs _convert_ with "advisor after payment". The page stays on the opportunity.
-3. **Online payment** panel (after convert). The coordinator picks a plan (active car plans, cheapest first) and ticks add-ons with the customer: included ones are shown ticked and locked, preselected ones come ticked, and the page shows the yearly total. **Save choice** prices it exactly like the website's selection and saves it as the lead's **online quote** (one per lead; saving again updates it), with the coordinator as its creator.
+1. **Details.** While the opportunity is open, the **Car details** (or Travel, Home, Health) panel is a form with the product's full-form fields, built from its field list in `constants/website.ts`. Fields may stay empty; **Save details** keeps the rest of the details and writes _details_ to the audit log with the fields that changed. The same rules as the website apply (ages, ranges, trip dates, owners only, family only).
+2. **Qualify**, then **Convert to lead.** There is no advisor picker: "The advisor is assigned automatically after the customer pays." Convert checks the saved details against the full form and, if one is missing, says which: "Complete GCC spec before converting" (the first missing field, in the form's order); a broken rule across fields gives its own message, e.g. a trip that has already started. It then creates the lead (`CAR-…`, `TRV-…`…) with an empty KYC file and no advisor, marks the opportunity _Converted_ and logs _convert_ with "advisor after payment". The page stays on the opportunity.
+3. **Online payment** panel (after convert). The coordinator picks a plan (active plans of the product, cheapest first) and ticks add-ons with the customer: included ones are shown ticked and locked, preselected ones come ticked, and the page shows the yearly total. **Save choice** prices it exactly like the website's selection and saves it as the lead's **online quote** (one per lead; saving again updates it), with the coordinator as its creator.
 4. **Create payment link** shows the link once, with a **Copy** button: "Shown once. Create a new link if it's lost." The coordinator sends it to the customer themselves (PolicyDesk sends no email or SMS).
 5. The customer opens `https://brokwise.vercel.app/pay/<token>`. The website asks PolicyDesk to open the link, remembers the opportunity in its journey cookie and sends the customer to its payment page, PaySandbox and the thank-you page, exactly as in the self-serve flow. Payment accepts the online quote and assigns the advisor.
 
@@ -175,9 +191,9 @@ Private and server-to-server only: the visitor's browser never calls it. The rou
 
 | Endpoint                                                 | Does                                                                                                                                                                                                                                                                |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /api/website/v1/opportunities`                     | Body `{ form: "short" \| "full", product: "car", customerName, email, phone, details }`. Returns **201** and the view below.                                                                                                                                        |
+| `POST /api/website/v1/opportunities`                     | Body `{ form: "short" \| "full", product: "car" \| "travel" \| "home" \| "health", customerName, email, phone, details }` (details per product above). Returns **201** and the view below.                                                                          |
 | `GET /api/website/v1/opportunities/{publicId}`           | Returns **200** and the view, or **404**.                                                                                                                                                                                                                           |
-| `GET /api/website/v1/opportunities/{publicId}/plans`     | Returns **200** `{ plans }`: active car plans, cheapest first, each with insurer, name, cover, excess, base premium, benefits and add-ons (id, name, kind, price). **409** `no_lead` for a short-form opportunity.                                                  |
+| `GET /api/website/v1/opportunities/{publicId}/plans`     | Returns **200** `{ plans }`: active plans of the opportunity's product, cheapest first, each with insurer, name, cover, excess, base premium, benefits and add-ons (id, name, kind, price). **409** `no_lead` for a short-form opportunity.                         |
 | `PUT /api/website/v1/opportunities/{publicId}/selection` | Body `{ planId, addOnIds }` (ticked optional and preselected add-ons, at most 20). Prices and saves the choice; returns **200** `{ selection }`.                                                                                                                    |
 | `GET /api/website/v1/opportunities/{publicId}/payment`   | Returns **200** `{ payment: { status: "ready" \| "already_paid", lines: [{ label, amount }], total, quoteReference } }`. **409** `no_lead` or `no_selection`.                                                                                                       |
 | `POST /api/website/v1/opportunities/{publicId}/payment`  | Body `{}`. Returns **200** `{ checkoutUrl }` (a new or the reused PaySandbox session). **409** `already_paid` or `no_selection`, **502**, **503** (below).                                                                                                          |
@@ -253,20 +269,20 @@ PolicyDesk refuses a request whose time is more than 5 minutes away from its own
 
 Every error has the same body: `{ "error": { "code": "…", "message"?: "…", "field"?: "…" } }`.
 
-| Status | Code                     | When                                                                                                                                                               |
-| ------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 400    | `invalid_request`        | Not JSON, a field fails validation, or an unknown field is sent. `field` names it, e.g. `details.city`. Nothing is written.                                        |
-| 400    | `invalid_request`        | Selection only: `field: "planId"` for a plan that is unknown, switched off or not a car plan; `field: "addOnIds"` for an add-on that cannot be ticked on that plan |
-| 401    | `unauthorized`           | Missing, wrong or expired signature                                                                                                                                |
-| 404    | `not_found`              | No opportunity with that public id (also for an id that is not a UUID)                                                                                             |
-| 409    | `no_lead`                | Plans, selection or payment for a short-form opportunity, which has no lead                                                                                        |
-| 409    | `no_selection`           | Payment before a plan was picked                                                                                                                                   |
-| 409    | `already_paid`           | Starting a payment for a lead that is already paid                                                                                                                 |
-| 410    | `link_expired`           | Opening a payment link more than 72 hours old; the customer asks their coordinator for a new one                                                                   |
-| 429    | `rate_limited`           | The visitor's IP used up its hourly limit for that kind of call (see Rate limits); the header `Retry-After` gives the seconds until the next hour. Nothing is done |
-| 502    | `paysandbox_unavailable` | PaySandbox could not be reached or refused the checkout; nothing is charged, try again                                                                             |
-| 503    | `api_disabled`           | `WEBSITE_API_SECRET` is not set on this PolicyDesk                                                                                                                 |
-| 503    | `payments_disabled`      | Starting a payment while `PAYSANDBOX_SECRET_KEY` or `WEBSITE_URL` is not set                                                                                       |
+| Status | Code                     | When                                                                                                                                                                   |
+| ------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `invalid_request`        | Not JSON, a field fails validation, or an unknown field is sent. `field` names it, e.g. `details.city`. Nothing is written.                                            |
+| 400    | `invalid_request`        | Selection only: `field: "planId"` for a plan that is unknown, switched off or of another product; `field: "addOnIds"` for an add-on that cannot be ticked on that plan |
+| 401    | `unauthorized`           | Missing, wrong or expired signature                                                                                                                                    |
+| 404    | `not_found`              | No opportunity with that public id (also for an id that is not a UUID)                                                                                                 |
+| 409    | `no_lead`                | Plans, selection or payment for a short-form opportunity, which has no lead                                                                                            |
+| 409    | `no_selection`           | Payment before a plan was picked                                                                                                                                       |
+| 409    | `already_paid`           | Starting a payment for a lead that is already paid                                                                                                                     |
+| 410    | `link_expired`           | Opening a payment link more than 72 hours old; the customer asks their coordinator for a new one                                                                       |
+| 429    | `rate_limited`           | The visitor's IP used up its hourly limit for that kind of call (see Rate limits); the header `Retry-After` gives the seconds until the next hour. Nothing is done     |
+| 502    | `paysandbox_unavailable` | PaySandbox could not be reached or refused the checkout; nothing is charged, try again                                                                                 |
+| 503    | `api_disabled`           | `WEBSITE_API_SECRET` is not set on this PolicyDesk                                                                                                                     |
+| 503    | `payments_disabled`      | Starting a payment while `PAYSANDBOX_SECRET_KEY` or `WEBSITE_URL` is not set                                                                                           |
 
 Unknown fields are refused, not ignored, so the website can never set things like the coordinator or the status.
 
@@ -294,14 +310,14 @@ The website sends each visitor's IP in the header `x-brokwise-client-ip`. Policy
 1. Pick a long random secret and set `WEBSITE_API_SECRET` to the same value in PolicyDesk and the website.
 2. Point the website's `POLICYDESK_API_URL` at PolicyDesk.
 3. Run the migrations (`npm run db:setup`) so opportunities have `public_id` and `details`, users have `phone`, `available` and `last_assigned_at`, plans have add-ons (`plan_add_ons`), quotes keep theirs (`add_ons`), the `orders`, `webhook_events`, `payment_links` and `rate_limits` tables exist, and quotes have `online` (set for the website's existing quotes).
-4. The same command gives every active car plan **without** add-ons its default set and prints `Car add-ons added: N`. It runs on databases that already have data too, and plans that have add-ons are skipped, so running it again adds nothing. Nothing runs during a build: previews and production share one database.
+4. The same command gives every active plan of a website product **without** add-ons its default set and prints `Add-ons added: N`. On the live database it adds the travel, home and health add-ons (car plans already have theirs), and migration `0006` gives the health and home & travel coordinators and advisors their made-up phones. It runs on databases that already have data too, and plans that have add-ons are skipped, so running it again adds nothing. Nothing runs during a build: previews and production share one database.
 
 ### Setting up PaySandbox
 
 1. On PaySandbox, create a project whose currency is **USD** (PolicyDesk's currency; checkouts leave the currency out, so the project's is used).
 2. Copy its secret key (`sk_test_…`) into PolicyDesk's `PAYSANDBOX_SECRET_KEY`.
 3. Add a webhook endpoint `https://<policydesk>/api/paysandbox/webhook` for all payment events, and copy its signing secret (`whsec_…`) into `PAYSANDBOX_WEBHOOK_SECRET`.
-4. Set `WEBSITE_URL` to the website's address (e.g. `https://brokwise.vercel.app`): PaySandbox sends the visitor back to `/car/thank-you` after paying and to `/car/payment` on cancel.
+4. Set `WEBSITE_URL` to the website's address (e.g. `https://brokwise.vercel.app`): PaySandbox sends the visitor back to `/<product>/thank-you` after paying and to `/<product>/payment` on cancel (`/car/…`, `/travel/…`, `/home/…`, `/health/…`).
 5. `PAYSANDBOX_API_URL` defaults to `https://paysandbox.vercel.app/api/v1`; the E2E tests point it at a fake (`e2e/fake-paysandbox.mjs`).
 
 PaySandbox's free merchant allows 200 checkout sessions and 1,000 API requests a day; a session expires after 24 hours and amounts are $1 to $5,000.
@@ -316,7 +332,7 @@ PaySandbox's free merchant allows 200 checkout sessions and 1,000 API requests a
 | **Split payments** between sellers (broker vs partner company)                                                                                                         | Needs PaySandbox support                                                                                     | When PaySandbox adds it                                                                                              |
 | **In-page card form** instead of the hosted checkout redirect                                                                                                          | Needs PaySandbox support                                                                                     | When PaySandbox adds it                                                                                              |
 | **Pricing engine**: price from car value, age, driver, eligibility rules                                                                                               | A flat price plus add-ons is enough for now                                                                  | After step 3                                                                                                         |
-| **SEO and content pages**, more products than car                                                                                                                      | Marketing growth                                                                                             | After the car journey is complete                                                                                    |
+| **SEO and content pages**, business lines                                                                                                                              | Marketing growth                                                                                             | After the four personal lines are live                                                                               |
 | **Customer document upload** on the website                                                                                                                            | Coordinators and advisors upload in PolicyDesk first                                                         | Later                                                                                                                |
 | **Add-on editing screens** in PolicyDesk                                                                                                                               | Seeded data first                                                                                            | Later                                                                                                                |
 | **Sending payment links** by email or SMS from PolicyDesk                                                                                                              | Coordinators copy the link into their own channel for now                                                    | Later                                                                                                                |

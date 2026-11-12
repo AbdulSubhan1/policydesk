@@ -80,3 +80,37 @@ export function fullForm(name = customerName()) {
     },
   };
 }
+
+/** An ISO day this many days from today (UTC), as the API compares dates. */
+export function isoInDays(days: number) {
+  return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** Each new product's quick-form field and the rest of its full form (made-up answers that pass every rule). */
+export const PRODUCT_DETAILS = {
+  travel: {
+    quick: { destination: "europe_schengen" },
+    full: { tripType: "single", startDate: isoInDays(14), endDate: isoInDays(24), travellers: 2, oldestAge: 45 },
+  },
+  home: {
+    quick: { city: "Karachi" },
+    full: { propertyType: "apartment", occupancy: "owner", buildingValue: 250000, contentsValue: 30000 },
+  },
+  health: {
+    quick: { coverFor: "family" },
+    full: { children: 2, dateOfBirth: "1986-03-20", city: "Lahore", preExisting: false },
+  },
+} as const;
+
+export type NewProduct = keyof typeof PRODUCT_DETAILS;
+
+/** A quick ("short") or full form for travel, home or health. */
+export function productForm(product: NewProduct, form: "short" | "full" = "full", name = customerName()) {
+  const { quick, full } = PRODUCT_DETAILS[product];
+  return {
+    ...shortForm(name),
+    form,
+    product,
+    details: form === "full" ? { ...quick, ...full } : { ...quick },
+  };
+}
