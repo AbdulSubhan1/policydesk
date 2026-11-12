@@ -1,10 +1,12 @@
-import { failureResponse, jsonError, publicIdParam, readSigned } from "@/server/website/http";
+import { failureResponse, jsonError, limited, publicIdParam, readSigned } from "@/server/website/http";
 import { getWebsitePlans } from "@/server/website/plans";
 
 // Plan cards for a full-form lead, cheapest first. A short-form opportunity has no lead yet → 409 no_lead.
 export async function GET(req: Request, { params }: { params: Promise<{ publicId: string }> }) {
   const signed = await readSigned(req);
   if (!signed.ok) return signed.response;
+  const limit = await limited(req, "read");
+  if (limit) return limit;
   const publicId = await publicIdParam(params);
   if (!publicId) return jsonError(404, "not_found");
 

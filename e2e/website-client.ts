@@ -1,4 +1,5 @@
 import type { APIRequestContext } from "@playwright/test";
+import { CLIENT_IP_HEADER } from "../constants/config";
 import { SIGNATURE_HEADER, TIMESTAMP_HEADER, signRequest } from "../server/website/signature";
 
 /** The secret the test server runs with (playwright.config.ts). */
@@ -14,8 +15,22 @@ export const E2E_WEBHOOK_SECRET = "whsec_AAECAwQFBgcICQoLDA0ODxAREhMUFRYX";
 /** Where Brokwise runs in its E2E: PaySandbox sends the visitor back here */
 export const E2E_WEBSITE_URL = "http://localhost:3100";
 
-/** Calls the website API the way the website does: raw JSON body, timestamp and HMAC signature headers. */
-export function websiteCall(request: APIRequestContext, method: "GET" | "POST" | "PUT", path: string, data?: unknown) {
+/** A random visitor IPv4, so specs don't share one rate-limit bucket. */
+export function randomIp() {
+  return Array.from({ length: 4 }, () => 1 + Math.floor(Math.random() * 254)).join(".");
+}
+
+/**
+ * Calls the website API the way the website does: raw JSON body, timestamp and HMAC signature headers, and the
+ * visitor's IP. Each call is a new random visitor unless `ip` is given; `ip: null` sends no IP header.
+ */
+export function websiteCall(
+  request: APIRequestContext,
+  method: "GET" | "POST" | "PUT",
+  path: string,
+  data?: unknown,
+  { ip = randomIp() }: { ip?: string | null } = {},
+) {
   const body = data === undefined ? "" : JSON.stringify(data);
   const ts = Math.floor(Date.now() / 1000);
   return request.fetch(path, {
@@ -25,6 +40,7 @@ export function websiteCall(request: APIRequestContext, method: "GET" | "POST" |
       "content-type": "application/json",
       [TIMESTAMP_HEADER]: String(ts),
       [SIGNATURE_HEADER]: signRequest(E2E_WEBSITE_SECRET, ts, method, path, body),
+      ...(ip === null ? {} : { [CLIENT_IP_HEADER]: ip }),
     },
   });
 }

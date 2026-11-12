@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { type LimitGroup, clientIp, consume } from "./rate-limit";
 import { SIGNATURE_HEADER, TIMESTAMP_HEADER, verifyRequest } from "./signature";
 
 // Shared plumbing for the signed website routes: every error has the same shape, { error: { code, message?, field? } }
@@ -46,6 +47,16 @@ export async function readSigned(
     return { ok: false, response: jsonError(400, "invalid_request", { message: "validation.tooLong" }) };
   }
   return { ok: true, body };
+}
+
+/** Counts the call against the visitor IP's limit; a 429 with Retry-After once it is used up. Call after readSigned. */
+export async function limited(req: Request, group: LimitGroup): Promise<Response | null> {
+  const result = await consume(group, clientIp(req));
+  if (result.ok) return null;
+  return Response.json(
+    { error: { code: "rate_limited" } },
+    { status: 429, headers: { "Retry-After": String(result.retryAfter) } },
+  );
 }
 
 /** Parses a JSON body with a Zod schema; the first problem becomes a 400 naming the field. */

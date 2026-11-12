@@ -263,17 +263,37 @@ Every error has the same body: `{ "error": { "code": "…", "message"?: "…", "
 | 409    | `no_selection`           | Payment before a plan was picked                                                                                                                                   |
 | 409    | `already_paid`           | Starting a payment for a lead that is already paid                                                                                                                 |
 | 410    | `link_expired`           | Opening a payment link more than 72 hours old; the customer asks their coordinator for a new one                                                                   |
+| 429    | `rate_limited`           | The visitor's IP used up its hourly limit for that kind of call (see Rate limits); the header `Retry-After` gives the seconds until the next hour. Nothing is done |
 | 502    | `paysandbox_unavailable` | PaySandbox could not be reached or refused the checkout; nothing is charged, try again                                                                             |
 | 503    | `api_disabled`           | `WEBSITE_API_SECRET` is not set on this PolicyDesk                                                                                                                 |
 | 503    | `payments_disabled`      | Starting a payment while `PAYSANDBOX_SECRET_KEY` or `WEBSITE_URL` is not set                                                                                       |
 
 Unknown fields are refused, not ignored, so the website can never set things like the coordinator or the status.
 
+### Rate limits
+
+The website sends each visitor's IP in the header `x-brokwise-client-ip`. PolicyDesk counts calls per IP and kind of call in fixed UTC-hour windows, in the `rate_limits` table (`server/website/rate-limit.ts`). Past the limit it answers **429** `rate_limited` with `Retry-After` and does nothing else; the count starts again at the next full hour.
+
+| Group    | Calls                                            | Env                              | Default per hour |
+| -------- | ------------------------------------------------ | -------------------------------- | ---------------- |
+| `lead`   | `POST /opportunities`                            | `RATE_LIMIT_LEADS_PER_HOUR`      | 5                |
+| `select` | `PUT …/selection`                                | `RATE_LIMIT_SELECTIONS_PER_HOUR` | 30               |
+| `pay`    | `POST …/payment`                                 | `RATE_LIMIT_PAYMENTS_PER_HOUR`   | 20               |
+| `link`   | `POST /pay-links/{token}/open`                   | `RATE_LIMIT_LINK_OPENS_PER_HOUR` | 20               |
+| `read`   | Every `GET` (opportunity, plans, payment, order) | `RATE_LIMIT_READS_PER_HOUR`      | 600              |
+
+- The signature is checked first, so unsigned or wrongly signed calls get **401** and are never counted.
+- The IP header is not signed separately: only holders of the API secret can call at all. A missing header, or one that is not a single IPv4 or IPv6 address, counts against one shared `unknown` bucket.
+- Unknown pay-link tokens count too, so tokens cannot be guessed faster than the `link` limit.
+- `RATE_LIMITS=off` turns all limits off (the website's own E2E tests use it, since all their calls come from one IP). An env value that is not a positive whole number keeps the default.
+- The PaySandbox webhook is never limited.
+- Windows older than a day are deleted on about 1 call in 50, so the table stays small without a scheduled job.
+
 ### Setting it up
 
 1. Pick a long random secret and set `WEBSITE_API_SECRET` to the same value in PolicyDesk and the website.
 2. Point the website's `POLICYDESK_API_URL` at PolicyDesk.
-3. Run the migrations (`npm run db:setup`) so opportunities have `public_id` and `details`, users have `phone`, `available` and `last_assigned_at`, plans have add-ons (`plan_add_ons`), quotes keep theirs (`add_ons`), the `orders`, `webhook_events` and `payment_links` tables exist, and quotes have `online` (set for the website's existing quotes).
+3. Run the migrations (`npm run db:setup`) so opportunities have `public_id` and `details`, users have `phone`, `available` and `last_assigned_at`, plans have add-ons (`plan_add_ons`), quotes keep theirs (`add_ons`), the `orders`, `webhook_events`, `payment_links` and `rate_limits` tables exist, and quotes have `online` (set for the website's existing quotes).
 4. The same command gives every active car plan **without** add-ons its default set and prints `Car add-ons added: N`. It runs on databases that already have data too, and plans that have add-ons are skipped, so running it again adds nothing. Nothing runs during a build: previews and production share one database.
 
 ### Setting up PaySandbox

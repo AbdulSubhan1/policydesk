@@ -326,3 +326,14 @@ export const auditLogs = pgTable("audit_logs", {
   details: text("details").notNull().default(""),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+/** Website API calls per visitor IP and endpoint group in each UTC hour (key = `${group}:${ip}`). */
+export const rateLimits = pgTable(
+  "rate_limits",
+  {
+    key: text("key").notNull(),
+    windowStart: timestamp("window_start").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.key, t.windowStart] })],
+);
