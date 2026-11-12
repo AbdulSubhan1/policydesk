@@ -263,6 +263,8 @@ test.describe.serial("website payments", () => {
   });
 
   test("booking a paid online order makes the policy active with method Online", async ({ page }) => {
+    // Three role sign-ins, KYC, three uploads, approval and booking: the longest journey in the suite
+    test.slow();
     await loginAs(page, "admin");
     await page.goto(`/leads?q=${main.reference}`);
     await page.getByRole("link", { name: main.name }).click();
