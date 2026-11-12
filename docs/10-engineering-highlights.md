@@ -21,7 +21,26 @@ flowchart LR
 - **Liftable later.** Website and payment logic lives in `server/website/` and `server/payments/`,
   which never import screens, so it can move into a separate API service without a rewrite.
 - **Multi-product by design.** Every call names the product; product fields live in one validated
-  `details` column, so a new line of business is a schema, not a migration of tables.
+  `details` column, so a new line of business is a schema, not a migration of tables (see
+  Config-driven products).
+
+## Config-driven products
+
+- **Four lines, one engine.** Car, travel, home and health share every table, endpoint and screen.
+  A product is a list entry (`constants/website.ts`), a details schema with its full-form fields and
+  rules across fields (`schemas/website.ts`), a field list for the coordinator's form and an add-on
+  catalogue. Adding the three lines needed no new table, only a data migration for phones.
+- **Refused, not ignored.** The request is a discriminated union on `product` with strict objects,
+  so a product the website doesn't sell, or another product's field, is a 400 naming the field.
+- **One rule set, three places.** The same per-product rules check the website's request, the
+  coordinator's form (in the browser and in the action) and the convert check, so a trip that ends
+  before it starts or a tenant's building value is caught everywhere (unit tests in
+  `schemas/website.test.ts`).
+- **One form for every line.** The coordinator's details form and the details panel are built from
+  the product's field list, so a new line gets its screens without a new component.
+- **Departments from the product map.** Leads and advisors-after-payment route through the existing
+  product → department mapping (travel and home → Home & Travel, health → Health), and PaySandbox
+  returns the visitor to the product's own pages.
 
 ## Security
 
@@ -60,5 +79,5 @@ flowchart LR
 - Preview deployments share the production database, so no migration runs during a build.
 - A fake PaySandbox (`e2e/fake-paysandbox.mjs`) lets the full payment flow, including a webhook that
   never arrives, run in tests without the live gateway.
-- Tests: 46 unit tests for this work (signing, pricing, assignment, pay links, rate limits on real
-  SQL) and 47 end-to-end tests in specs 06–10.
+- Tests: 67 unit tests for this work (signing, pricing, assignment, pay links, rate limits on real
+  SQL, per-product details rules) and 59 end-to-end tests in specs 06–11.
