@@ -7,7 +7,6 @@
     "app/(app)/error.tsx",
     "app/(app)/kyc/page.tsx",
     "app/(app)/leads/(list)/page.tsx",
-    "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/forms/document-type-form.tsx",
@@ -16,6 +15,7 @@
     "components/forms/login-form.tsx",
     "components/forms/online-plan-form.tsx",
     "components/forms/opportunity-form.tsx",
+    "components/forms/plan-edit-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/quote-form.tsx",
     "components/forms/role-form.tsx",
@@ -25,38 +25,45 @@
     "components/layout/locale-switch.tsx",
     "components/layout/sidebar.tsx",
     "components/leads/documents-tab.tsx",
+    "components/leads/lead-actions.tsx",
     "components/leads/policy-tab.tsx",
     "components/leads/quotes-tab.tsx",
     "components/opportunities/online-payment-panel.tsx",
     "components/opportunities/pay-link-creator.tsx"
   ],
   "ButtonLink": [
+    "app/(app)/admin/plans/page.tsx",
     "app/(app)/design-system/[name]/page.tsx",
+    "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
+    "components/forms/opportunity-form.tsx",
+    "components/forms/plan-edit-form.tsx",
+    "components/leads/contact-card.tsx",
     "components/leads/documents-tab.tsx",
     "components/leads/policy-tab.tsx"
   ],
   "Field": [
     "app/(app)/opportunities/[id]/page.tsx",
     "components/forms/document-type-form.tsx",
+    "components/forms/form-autocomplete.tsx",
     "components/forms/insurer-form.tsx",
     "components/forms/kyc-form.tsx",
     "components/forms/login-form.tsx",
     "components/forms/online-plan-form.tsx",
     "components/forms/opportunity-form.tsx",
+    "components/forms/plan-edit-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/quote-form.tsx",
     "components/forms/role-form.tsx",
     "components/forms/upload-form.tsx",
     "components/forms/website-details-form.tsx",
+    "components/leads/lead-actions.tsx",
     "components/leads/policy-tab.tsx",
     "components/opportunities/pay-link-creator.tsx"
   ],
   "InlineForm": [
-    "app/(app)/admin/plans/page.tsx",
     "app/(app)/admin/users/page.tsx",
-    "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx"
   ],
   "FormError": [
@@ -66,6 +73,7 @@
     "components/forms/login-form.tsx",
     "components/forms/online-plan-form.tsx",
     "components/forms/opportunity-form.tsx",
+    "components/forms/plan-edit-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/quote-form.tsx",
     "components/forms/role-form.tsx",
@@ -80,23 +88,23 @@
     "app/(app)/admin/roles/page.tsx",
     "app/(app)/admin/users/page.tsx",
     "app/(app)/kyc/page.tsx",
-    "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/layout/locale-switch.tsx",
     "components/leads/documents-tab.tsx",
+    "components/leads/lead-actions.tsx",
     "components/leads/policy-tab.tsx",
     "components/leads/quotes-tab.tsx",
     "components/opportunities/online-payment-panel.tsx"
   ],
   "Input": [
-    "app/(app)/admin/plans/page.tsx",
     "app/(app)/kyc/page.tsx",
     "components/forms/document-type-form.tsx",
     "components/forms/insurer-form.tsx",
     "components/forms/kyc-form.tsx",
     "components/forms/login-form.tsx",
     "components/forms/opportunity-form.tsx",
+    "components/forms/plan-edit-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/role-form.tsx",
     "components/forms/website-details-form.tsx",
@@ -107,6 +115,7 @@
     "components/forms/login-form.tsx"
   ],
   "NumberInput": [
+    "components/forms/plan-edit-form.tsx",
     "components/forms/plan-form.tsx",
     "components/forms/quote-form.tsx",
     "components/forms/website-details-form.tsx"
@@ -123,20 +132,26 @@
   ],
   "Autocomplete": [
     "app/(app)/admin/users/page.tsx",
-    "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
     "components/forms/form-autocomplete.tsx",
-    "components/leads/policy-tab.tsx"
+    "components/forms/plan-edit-form.tsx",
+    "components/leads/lead-actions.tsx",
+    "components/leads/policy-tab.tsx",
+    "components/plans/plan-filters.tsx"
   ],
   "MultiSelect": [],
   "Checkbox": [
     "app/(app)/admin/roles/page.tsx",
-    "components/forms/online-plan-form.tsx"
+    "components/forms/online-plan-form.tsx",
+    "components/forms/quote-form.tsx",
+    "components/plans/plan-filters.tsx"
   ],
   "Radio": [
     "app/(app)/admin/documents/page.tsx"
   ],
-  "RadioGroup": [],
+  "RadioGroup": [
+    "components/forms/opportunity-form.tsx"
+  ],
   "Switch": [],
   "SegmentGroup": [],
   "Rating": [],
@@ -144,7 +159,9 @@
     "components/forms/kyc-form.tsx",
     "components/forms/website-details-form.tsx"
   ],
-  "Dialog": [],
+  "Dialog": [
+    "components/leads/lead-actions.tsx"
+  ],
   "AlertDialog": [
     "app/(app)/admin/users/page.tsx",
     "components/leads/documents-tab.tsx",
@@ -154,7 +171,9 @@
   "Popover": [],
   "Tooltip": [],
   "DropdownMenu": [
-    "app/(app)/leads/(list)/page.tsx"
+    "app/(app)/admin/plans/page.tsx",
+    "app/(app)/leads/(list)/page.tsx",
+    "components/leads/lead-actions.tsx"
   ],
   "ActionBar": [
     "app/(app)/leads/(list)/page.tsx"
@@ -164,7 +183,6 @@
   ],
   "PillNav": [
     "app/(app)/admin/documents/page.tsx",
-    "app/(app)/admin/plans/page.tsx",
     "app/(app)/design-system/[name]/page.tsx",
     "app/(app)/kb/[[...slug]]/page.tsx",
     "app/(app)/kyc/page.tsx"
@@ -181,7 +199,8 @@
     "components/dashboard/renewals-card.tsx",
     "components/leads/activity-feed.tsx",
     "components/leads/kyc-tab.tsx",
-    "components/leads/policy-tab.tsx"
+    "components/leads/policy-tab.tsx",
+    "components/leads/quotes-tab.tsx"
   ],
   "Skeleton": [
     "app/(app)/leads/[id]/loading.tsx",
@@ -239,9 +258,13 @@
     "components/dashboard/funnel.tsx",
     "components/dashboard/renewals-card.tsx",
     "components/forms/opportunity-form.tsx",
+    "components/forms/quote-form.tsx",
     "components/forms/role-form.tsx",
     "components/kb/kb-article.tsx",
     "components/layout/list-skeleton.tsx",
+    "components/leads/contact-card.tsx",
+    "components/leads/deal-card.tsx",
+    "components/leads/quotes-tab.tsx",
     "components/opportunities/online-payment-panel.tsx"
   ],
   "PanelSection": [
@@ -255,8 +278,8 @@
   ],
   "DetailList": [
     "app/(app)/kyc/page.tsx",
-    "app/(app)/leads/[id]/page.tsx",
     "app/(app)/opportunities/[id]/page.tsx",
+    "components/leads/deal-card.tsx",
     "components/leads/kyc-tab.tsx",
     "components/leads/online-payment.tsx",
     "components/leads/policy-tab.tsx"
@@ -270,8 +293,8 @@
     "app/(app)/leads/(list)/page.tsx",
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
+    "components/forms/plan-edit-form.tsx",
     "components/leads/documents-tab.tsx",
-    "components/leads/quotes-tab.tsx",
     "components/opportunities/online-payment-panel.tsx"
   ],
   "CellText": [
@@ -282,12 +305,10 @@
     "app/(app)/opportunities/(list)/page.tsx",
     "app/(app)/policies/page.tsx",
     "components/leads/documents-tab.tsx",
-    "components/leads/quotes-tab.tsx",
     "components/opportunities/online-payment-panel.tsx"
   ],
   "ListRow": [
-    "app/(app)/admin/documents/page.tsx",
-    "app/(app)/admin/plans/page.tsx"
+    "app/(app)/admin/documents/page.tsx"
   ],
   "Badge": [
     "app/(app)/admin/plans/page.tsx",
@@ -306,6 +327,10 @@
     "components/leads/screening-result.tsx",
     "components/opportunities/online-payment-panel.tsx"
   ],
+  "PriceBreakdown": [
+    "components/forms/quote-form.tsx",
+    "components/leads/quotes-tab.tsx"
+  ],
   "Stat": [
     "app/(app)/page.tsx"
   ],
@@ -315,14 +340,18 @@
   "Avatar": [
     "app/(app)/admin/users/page.tsx",
     "app/(app)/leads/(list)/page.tsx",
-    "components/layout/sidebar.tsx"
+    "components/layout/sidebar.tsx",
+    "components/leads/quotes-tab.tsx"
   ],
   "AvatarGroup": [],
   "Icon": [
+    "app/(app)/admin/plans/page.tsx",
     "app/(app)/design-system/[name]/page.tsx",
     "app/(app)/leads/(list)/page.tsx",
+    "components/forms/plan-edit-form.tsx",
     "components/layout/locale-switch.tsx",
     "components/layout/nav-link.tsx",
+    "components/leads/lead-actions.tsx",
     "components/leads/progress-rail.tsx"
   ],
   "MotionHighlight": [

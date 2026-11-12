@@ -12,6 +12,7 @@ import {
   ICON_NAMES,
   ListRow,
   Panel,
+  PriceBreakdown,
   Stat,
   Timeline,
 } from "@/components/ui";
@@ -178,6 +179,23 @@ export function DataDemos({ name, path, params }: DemoProps) {
               { id: 4, icon: "inbox", title: t("status.new"), time: "18 Nov" },
             ]}
           />
+        </Demo>
+      );
+    case "PriceBreakdown":
+      return (
+        <Demo title="A quote's price" description="Included add-ons say so; money taken off is red.">
+          <div className="max-w-sm">
+            <PriceBreakdown
+              caption="Price breakdown for Northwind Plus"
+              lines={[
+                { label: t("lead.quotes.planLine"), amount: money(1215) },
+                { label: "Roadside assistance", amount: t("lead.quotes.included"), tone: "included" },
+                { label: "Replacement car", amount: money(60) },
+                { label: t("lead.quotes.discount"), amount: `−${money(50)}`, tone: "minus" },
+              ]}
+              total={{ label: t("lead.quotes.totalYear"), amount: money(1225) }}
+            />
+          </div>
         </Demo>
       );
     case "Avatar":

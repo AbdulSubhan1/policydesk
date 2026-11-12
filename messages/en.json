@@ -42,7 +42,8 @@
     "today": "Today",
     "saved": "Saved",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "optional": "Optional"
   },
   "nav": {
     "main": "Main",
@@ -235,7 +236,8 @@
     "tripTooLong": "A single trip can last at most 180 days",
     "annualNoEndDate": "An annual policy has no end date; leave it empty",
     "ownersOnly": "Only owners insure the building; leave it empty for a tenant",
-    "familyOnly": "Children are covered only on a family policy; leave it empty"
+    "familyOnly": "Children are covered only on a family policy; leave it empty",
+    "discountTooHigh": "The discount must be less than the price"
   },
   "errors": {
     "invalidLogin": "That email and password don't match a user",
@@ -326,7 +328,7 @@
     "title": "Opportunities",
     "description": "New inquiries {scope}. Qualify them, then convert them into leads for an advisor.",
     "new": "New opportunity",
-    "newDescription": "It goes to the department that sells the chosen product.",
+    "newDescription": "It goes to the department that sells the product. A coordinator qualifies it next.",
     "customer": "Customer",
     "product": "Product",
     "status": "Status",
@@ -442,7 +444,13 @@
       "revokeTitle": "Revoke this payment link?",
       "revokeBody": "The customer can't pay through it any more. Create a new link to send another.",
       "noLinks": "No payment links yet"
-    }
+    },
+    "customerSection": "Customer",
+    "needSection": "What they need",
+    "fullName": "Full name",
+    "mobile": "Mobile",
+    "sourceQuestion": "How did they reach us?",
+    "goesTo": "Goes to {department}"
   },
   "leads": {
     "title": "Leads",
@@ -461,7 +469,6 @@
     }
   },
   "lead": {
-    "summary": "{product} insurance in {department}, handled by {advisor}.",
     "nobody": "nobody yet",
     "renews": "Renews {policy}, which ends on {date}.",
     "steps": {
@@ -481,40 +488,56 @@
         "quotes": "Next: accept a quote.",
         "kyc": "Next: approve KYC.",
         "documents": "Next: upload the required documents.",
-        "policy": "Next: book the policy."
+        "policy": "Next: book the policy.",
+        "kycStart": "Next: run KYC, then collect the documents and book the policy."
       }
     },
     "tabs": {
       "quotes": "Quotes",
       "kyc": "KYC",
       "documents": "Documents",
-      "policy": "Policy and payment"
+      "policy": "Policy",
+      "documentsProgress": "Documents {done}/{total}"
     },
     "customerCard": "Customer",
-    "cameFrom": "Came from",
     "opportunityNumber": "Opportunity #{id}",
     "setStage": "Set stage",
-    "reassign": "Reassign",
     "activity": "Activity",
     "noActivity": "No activity yet",
     "system": "System",
     "quotes": {
-      "insurerPlan": "Insurer and plan",
-      "premium": "Premium",
-      "status": "Status",
-      "decision": "Customer decision",
-      "accepted": "Accepted",
-      "declined": "Declined",
       "empty": "No quotes yet. Pick a plan below to quote the customer.",
       "plan": "Plan",
-      "premiumOffered": "Premium offered",
       "add": "Add quote",
       "adding": "Adding…",
-      "excess": "Excess {amount}",
       "noPlans": "No active plans for this product. An admin can add them under Insurers & plans.",
       "emptyTitle": "No quotes yet",
       "included": "Included",
-      "createdBy": "Created by"
+      "planLine": "Plan, 1 year",
+      "discount": "Advisor discount",
+      "insurerPrice": "Changed to the insurer's price",
+      "totalYear": "Total a year",
+      "customerTicked": "(customer ticked)",
+      "notChosen": "Not chosen",
+      "paidOnline": "Paid online",
+      "madeByWebsite": "Made by the website · quote {reference} · {date}",
+      "madeBy": "Made by {name} · quote {reference} · {date}",
+      "markAccepted": "Customer accepted",
+      "markNotChosen": "Not chosen",
+      "addTitle": "Add a quote",
+      "addDescription": "Pick a plan. Its add-ons and price fill in from Insurers and plans.",
+      "planHint": "{cover} · excess {excess} · plan price {price} a year",
+      "addOnsLegend": "Add-ons for this plan",
+      "discountLabel": "Discount",
+      "insurerGaveDifferent": "The insurer gave a different price",
+      "useWorkedOut": "Use the worked-out price",
+      "insurerPriceLabel": "Insurer's price a year",
+      "overrideHint": "Saved as the insurer's price instead of the plan's.",
+      "breakdownCaption": "Price breakdown for {plan}",
+      "plusPrice": "+{amount}",
+      "pickPlanFirst": "Pick a plan to see its add-ons and price.",
+      "excessShort": "excess {amount}",
+      "added": "Quote added"
     },
     "kyc": {
       "none": "No KYC record",
@@ -532,7 +555,9 @@
       "submitting": "Screening…",
       "pep": "PEP",
       "watchlist": "Watchlist match",
-      "edd": "Enhanced due diligence"
+      "edd": "Enhanced due diligence",
+      "fromWebsite": "From website",
+      "prefilled": "{count, plural, one {# answer came} other {# answers came}} from the website form. Check them, then fill the rest."
     },
     "documents": {
       "required": "required",
@@ -576,7 +601,46 @@
         "paymentId": "PaySandbox payment",
         "paidAt": "Paid on"
       }
-    }
+    },
+    "headline": "{product} · {department} · {type} · advisor {advisor}",
+    "changeStageOrAdvisor": "Change stage or advisor",
+    "editDescription": "Both changes show in the lead's activity.",
+    "saveChanges": "Save changes",
+    "moreActions": "More actions",
+    "menu": {
+      "openOpportunity": "Open opportunity #{id}",
+      "allActivity": "All activity"
+    },
+    "nextAction": {
+      "quotes": "Open quotes",
+      "kycStart": "Start KYC",
+      "kycOpen": "Open KYC",
+      "documents": "Upload documents",
+      "policy": "Book policy"
+    },
+    "contact": {
+      "title": "Contact",
+      "call": "Call",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "cameFrom": "Came from {source}"
+    },
+    "deal": {
+      "title": "Deal",
+      "plan": "Plan",
+      "premium": "Premium",
+      "paid": "Paid",
+      "recorded": "Recorded by finance",
+      "paidOnline": "{amount} online, {date}",
+      "paidOn": "{date}",
+      "notYet": "Not yet",
+      "notNeeded": "Not needed, paid online",
+      "noPlan": "No quote yet"
+    },
+    "activityCount": "{count, plural, one {# event} other {# events}}",
+    "activityAll": "All {count} events",
+    "activityLatest": "Show the latest only",
+    "summary": "{product} insurance in {department}, handled by {advisor}."
   },
   "activity": {
     "opportunity": {
@@ -585,7 +649,7 @@
     "quote": {
       "create": "added a quote",
       "accepted": "marked a quote accepted",
-      "rejected": "marked a quote declined",
+      "rejected": "marked a quote not chosen",
       "select": "picked a plan"
     },
     "kyc": {
@@ -660,7 +724,7 @@
   },
   "plans": {
     "title": "Insurers & plans",
-    "description": "Plans loaded from each insurer. Advisors quote from the active plans of a lead's product.",
+    "description": "Advisors and the website quote from active plans. Prices and add-ons here are what customers see.",
     "insurers": "Insurers",
     "planCount": "{count, plural, one {# plan} other {# plans}}",
     "insurerName": "Insurer name",
@@ -679,7 +743,47 @@
     "nameAr": "Plan name (Arabic)",
     "benefits": "Benefits, separated by commas",
     "save": "Add plan",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "insurerPlans": "{count, plural, one {# {product} plan} other {# {product} plans}}",
+    "noActivePlans": "No active plans",
+    "productCount": "{product} · {count, plural, one {# plan} other {# plans}}",
+    "allInsurers": "All insurers",
+    "showInactive": "Show inactive",
+    "filters": "Plan filters",
+    "planHeader": "Plan",
+    "priceYear": "Price a year",
+    "addOns": "Add-ons",
+    "addOnSummary": {
+      "included": "{count} included",
+      "optional": "{count} optional",
+      "preselected": "{count} added by default",
+      "none": "None"
+    },
+    "edit": "Edit",
+    "editPlan": "Edit {plan}",
+    "editing": "Editing",
+    "editTitle": "Edit {plan}",
+    "editDescription": "{insurer} · {cover}. Quotes already made keep the price and add-ons they were made with.",
+    "benefitsLabel": "Benefits",
+    "addBenefit": "Add benefit",
+    "removeBenefit": "Remove {benefit}",
+    "addOnName": "Add-on",
+    "howOffered": "How it's offered",
+    "howOfferedFor": "How {name} is offered",
+    "priceFor": "Price of {name}",
+    "offer": {
+      "included": "Included",
+      "optional": "Optional",
+      "preselected": "Added by default",
+      "off": "Not offered"
+    },
+    "offersHint": "Included is free. Added by default shows ticked, and the customer can remove it. Not offered hides it from new quotes.",
+    "addAddOn": "Add an add-on",
+    "pickAddOn": "Pick an add-on to offer…",
+    "saveChanges": "Save changes",
+    "deactivatePlan": "Deactivate plan",
+    "activatePlan": "Activate plan",
+    "inactiveInsurer": "Its insurer is inactive, so nobody can quote it."
   },
   "documentSettings": {
     "title": "Document settings",
@@ -844,7 +948,8 @@
     "contentsValue": "e.g. 30000",
     "coverFor": "Pick who is covered…",
     "children": "e.g. 2",
-    "preExisting": "Yes or no…"
+    "preExisting": "Yes or no…",
+    "benefit": "e.g. Free cancellation, 14 days"
   },
   "table": {
     "all": "All",

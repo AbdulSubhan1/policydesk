@@ -119,6 +119,15 @@ export function SelectionDemos({ name }: DemoProps) {
               }))}
             />
           </Demo>
+          <Demo title="Pills" description="Short choices side by side; they wrap on a phone.">
+            <RadioGroup
+              name="demo-source"
+              variant="pills"
+              label={t("opportunities.source")}
+              defaultValue="phone"
+              options={keyedOptions(t, "sources", ["phone", "referral", "partner"])}
+            />
+          </Demo>
         </>
       );
     case "Switch":

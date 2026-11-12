@@ -98,6 +98,14 @@ export function LayoutDemos({ name, path, params }: DemoProps) {
               </ul>
             </Panel>
           </Demo>
+          <Demo
+            title="Folds on a phone"
+            description="collapsible: tap the title to open it below lg; always open above."
+          >
+            <Panel title={t("lead.deal.title")} summary={`· ${t("common.perYear", { amount: "$1,140" })}`} collapsible>
+              <DetailList items={[{ label: t("lead.deal.plan"), value: "Northwind Plus" }]} />
+            </Panel>
+          </Demo>
         </>
       );
     case "PanelSection":
