@@ -6,11 +6,13 @@ import { id } from "@/schemas/fields";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";
 import { db, schema } from "@/server/db";
+import { assertNotDemoLocked } from "@/server/demo-lock";
 
 const { roles, users, departments } = schema;
 
 async function requireOtherUser(formData: FormData) {
   const user = await requirePermission("users:manage");
+  await assertNotDemoLocked("users", user.email, "/admin/users");
   const targetId = id.parse(formData.get("userId"));
   if (targetId === user.id) throw new Error("You cannot change your own account here");
   const [target] = await db.select().from(users).where(eq(users.id, targetId));

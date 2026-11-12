@@ -65,3 +65,7 @@ No screen or action writes them: they are changed only in the database's SQL edi
 so no PolicyDesk account can flip them. `lib/settings.ts` lists every known key with its type and default;
 `getSetting()` reads them once per request and falls back to the default when a row is missing or malformed.
 Migrations and missing settings are applied on every production deploy (`npm run db:migrate`, see `vercel.json`).
+
+While `demo_mode` is on, the live demo locks roles, users, document settings, insurers and plans, document uploads and
+deletes, and payment links, for every account. The check is in the server actions (`server/demo-lock.ts`); the screens
+only mirror it (read-only, with a note). Each refused attempt is reported to Pulse as `action_blocked`.

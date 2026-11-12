@@ -8,12 +8,16 @@ import { id } from "@/schemas/fields";
 import { logAudit } from "@/server/audit";
 import { db, schema } from "@/server/db";
 import { requireLead } from "@/server/guards";
+import { assertNotDemoLocked, demoLockError } from "@/server/demo-lock";
 
 const { documents, productDocuments } = schema;
 
 // Files cannot be sent as a plain object, so this action takes FormData (built by the upload form)
 export async function uploadDocument(formData: FormData): Promise<ActionResult> {
   const { user, lead, opportunity } = await requireLead("documents:upload", id.parse(formData.get("leadId")));
+  // Files are stored in the database, so the live demo takes none
+  const locked = await demoLockError("uploads", user.email, `/leads/${lead.id}`);
+  if (locked) return { ok: false, error: locked };
   const documentTypeId = id.parse(formData.get("documentTypeId"));
   const file = formData.get("file");
 
@@ -59,6 +63,7 @@ export async function deleteDocument(formData: FormData) {
     .where(eq(documents.id, id.parse(formData.get("documentId"))));
   if (!doc) throw new Error("errors.notFound");
   const { user } = await requireLead("documents:upload", doc.leadId);
+  await assertNotDemoLocked("document_delete", user.email, `/leads/${doc.leadId}`);
 
   await db.delete(documents).where(eq(documents.id, doc.id));
   await logAudit({

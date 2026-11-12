@@ -8,12 +8,15 @@ import { id, option } from "@/schemas/fields";
 import { documentTypeSchema, type DocumentTypeInput } from "@/schemas/document-type";
 import { logAudit } from "@/server/audit";
 import { requirePermission } from "@/server/auth";
+import { assertNotDemoLocked, demoLockError } from "@/server/demo-lock";
 import { db, schema } from "@/server/db";
 
 const { documentTypes, productDocuments } = schema;
 
 export async function createDocumentType(input: DocumentTypeInput): Promise<ActionResult> {
   const user = await requirePermission("documents:configure");
+  const locked = await demoLockError("settings", user.email, "/admin/documents");
+  if (locked) return { ok: false, error: locked };
   const parsed = documentTypeSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
   const { nameEn, nameAr, descriptionEn, descriptionAr } = parsed.data;
@@ -38,6 +41,7 @@ export async function createDocumentType(input: DocumentTypeInput): Promise<Acti
 
 export async function toggleDocumentType(formData: FormData) {
   const user = await requirePermission("documents:configure");
+  await assertNotDemoLocked("settings", user.email, "/admin/documents");
   const [doc] = await db
     .select()
     .from(documentTypes)
@@ -58,6 +62,7 @@ export async function toggleDocumentType(formData: FormData) {
 /** Saves one product's checklist. Each document type is "none", "optional" or "required". */
 export async function saveProductDocuments(formData: FormData) {
   const user = await requirePermission("documents:configure");
+  await assertNotDemoLocked("settings", user.email, "/admin/documents");
   const product = option(PRODUCTS).parse(formData.get("product"));
   const types = await db.select({ id: documentTypes.id }).from(documentTypes);
 

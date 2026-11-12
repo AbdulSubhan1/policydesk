@@ -282,7 +282,8 @@
     "alreadyPaid": "The customer has already paid",
     "addOnUnavailable": "One of the add-ons can't be chosen for this plan",
     "noOnlineSelection": "Save a plan first",
-    "payLinksDisabled": "Payment links are off: WEBSITE_URL is not set"
+    "payLinksDisabled": "Payment links are off: WEBSITE_URL is not set",
+    "demoLocked": "Turned off in the live demo, so every visitor sees the same demo."
   },
   "login": {
     "title": "Sign in",
@@ -1039,5 +1040,11 @@
     "pageOf": "Page {page} of {pages}",
     "pages": "Pages",
     "select": "Select"
+  },
+  "demo": {
+    "lockedTitle": "Read-only in the live demo",
+    "lockedBody": "You can look around, but changes here are turned off so every visitor sees the same demo.",
+    "uploadsOff": "Uploading is turned off in the live demo: files are stored in the database. The checklist above still shows what each product needs.",
+    "payLinksOff": "Payment links are turned off in the live demo: each one opens a real PaySandbox checkout. Try paying from the Brokwise website instead."
   }
 }

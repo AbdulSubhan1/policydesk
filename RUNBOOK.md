@@ -23,8 +23,18 @@ select key, value, description, updated_at from app_settings order by key;
 
 ### Demo mode
 
-`demo_mode = true` means the app runs as the public live demo: the login page shows the demo accounts, and the demo
-limits apply. `false` means normal use, without the demo limits.
+`demo_mode = true` means the app runs as the public live demo. Anyone can sign in with the shown demo accounts, look
+around and work leads end to end, but these are **locked for everyone, the demo Admin too** (the screens open
+read-only, and every attempt is sent to Pulse's security page as `action_blocked`):
+
+- roles and permissions
+- users (role, department, active, available)
+- document settings, insurers and plans
+- uploading documents (files are stored in the database) and deleting them
+- creating or revoking payment links (each opens a real PaySandbox checkout)
+
+`false` means normal use: nothing is locked. **Turn it back on when you are done**: while it is off, anyone with the
+public demo password can change everything.
 
 Turn demo mode **off**:
 

@@ -16,6 +16,7 @@ import type { Product } from "@/constants/products";
 import { dateTime, money } from "@/lib/format";
 import { localized } from "@/lib/i18n";
 import { revokePayLink } from "@/server/actions/website-payments";
+import { isDemoLocked } from "@/server/demo-lock";
 import { getOnlinePayment } from "@/server/queries/online-payment";
 import { PayLinkCreator } from "./pay-link-creator";
 
@@ -33,10 +34,11 @@ export async function OnlinePaymentPanel({
   product: Product;
   details: Record<string, string | number | boolean>;
 }) {
-  const [{ plans, selection, paid, links }, t, locale] = await Promise.all([
+  const [{ plans, selection, paid, links }, t, locale, locked] = await Promise.all([
     getOnlinePayment(leadId, product, details),
     getTranslations(),
     getLocale(),
+    isDemoLocked(),
   ]);
 
   const columns: Column<Link>[] = [
@@ -59,7 +61,8 @@ export async function OnlinePaymentPanel({
       header: "",
       align: "end",
       cell: (l) =>
-        l.state === "active" && (
+        l.state === "active" &&
+        !locked && (
           <form action={revokePayLink}>
             <Hidden name="id" value={opportunityId} />
             <Hidden name="linkId" value={l.id} />
@@ -119,7 +122,12 @@ export async function OnlinePaymentPanel({
                   total: money(selection.total),
                 })}
               </p>
-              <PayLinkCreator opportunityId={opportunityId} hasLinks={links.length > 0} />
+              {locked ? (
+                // Each link opens a real PaySandbox checkout, so the live demo makes none
+                <p className="text-sm text-muted">{t("demo.payLinksOff")}</p>
+              ) : (
+                <PayLinkCreator opportunityId={opportunityId} hasLinks={links.length > 0} />
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted">{t("opportunities.online.chooseFirst")}</p>

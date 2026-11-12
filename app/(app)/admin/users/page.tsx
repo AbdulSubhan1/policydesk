@@ -11,21 +11,26 @@ import {
   InlineForm,
   PageHeader,
 } from "@/components/ui";
+import { DemoLockedNotice } from "@/components/demo-locked-notice";
 import { can } from "@/lib/rbac";
 import { toggleUserActive, toggleUserAvailable, updateUser } from "@/server/actions/users";
 import { requireUser } from "@/server/auth";
+import { isDemoLocked } from "@/server/demo-lock";
 import { listDepartments, listRoles, listUsers } from "@/server/queries/users";
 
 export default async function UsersPage() {
   const user = await requireUser();
   if (!can(user, "users:manage")) return <Forbidden permission="users:manage" />;
 
-  const [userRows, roleRows, deptRows, t] = await Promise.all([
+  const [userRows, roleRows, deptRows, t, locked] = await Promise.all([
     listUsers(),
     listRoles(),
     listDepartments(),
     getTranslations(),
+    isDemoLocked(),
   ]);
+  // In the live demo every row is read-only, like your own row
+  const editable = (id: number) => !locked && id !== user.id;
   const roleOptions = roleRows.map((r) => ({ value: String(r.id), label: r.name }));
   const deptOptions = [
     { value: "", label: t("users.noDepartment") },
@@ -35,6 +40,7 @@ export default async function UsersPage() {
   return (
     <>
       <PageHeader title={t("users.title")} description={t("users.description")} />
+      {locked && <DemoLockedNotice className="mb-6" />}
       <DataTable
         path="/admin/users"
         rows={userRows}
@@ -59,7 +65,7 @@ export default async function UsersPage() {
             key: "role",
             header: t("users.roleDepartment"),
             cell: (u) =>
-              u.id === user.id ? (
+              !editable(u.id) ? (
                 <CellText
                   primary={u.roleName}
                   secondary={u.departmentKey ? t(`departments.${u.departmentKey}`) : undefined}
@@ -101,7 +107,7 @@ export default async function UsersPage() {
                 <span className={u.available ? "text-brand-strong" : "text-muted"}>
                   {u.available ? t("common.yes") : t("common.no")}
                 </span>
-                {u.id !== user.id && (
+                {editable(u.id) && (
                   <form action={toggleUserAvailable}>
                     <Hidden name="userId" value={u.id} />
                     <Button size="sm" variant="ghost">
@@ -117,7 +123,7 @@ export default async function UsersPage() {
             header: "",
             align: "end",
             cell: (u) =>
-              u.id !== user.id && (
+              editable(u.id) && (
                 <form action={toggleUserActive}>
                   <Hidden name="userId" value={u.id} />
                   {u.active ? (

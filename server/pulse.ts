@@ -11,11 +11,11 @@ export const PULSE_URL = "https://abdulsubhan-pulse.vercel.app";
 const TIMEOUT_MS = 10_000;
 
 export type SecurityEvent = {
-  type: "login_failed" | "login_succeeded" | "login_blocked";
+  type: "login_failed" | "login_succeeded" | "login_blocked" | "action_blocked";
   account?: string;
   ip?: string;
   path?: string;
-  // snake_case reason, never free text: "wrong_password", "unknown_account", "inactive", "rate_limited"
+  // snake_case reason, never free text: "wrong_password", "unknown_account", "inactive", "rate_limited", "demo_roles"
   reason?: string;
 };
 

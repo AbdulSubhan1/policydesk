@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { DemoLockedNotice } from "@/components/demo-locked-notice";
 import { DocumentTypeForm } from "@/components/forms/document-type-form";
 import {
   Button,
@@ -17,6 +18,7 @@ import { localized } from "@/lib/i18n";
 import { can } from "@/lib/rbac";
 import { saveProductDocuments, toggleDocumentType } from "@/server/actions/document-settings";
 import { requireUser } from "@/server/auth";
+import { isDemoLocked } from "@/server/demo-lock";
 import { listDocumentTypes, productChecklist } from "@/server/queries/documents";
 
 const LEVELS = ["none", "optional", "required"] as const;
@@ -27,11 +29,12 @@ export default async function DocumentSettingsPage({ searchParams }: { searchPar
 
   const requested = (await searchParams).product;
   const product: Product = PRODUCTS.find((p) => p === requested) ?? "car";
-  const [types, checklist, t, locale] = await Promise.all([
+  const [types, checklist, t, locale, locked] = await Promise.all([
     listDocumentTypes(),
     productChecklist(product),
     getTranslations(),
     getLocale(),
+    isDemoLocked(),
   ]);
   const levelLabel = {
     none: t("documentSettings.notUsed"),
@@ -43,21 +46,29 @@ export default async function DocumentSettingsPage({ searchParams }: { searchPar
   return (
     <>
       <PageHeader title={t("documentSettings.title")} description={t("documentSettings.description")} />
+      {locked && <DemoLockedNotice className="mb-6" />}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <Panel title={t("documentSettings.types")} flush footer={<DocumentTypeForm />} className="self-start">
+        <Panel
+          title={t("documentSettings.types")}
+          flush
+          footer={locked ? undefined : <DocumentTypeForm />}
+          className="self-start"
+        >
           <ul>
             {types.map((type) => (
               <ListRow
                 key={type.id}
                 muted={!type.active}
                 action={
-                  <form action={toggleDocumentType}>
-                    <Hidden name="documentTypeId" value={type.id} />
-                    <Button size="sm" variant="ghost">
-                      {type.active ? t("common.disable") : t("common.enable")}
-                    </Button>
-                  </form>
+                  !locked && (
+                    <form action={toggleDocumentType}>
+                      <Hidden name="documentTypeId" value={type.id} />
+                      <Button size="sm" variant="ghost">
+                        {type.active ? t("common.disable") : t("common.enable")}
+                      </Button>
+                    </form>
+                  )
                 }
               >
                 <CellText primary={localized(type.name, locale)} secondary={localized(type.description, locale)} />
@@ -79,41 +90,45 @@ export default async function DocumentSettingsPage({ searchParams }: { searchPar
             title={t("documentSettings.checklist", { product: t(`products.${product}`) })}
             flush
             actions={
-              <Button variant="primary" form={formId}>
-                {t("common.save")}
-              </Button>
+              !locked && (
+                <Button variant="primary" form={formId}>
+                  {t("common.save")}
+                </Button>
+              )
             }
           >
             <form id={formId} key={product} action={saveProductDocuments}>
               <Hidden name="product" value={product} />
-              <DataTable
-                embedded
-                path="/admin/documents"
-                rows={types.filter((type) => type.active)}
-                rowKey={(type) => type.id}
-                minWidth="sm"
-                empty={{ title: t("documentSettings.types"), icon: "fileSettings" }}
-                columns={[
-                  {
-                    key: "document",
-                    header: t("documentSettings.document"),
-                    cell: (type) => localized(type.name, locale),
-                  },
-                  ...LEVELS.map((level) => ({
-                    key: level,
-                    header: levelLabel[level],
-                    align: "center" as const,
-                    cell: (type: (typeof types)[number]) => (
-                      <Radio
-                        name={`doc-${type.id}`}
-                        value={level}
-                        defaultChecked={(checklist.get(type.id) ?? "none") === level}
-                        aria-label={`${localized(type.name, locale)}: ${levelLabel[level]}`}
-                      />
-                    ),
-                  })),
-                ]}
-              />
+              <fieldset disabled={locked}>
+                <DataTable
+                  embedded
+                  path="/admin/documents"
+                  rows={types.filter((type) => type.active)}
+                  rowKey={(type) => type.id}
+                  minWidth="sm"
+                  empty={{ title: t("documentSettings.types"), icon: "fileSettings" }}
+                  columns={[
+                    {
+                      key: "document",
+                      header: t("documentSettings.document"),
+                      cell: (type) => localized(type.name, locale),
+                    },
+                    ...LEVELS.map((level) => ({
+                      key: level,
+                      header: levelLabel[level],
+                      align: "center" as const,
+                      cell: (type: (typeof types)[number]) => (
+                        <Radio
+                          name={`doc-${type.id}`}
+                          value={level}
+                          defaultChecked={(checklist.get(type.id) ?? "none") === level}
+                          aria-label={`${localized(type.name, locale)}: ${levelLabel[level]}`}
+                        />
+                      ),
+                    })),
+                  ]}
+                />
+              </fieldset>
             </form>
           </Panel>
         </div>
