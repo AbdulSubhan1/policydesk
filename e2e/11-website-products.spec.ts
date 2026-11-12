@@ -3,6 +3,9 @@ import { HEALTH_ADD_ONS, TRAVEL_ADD_ONS } from "../constants/add-ons";
 import { PRODUCT_COVERS } from "../constants/products";
 import { loginAs, pick } from "./helpers";
 import {
+  E2E_PAYSANDBOX_KEY,
+  E2E_WEBSITE_URL,
+  FAKE_PAYSANDBOX_PORT,
   OPPORTUNITIES_PATH,
   customerName,
   fullForm,
@@ -164,6 +167,17 @@ test.describe("website products", () => {
     const started = await websiteCall(request, "POST", `${OPPORTUNITIES_PATH}/${publicId}/payment`, {});
     expect(started.status()).toBe(200);
     const { checkoutUrl } = await started.json();
+    // PaySandbox sends the visitor back to the health pages, not the car ones
+    const sessionId = new URL(checkoutUrl).pathname.split("/").pop();
+    const session = await (
+      await request.get(`http://localhost:${FAKE_PAYSANDBOX_PORT}/api/v1/checkout_sessions/${sessionId}`, {
+        headers: { authorization: `Bearer ${E2E_PAYSANDBOX_KEY}` },
+      })
+    ).json();
+    expect(session).toMatchObject({
+      success_url: `${E2E_WEBSITE_URL}/health/thank-you`,
+      cancel_url: `${E2E_WEBSITE_URL}/health/payment`,
+    });
     // Pressing Pay on the fake checkout posts the signed webhook to PolicyDesk before redirecting
     const paid = await request.post(`${checkoutUrl}/pay`, { maxRedirects: 0 });
     expect(paid.status()).toBe(303);
