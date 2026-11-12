@@ -219,13 +219,18 @@ The view shows only public ids, never internal numbers:
 
 ```json
 {
-  "opportunity": { "publicId": "3f9c2a1e-…", "status": "converted", "product": "car" },
+  "opportunity": {
+    "publicId": "3f9c2a1e-…",
+    "status": "converted",
+    "product": "car",
+    "details": { "make": "Toyota", "model": "Corolla", "year": 2021, "carValue": 18000, "…": "…" }
+  },
   "lead": { "reference": "CAR-J2M3HX7" },
   "contact": { "role": "coordinator", "name": "Hina Malik", "email": "…", "phone": "+923001110001" }
 }
 ```
 
-`lead` is `null` for the short form; `contact` is `null` when nobody was available. Once a plan is chosen, the view also has `selection` (otherwise `null`):
+`details` are the visitor's own form answers as stored (the website uses them to say what was quoted, e.g. "Toyota Corolla 2021 · $18,000"); `lead` is `null` for the short form; `contact` is `null` when nobody was available. Once a plan is chosen, the view also has `selection` (otherwise `null`):
 
 ```json
 {
