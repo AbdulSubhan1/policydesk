@@ -1,4 +1,4 @@
-import { CURRENCY } from "@/constants/config";
+import { CURRENCY, TIME_ZONE } from "@/constants/config";
 
 export function money(amount: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: CURRENCY, maximumFractionDigits: 0 }).format(
@@ -6,12 +6,20 @@ export function money(amount: number) {
   );
 }
 
+const SHORT_DATE = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: TIME_ZONE,
+});
+const DATE_TIME = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: TIME_ZONE });
+
 export function shortDate(value: Date | string) {
-  return new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return SHORT_DATE.format(new Date(value));
 }
 
 export function dateTime(value: Date | string) {
-  return new Date(value).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+  return DATE_TIME.format(new Date(value));
 }
 
 /** b***s@yopmail.com: enough for the customer to recognise, not enough to read off a screen. */

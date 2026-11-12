@@ -8,6 +8,9 @@ export const DEMO_PASSWORD = "demo1234";
 
 export const CURRENCY = "USD";
 
+/** Every date is shown in this zone, wherever the server runs (Vercel is UTC); Brokwise uses the same one. */
+export const TIME_ZONE = "Asia/Karachi";
+
 export const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 export const UPLOAD_MIME_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/webp"];
 

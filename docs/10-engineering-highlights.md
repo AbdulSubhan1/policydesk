@@ -72,6 +72,9 @@ flowchart LR
   booking; booking then marks the policy paid "Online (PaySandbox)".
 - Quotes keep snapshots of the plan and add-ons, so history never changes.
 - Every website and system action is on the audit trail with "Website" as the actor.
+- One time zone for dates (`TIME_ZONE`, shared with Brokwise): the server runs in UTC, so a payment
+  at 20:00 UTC would otherwise show a day earlier here than on the website (unit test in
+  `lib/format.test.ts` runs as UTC).
 
 ## Delivery
 
@@ -79,5 +82,5 @@ flowchart LR
 - Preview deployments share the production database, so no migration runs during a build.
 - A fake PaySandbox (`e2e/fake-paysandbox.mjs`) lets the full payment flow, including a webhook that
   never arrives, run in tests without the live gateway.
-- Tests: 67 unit tests for this work (signing, pricing, assignment, pay links, rate limits on real
-  SQL, per-product details rules) and 59 end-to-end tests in specs 06–11.
+- Tests: 78 unit tests for this work (signing, pricing, assignment, pay links, rate limits on real
+  SQL, per-product details rules, plan benefits, time zone) and 59 end-to-end tests in specs 06–11.
