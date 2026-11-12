@@ -118,7 +118,7 @@ test.describe.serial("website payments", () => {
     expect(payment).toEqual({
       status: "ready",
       lines: [
-        { label: `${main.plan.insurer} ${main.plan.name}`, amount: main.plan.basePremium },
+        { label: main.plan.name, amount: main.plan.basePremium },
         { label: included.name, amount: 0 },
         { label: main.optional.name, amount: main.optional.price },
       ],
@@ -152,7 +152,7 @@ test.describe.serial("website payments", () => {
     expect(session.amount).toBe(main.selection.total * 100);
     expect(session.line_items).toHaveLength(3);
     expect(session.line_items[0]).toEqual({
-      name: `${main.plan.insurer} ${main.plan.name}`,
+      name: main.plan.name,
       quantity: 1,
       amount: main.plan.basePremium * 100,
     });

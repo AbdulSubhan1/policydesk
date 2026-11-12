@@ -165,7 +165,7 @@ test.describe.serial("assisted flow and payment links", () => {
     expect((await openLink(request, token)).status()).toBe(200);
     const payment = await paymentTotal(request, publicId);
     expect(payment).toMatchObject({ status: "ready", total: pickedTotal(cheapest) });
-    expect(payment.lines[0].label).toBe(`${cheapest.insurer} ${cheapest.name}`);
+    expect(payment.lines[0].label).toBe(cheapest.name);
   });
 
   test("paid order → open gives status paid", async ({ page, request }) => {

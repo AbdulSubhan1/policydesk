@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { QuoteAddOn } from "@/constants/add-ons";
-import { toCents, toLineItems } from "./line-items";
+import { planLineName, toCents, toLineItems } from "./line-items";
 
 const addOn = (key: string, kind: QuoteAddOn["kind"], price: number): QuoteAddOn => ({
   key,
@@ -20,7 +20,7 @@ const QUOTE = {
 describe("toLineItems", () => {
   it("plan line plus included at 0 plus chosen add-ons", () => {
     expect(toLineItems(QUOTE).lines).toEqual([
-      { name: "Northwind Assurance Northwind Plus", quantity: 1, amount: 1110 },
+      { name: "Northwind Plus", quantity: 1, amount: 1110 },
       { name: "Add-on roadside", quantity: 1, amount: 0 },
       { name: "Add-on windscreen", quantity: 1, amount: 35 },
       { name: "Add-on driver", quantity: 1, amount: 30 },
@@ -33,8 +33,13 @@ describe("toLineItems", () => {
     expect(lines.reduce((sum, l) => sum + l.amount * l.quantity, 0)).toBe(1175);
     // No add-ons at all: one plan line for the whole premium
     expect(toLineItems({ ...QUOTE, addOns: [], premium: 900 }).lines).toEqual([
-      { name: "Northwind Assurance Northwind Plus", quantity: 1, amount: 900 },
+      { name: "Northwind Plus", quantity: 1, amount: 900 },
     ]);
+  });
+
+  it("adds the insurer only when the plan name doesn't already carry its brand", () => {
+    expect(planLineName("Northwind Assurance", "Northwind Plus")).toBe("Northwind Plus");
+    expect(planLineName("Bluepeak Insurance", "Gold Comprehensive")).toBe("Bluepeak Insurance Gold Comprehensive");
   });
 
   it("cents are dollars × 100", () => {
