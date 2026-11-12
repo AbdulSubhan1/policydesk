@@ -3,10 +3,12 @@ import { after } from "next/server";
 
 // Pulse is my small monitor (github.com/AbdulSubhan1/monitor). PolicyDesk sends it security events (logins) with its
 // own token. Pulse stores the account and IP only as keyed hashes. Off until MONITOR_LOG_TOKEN is set, and it can never
-// break a login: sent after the response, 2-second timeout, every failure ignored.
+// break a login: sent after the response (the visitor never waits), failures only logged.
 
 export const PULSE_URL = "https://abdulsubhan-pulse.vercel.app";
-const TIMEOUT_MS = 2_000;
+// Generous because nobody waits for it: a cold Pulse plus a sleeping free database can take a few seconds, and a
+// 2-second limit silently dropped real events
+const TIMEOUT_MS = 10_000;
 
 export type SecurityEvent = {
   type: "login_failed" | "login_succeeded" | "login_blocked";
@@ -21,15 +23,17 @@ async function send(event: SecurityEvent): Promise<void> {
   const token = process.env.MONITOR_LOG_TOKEN?.trim();
   if (!token) return;
   try {
-    await fetch(`${PULSE_URL}/api/security`, {
+    const res = await fetch(`${PULSE_URL}/api/security`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify(event),
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-  } catch {
-    // Monitoring is best effort; the login matters more
+    // One line in the Vercel logs, so a lost event has a visible reason (never the token or the event's data)
+    if (!res.ok) console.warn(`[pulse] security event not stored: HTTP ${res.status}`);
+  } catch (err) {
+    console.warn(`[pulse] security event not sent: ${err instanceof Error ? err.name : "error"}`);
   }
 }
 

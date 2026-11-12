@@ -55,4 +55,5 @@ The session is a signed JWT (`jose`) in an http-only cookie. `middleware.ts` onl
   `inactive`, `wrong_password`), successes, and blocks. Only the first 10 failures per address and window plus one
   "blocked" event are sent, so an attack of any size costs Pulse about 11 rows. Pulse stores the email and IP only as
   keyed hashes and flags brute force, password spraying and a sign-in right after many failures. Sent after the
-  response, 2-second timeout, off until `MONITOR_LOG_TOKEN` is set.
+  response with a 10-second limit nobody waits for (2 seconds silently dropped events when Pulse or its database was
+  cold); a lost event leaves a one-line `[pulse]` warning in the Vercel logs. Off until `MONITOR_LOG_TOKEN` is set.
