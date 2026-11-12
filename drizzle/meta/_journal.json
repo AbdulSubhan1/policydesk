@@ -43,6 +43,13 @@
       "when": 1794450693540,
       "tag": "0005_ambiguous_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794452008045,
+      "tag": "0006_website_products_phones",
+      "breakpoints": true
     }
   ]
 }

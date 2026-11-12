@@ -2,7 +2,7 @@
  * Creates the tables and fills them with demo data.
  *   npm run db:setup            -> migrate, seed only if empty
  *   npm run db:setup -- --reset -> wipe everything and seed again
- * Both then give car plans without add-ons their default set (safe to repeat on live data).
+ * Both then give plans of the website products without add-ons their default set (safe to repeat on live data).
  */
 import bcrypt from "bcryptjs";
 import { sql } from "drizzle-orm";
@@ -24,7 +24,7 @@ import { screenCustomer } from "@/lib/kyc";
 import { leadReference, quoteReference } from "@/lib/reference";
 import { ALL_PERMISSIONS, type Permission } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
-import { ensureCarAddOns } from "@/server/website/catalogue";
+import { ensureAddOns } from "@/server/website/catalogue";
 
 const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permissions: Permission[] }[] = [
   {
@@ -115,7 +115,7 @@ const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permis
   },
 ];
 
-// Motor users have made-up phones because the website shows them on its coordinator card
+// Coordinators and advisors of the website's departments have made-up phones: the website shows them to customers
 const USER_SEED: { name: string; email: string; role: string; department?: DepartmentKey; phone?: string }[] = [
   { name: "Sara Admin", email: "admin@policydesk.dev", role: "Admin" },
   {
@@ -154,12 +154,30 @@ const USER_SEED: { name: string; email: string; role: string; department?: Depar
     phone: "+923001110003",
   },
   { name: "Sana Malik", email: "sana@policydesk.dev", role: "Department Manager", department: "health" },
-  { name: "Kamran Ali", email: "kamran@policydesk.dev", role: "Coordinator", department: "health" },
-  { name: "Zain Raza", email: "zain@policydesk.dev", role: "Advisor", department: "health" },
+  {
+    name: "Kamran Ali",
+    email: "kamran@policydesk.dev",
+    role: "Coordinator",
+    department: "health",
+    phone: "+923001110006",
+  },
+  { name: "Zain Raza", email: "zain@policydesk.dev", role: "Advisor", department: "health", phone: "+923001110007" },
   { name: "Rehan Shah", email: "rehan@policydesk.dev", role: "Coordinator", department: "life_savings" },
   { name: "Noor Fatima", email: "noor@policydesk.dev", role: "Advisor", department: "life_savings" },
-  { name: "Mehwish Iqbal", email: "mehwish@policydesk.dev", role: "Coordinator", department: "home_travel" },
-  { name: "Tariq Hussain", email: "tariq@policydesk.dev", role: "Advisor", department: "home_travel" },
+  {
+    name: "Mehwish Iqbal",
+    email: "mehwish@policydesk.dev",
+    role: "Coordinator",
+    department: "home_travel",
+    phone: "+923001110008",
+  },
+  {
+    name: "Tariq Hussain",
+    email: "tariq@policydesk.dev",
+    role: "Advisor",
+    department: "home_travel",
+    phone: "+923001110009",
+  },
   { name: "Ayesha Nadeem", email: "ayesha@policydesk.dev", role: "Coordinator", department: "business" },
   { name: "Yasir Qureshi", email: "yasir@policydesk.dev", role: "Advisor", department: "business" },
   { name: "Fatima Compliance", email: "compliance@policydesk.dev", role: "Compliance Officer" },
@@ -681,7 +699,7 @@ async function main() {
     console.log("Database already has data. Use --reset to wipe and reseed.");
   }
   // Runs on existing databases too: this is how the live plans get their add-ons
-  console.log(`Car add-ons added: ${await ensureCarAddOns()}`);
+  console.log(`Add-ons added: ${await ensureAddOns()}`);
   process.exit(0);
 }
 
