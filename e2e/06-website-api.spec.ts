@@ -25,6 +25,8 @@ test.describe.serial("website API", () => {
     expect(res.status()).toBe(201);
     const view = await res.json();
     expect(view.opportunity).toMatchObject({ status: "new", product: "car" });
+    // The visitor's own answers come back, so the website can say what was quoted
+    expect(view.opportunity.details).toMatchObject(shortForm().details);
     expect(view.lead).toBeNull();
     expect(view.contact.role).toBe("coordinator");
     expect(view.contact.phone).toMatch(/^\+92/);

@@ -13,9 +13,15 @@ import { getWebsiteSelection, type WebsiteSelection } from "./plans";
 const { opportunities, leads, kycRecords, departments, users } = schema;
 const coordinator = alias(users, "coordinator");
 
-/** What the website may see: public ids, the lead reference and the person to show. Never serial ids. */
+/** The answers from the website's form, as stored on the opportunity. */
+type Details = (typeof opportunities.$inferSelect)["details"];
+
+/**
+ * What the website may see: public ids, the visitor's own form answers (so it can say what was quoted), the lead
+ * reference and the person to show. Never serial ids.
+ */
 export type WebsiteOpportunityView = {
-  opportunity: { publicId: string; status: OpportunityStatus; product: Product };
+  opportunity: { publicId: string; status: OpportunityStatus; product: Product; details: Details };
   lead: { reference: string } | null;
   contact: { role: "coordinator"; name: string; email: string; phone: string } | null;
   /** The plan the visitor picked on the website, once they have */
@@ -25,13 +31,13 @@ export type WebsiteOpportunityView = {
 type Person = { name: string; email: string; phone: string };
 
 function toView(
-  opp: { publicId: string; status: OpportunityStatus; product: Product },
+  opp: { publicId: string; status: OpportunityStatus; product: Product; details: Details },
   leadRef: string | null,
   person: Person | null,
   selection: WebsiteSelection | null = null,
 ): WebsiteOpportunityView {
   return {
-    opportunity: { publicId: opp.publicId, status: opp.status, product: opp.product },
+    opportunity: { publicId: opp.publicId, status: opp.status, product: opp.product, details: opp.details },
     lead: leadRef ? { reference: leadRef } : null,
     contact: person ? { role: "coordinator", name: person.name, email: person.email, phone: person.phone } : null,
     selection,
