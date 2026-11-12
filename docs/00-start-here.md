@@ -68,7 +68,7 @@ Each person signs in with a role. The role decides which menu items and buttons 
 | A lead's page     | A progress bar on top (Quote → KYC → Documents → Booked → Paid) and a tab for each step        |
 | KYC review        | Compliance's queue: approve or reject, with a note                                             |
 | Policies          | Every policy, its payment status, and a Renew button near the end date                         |
-| Insurers & plans  | Admin: add insurers and their plans with prices                                                |
+| Insurers & plans  | Admin: add insurers and plans; edit a plan's price, benefits and add-ons                       |
 | Documents         | Admin: the list of document types, and which ones each product needs                           |
 | Users, Roles      | Admin: who works here, their role and department, and what each role may do                    |
 | Audit log         | Every change anyone made, newest first                                                         |
