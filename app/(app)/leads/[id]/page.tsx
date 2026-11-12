@@ -144,8 +144,22 @@ export default async function LeadPage({
             <div className="grid gap-4">
               <DetailList
                 items={[
-                  { label: t("opportunities.email"), value: opportunity.email },
-                  { label: t("opportunities.phone"), value: opportunity.phone },
+                  {
+                    label: t("opportunities.email"),
+                    value: (
+                      <Link href={`mailto:${opportunity.email}`} className="text-brand hover:underline">
+                        {opportunity.email}
+                      </Link>
+                    ),
+                  },
+                  {
+                    label: t("opportunities.phone"),
+                    value: (
+                      <Link href={`tel:${opportunity.phone}`} className="text-brand hover:underline">
+                        {opportunity.phone}
+                      </Link>
+                    ),
+                  },
                   {
                     label: t("lead.cameFrom"),
                     value:
