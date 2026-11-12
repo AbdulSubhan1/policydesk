@@ -271,12 +271,14 @@ test.describe.serial("website payments", () => {
     await expect(page).toHaveURL(/\/leads\/[0-9a-f-]{36}$/, { timeout: 30_000 });
     const leadUrl = new URL(page.url()).pathname;
     // One advisor assignment, however many times the payment was reported
+    await page.goto(`${leadUrl}?activity=all`);
     await expect(page.getByText("assigned the advisor", { exact: true })).toHaveCount(1);
     // Paid but not booked: the rail's Paid step is done from the order, and the banner names the next step
     const amount = `$${main.selection.total.toLocaleString("en-US")}`;
     await expect(page.getByText(`Paid online · ${amount}`)).toBeVisible();
     await expect(page.getByText(new RegExp(`^Customer paid \\${amount} online on `))).toBeVisible();
-    await expect(page.getByText("Next: approve KYC.")).toBeVisible();
+    await expect(page.getByText("Next: run KYC, then collect the documents and book the policy.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Start KYC" })).toBeVisible();
     await expect(page.locator('a[href^="mailto:"]')).toHaveCount(1);
     await expect(page.locator('a[href^="tel:+"]')).toHaveCount(1);
 

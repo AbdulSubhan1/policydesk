@@ -77,12 +77,27 @@ export function FormDemos({ name, path }: DemoProps) {
       );
     case "Field":
       return (
-        <Demo
-          title="Shared validation"
-          description="Every form uses these rules from schemas/fields.ts. Type to see them work."
-        >
-          <ValidationDemo />
-        </Demo>
+        <>
+          <Demo
+            title="Shared validation"
+            description="Every form uses these rules from schemas/fields.ts. Type to see them work."
+          >
+            <ValidationDemo />
+          </Demo>
+          <Demo
+            title="Optional and tagged"
+            description="Mark only the optional fields; a tag says where a value came from."
+          >
+            <div className="grid max-w-sm gap-4">
+              <Field label={t("lead.kyc.nationality")} tag={t("lead.kyc.fromWebsite")}>
+                <Input defaultValue="Pakistan" />
+              </Field>
+              <Field label={t("opportunities.notes")} optional>
+                <Textarea rows={2} placeholder={t("placeholders.notes")} />
+              </Field>
+            </div>
+          </Demo>
+        </>
       );
     case "InlineForm":
       return (

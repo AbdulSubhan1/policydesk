@@ -54,7 +54,8 @@ export const UI_REGISTRY: RegistryEntry[] = [
     file: "field.tsx",
     group: "Forms",
     description: "Label + control + hint or translated error. The demo runs the shared rules from schemas/fields.ts.",
-    props: "label; hint?; error?: message key; group?: true for multi-input controls such as PhoneInput",
+    props:
+      "label; hint?; error?: message key; group?: true for multi-input controls such as PhoneInput; optional?: marks the field (Optional); tag?: a note at the end of the label row",
     example: '<Field label={t("email")} error={errorOf("email")}><Input {...form.register("email")} /></Field>',
   },
   {
@@ -63,7 +64,7 @@ export const UI_REGISTRY: RegistryEntry[] = [
     group: "Forms",
     description: "A choice and a button on one line for one-click server actions.",
     props: "action: server action; ...form attributes",
-    example: "<InlineForm action={updateLeadStage}>…</InlineForm>",
+    example: "<InlineForm action={updateLead}>…</InlineForm>",
   },
   {
     name: "FormError",
@@ -208,7 +209,8 @@ export const UI_REGISTRY: RegistryEntry[] = [
       ["Tab", "Leaves the group"],
     ],
     description: "One choice from a short list with a legend: plain rows, or cards with a line of description.",
-    props: 'name; options: { value; label; description? }[]; defaultValue?; label; variant?: "list" | "cards"',
+    props:
+      'name; options: { value; label; description? }[]; defaultValue?; label; variant?: "list" | "cards" | "pills"; inputProps? (e.g. register(name)); invalid?; error?',
     example: '<RadioGroup name="method" label="Payment method" variant="cards" options={…} />',
   },
   {
@@ -420,7 +422,7 @@ export const UI_REGISTRY: RegistryEntry[] = [
     file: "page-header.tsx",
     group: "Layout",
     description: "The top of every page: title, one-line description, optional back link and main action.",
-    props: "title; description?; action?; back?: { href; label }",
+    props: "title; badges?; description?; action?; back?: { href; label }",
     example: '<PageHeader title="Leads" description="…" action={<ButtonLink …/>} />',
   },
   {
@@ -428,7 +430,7 @@ export const UI_REGISTRY: RegistryEntry[] = [
     file: "panel.tsx",
     group: "Layout",
     description: "A titled section of a page. Use flush for tables, lists and tabs; footer for an add form.",
-    props: "title?; description?; actions?; footer?; flush?; children",
+    props: "title?; description?; actions?; footer?; flush?; collapsible?: folds on phones; summary?; children",
     example: '<Panel title="Customer" actions={<Button>Save</Button>}>…</Panel>',
   },
   {
@@ -493,6 +495,16 @@ export const UI_REGISTRY: RegistryEntry[] = [
     description: "Status pill. Colour and translated label come from the status value.",
     props: "status?: string; tone?: BadgeTone; children?",
     example: '<Badge status="approved" />',
+  },
+  {
+    name: "PriceBreakdown",
+    file: "price-breakdown.tsx",
+    group: "Data",
+    description:
+      "What a price is made of: one line per part (plan, add-ons, discount) and the total under a rule. Amounts come formatted.",
+    props: 'caption; lines: { label; amount; tone?: "included" | "minus" }[]; total: { label; amount }',
+    example:
+      '<PriceBreakdown caption="Price breakdown" lines={[{ label: "Plan, 1 year", amount: money(1110) }]} total={{ label: "Total a year", amount: money(1140) }} />',
   },
   {
     name: "Stat",

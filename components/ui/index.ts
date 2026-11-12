@@ -37,6 +37,7 @@ export { PasswordInput } from "./password-input";
 export { PhoneInput } from "./phone-input";
 export { PillNav, type PillItem } from "./pill-nav";
 export { Popover } from "./popover";
+export { PriceBreakdown, type PriceLine } from "./price-breakdown";
 export { Progress } from "./progress";
 export { Radio } from "./radio";
 export { RadioGroup } from "./radio-group";

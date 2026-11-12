@@ -11,20 +11,50 @@ import { usersWithPermission } from "@/server/queries/users";
 
 const { leads } = schema;
 
-export async function updateLeadStage(formData: FormData) {
-  const stage = option(EDITABLE_LEAD_STAGES).parse(formData.get("stage"));
-  const { user, lead } = await requireLead("leads:edit", id.parse(formData.get("leadId")));
-  if (lead.stage === "won") throw new Error("Won leads are closed");
+/**
+ * The lead page's "Change stage or advisor" dialog. Each field is only sent when the user may change it, and each is
+ * checked against its own permission: the stage needs leads:edit, the advisor leads:assign. Unchanged values are skipped.
+ */
+export async function updateLead(formData: FormData) {
+  const leadId = id.parse(formData.get("leadId"));
+  const stageValue = formData.get("stage");
+  const advisorValue = formData.get("advisorId");
 
-  await db.update(leads).set({ stage, updatedAt: new Date() }).where(eq(leads.id, lead.id));
-  await logAudit({
-    userId: user.id,
-    action: "stage",
-    entity: "lead",
-    entityId: lead.id,
-    leadId: lead.id,
-    details: `${lead.stage} → ${stage}`,
-  });
+  if (stageValue) {
+    const stage = option(EDITABLE_LEAD_STAGES).parse(stageValue);
+    const { user, lead } = await requireLead("leads:edit", leadId);
+    if (lead.stage === "won") throw new Error("Won leads are closed");
+    if (lead.stage !== stage) {
+      await db.update(leads).set({ stage, updatedAt: new Date() }).where(eq(leads.id, lead.id));
+      await logAudit({
+        userId: user.id,
+        action: "stage",
+        entity: "lead",
+        entityId: lead.id,
+        leadId: lead.id,
+        details: `${lead.stage} → ${stage}`,
+      });
+    }
+  }
+
+  if (advisorValue) {
+    const { user, lead } = await requireLead("leads:assign", leadId);
+    const advisor = (await usersWithPermission(lead.departmentId, "quotes:create")).find(
+      (a) => a.id === Number(advisorValue),
+    );
+    if (!advisor) throw new Error("Pick an advisor from this department");
+    if (advisor.id !== lead.advisorId) {
+      await db.update(leads).set({ advisorId: advisor.id, updatedAt: new Date() }).where(eq(leads.id, lead.id));
+      await logAudit({
+        userId: user.id,
+        action: "assign",
+        entity: "lead",
+        entityId: lead.id,
+        leadId: lead.id,
+        details: advisor.name,
+      });
+    }
+  }
   revalidatePath("/leads/[id]", "page");
 }
 
@@ -47,25 +77,6 @@ export async function updateLeadStages(formData: FormData) {
     });
   }
   revalidatePath("/leads");
-}
-
-export async function reassignAdvisor(formData: FormData) {
-  const { user, lead } = await requireLead("leads:assign", id.parse(formData.get("leadId")));
-  const advisor = (await usersWithPermission(lead.departmentId, "quotes:create")).find(
-    (a) => a.id === Number(formData.get("advisorId")),
-  );
-  if (!advisor) throw new Error("Pick an advisor from this department");
-
-  await db.update(leads).set({ advisorId: advisor.id, updatedAt: new Date() }).where(eq(leads.id, lead.id));
-  await logAudit({
-    userId: user.id,
-    action: "assign",
-    entity: "lead",
-    entityId: lead.id,
-    leadId: lead.id,
-    details: advisor.name,
-  });
-  revalidatePath("/leads/[id]", "page");
 }
 
 /**

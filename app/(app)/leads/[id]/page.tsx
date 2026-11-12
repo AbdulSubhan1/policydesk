@@ -1,29 +1,16 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ActivityFeed } from "@/components/leads/activity-feed";
+import { ContactCard } from "@/components/leads/contact-card";
+import { DealCard } from "@/components/leads/deal-card";
 import { DocumentsTab } from "@/components/leads/documents-tab";
 import { KycTab } from "@/components/leads/kyc-tab";
+import { LeadActions } from "@/components/leads/lead-actions";
 import { PolicyTab } from "@/components/leads/policy-tab";
-import { ProgressRail } from "@/components/leads/progress-rail";
+import { ProgressRail, type RailStep } from "@/components/leads/progress-rail";
 import { QuotesTab } from "@/components/leads/quotes-tab";
-import {
-  Alert,
-  Autocomplete,
-  Badge,
-  Button,
-  DetailList,
-  Forbidden,
-  Hidden,
-  InlineForm,
-  PageHeader,
-  Panel,
-  Tabs,
-} from "@/components/ui";
-import { EDITABLE_LEAD_STAGES } from "@/constants/statuses";
+import { Alert, Badge, ButtonLink, Forbidden, PageHeader, Panel, Tabs } from "@/components/ui";
 import { money, shortDate } from "@/lib/format";
-import { keyedOptions } from "@/lib/options";
-import { can, scopeOf } from "@/lib/rbac";
-import { reassignAdvisor, updateLeadStage } from "@/server/actions/leads";
+import { scopeOf } from "@/lib/rbac";
 import { requireUser } from "@/server/auth";
 import {
   getDocuments,
@@ -33,38 +20,44 @@ import {
   getPolicy,
   getPolicyById,
   getQuotes,
+  getTimeline,
 } from "@/server/queries/lead-details";
-import { usersWithPermission } from "@/server/queries/users";
 
 const TABS = { quotes: QuotesTab, kyc: KycTab, documents: DocumentsTab, policy: PolicyTab };
 type TabId = keyof typeof TABS;
+
+/** Events shown in the side column until "All N events" is opened. */
+const LATEST_EVENTS = 3;
 
 export default async function LeadPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; activity?: string }>;
 }) {
   const user = await requireUser();
   if (scopeOf(user, "leads") === "none") return <Forbidden permission="leads:view_own" />;
 
-  const { lead, opportunity, departmentKey, advisorName, closed } = await getLeadContext((await params).id);
+  const { lead, opportunity, departmentKey, advisorName } = await getLeadContext((await params).id);
   const leadId = lead.id;
-  const [quotes, kyc, docs, policy, order, previous, t] = await Promise.all([
+  const [quotes, kyc, docs, policy, order, timeline, previous, query, t] = await Promise.all([
     getQuotes(leadId),
     getKyc(leadId),
     getDocuments(leadId),
     getPolicy(leadId),
     getOrder(leadId),
+    getTimeline(leadId),
     lead.previousPolicyId ? getPolicyById(lead.previousPolicyId) : undefined,
+    searchParams,
     getTranslations(),
   ]);
 
   const accepted = quotes.find((q) => q.status === "accepted");
   const paidOnline = order?.status === "paid" ? order : undefined;
   const kycStatus = kyc?.record.status ?? "pending";
-  const steps = [
+  const documentsDone = docs.required.length - docs.missing.length;
+  const steps: (RailStep & { tab: TabId })[] = [
     {
       tab: "quotes",
       label: t("lead.steps.quote"),
@@ -75,10 +68,7 @@ export default async function LeadPage({
     {
       tab: "documents",
       label: t("lead.steps.documents"),
-      detail: t("lead.steps.documentsCount", {
-        done: docs.required.length - docs.missing.length,
-        total: docs.required.length,
-      }),
+      detail: t("lead.steps.documentsCount", { done: documentsDone, total: docs.required.length }),
       done: docs.missing.length === 0,
     },
     {
@@ -102,29 +92,36 @@ export default async function LeadPage({
   const next = steps.find((s) => !s.done);
 
   // Open the first unfinished step unless a tab was picked
-  const requested = (await searchParams).tab;
-  const tab = (requested && requested in TABS ? requested : (next?.tab ?? "policy")) as TabId;
+  const tab = (query.tab && query.tab in TABS ? query.tab : (next?.tab ?? "policy")) as TabId;
   const Section = TABS[tab];
-  const advisors =
-    can(user, "leads:assign") && !closed ? await usersWithPermission(lead.departmentId, "quotes:create") : [];
+  const allActivity = query.activity === "all";
+  const nextAction =
+    next?.tab === "kyc" ? (kycStatus === "pending" || kycStatus === "rejected" ? "kycStart" : "kycOpen") : next?.tab;
 
   return (
     <>
       <PageHeader
         back={{ href: "/leads", label: t("nav.leads") }}
         title={opportunity.customerName}
-        description={t("lead.summary", {
-          product: t(`products.${opportunity.product}`),
-          department: t(`departments.${departmentKey}`),
-          advisor: advisorName ?? t("lead.nobody"),
-        })}
-        action={
-          <div className="flex flex-wrap gap-1.5">
-            <Badge tone="grey">{lead.reference}</Badge>
-            <Badge status={lead.type} />
+        badges={
+          <span className="flex flex-wrap gap-1.5">
             <Badge status={lead.stage} />
-          </div>
+            {lead.type === "renewal" && <Badge status="renewal" />}
+            {paidOnline && <Badge tone="green">{t("leads.paidOnline")}</Badge>}
+          </span>
         }
+        description={
+          <>
+            {t("lead.headline", {
+              product: t(`products.${opportunity.product}`),
+              department: t(`departments.${departmentKey}`),
+              type: t(`status.${lead.type}`),
+              advisor: advisorName ?? t("lead.nobody"),
+            })}{" "}
+            · <span className="font-mono">{lead.reference}</span>
+          </>
+        }
+        action={<LeadActions leadId={leadId} tab={tab} />}
       />
       {previous && (
         <p className="-mt-3 mb-5 text-sm text-plum">
@@ -137,93 +134,70 @@ export default async function LeadPage({
           tone="success"
           className="mb-4"
           title={t("lead.paidOnline.title", { amount: money(paidOnline.amount), date: shortDate(paidOnline.paidAt) })}
+          action={
+            <ButtonLink href={`?tab=${next.tab}`} variant="primary" size="sm" scroll={false}>
+              {t(`lead.nextAction.${nextAction}`)}
+            </ButtonLink>
+          }
         >
-          {t(`lead.paidOnline.next.${next.tab}`)}
+          {t(`lead.paidOnline.next.${nextAction === "kycStart" ? "kycStart" : next.tab}`)}
         </Alert>
       )}
 
-      <ProgressRail steps={steps} />
+      <ProgressRail steps={steps.map((s) => ({ ...s, href: `?tab=${s.tab}` }))} />
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <Panel className="self-start" flush>
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto_auto_1fr]">
+        <ContactCard leadId={leadId} className="lg:col-start-2 lg:row-start-1" />
+
+        <Panel className="self-start lg:col-start-1 lg:row-span-3 lg:row-start-1" flush>
           <Tabs
             label={t("lead.tabs.quotes")}
             current={tab}
             tabs={[
               { id: "quotes", label: t("lead.tabs.quotes"), href: "?tab=quotes", count: quotes.length },
               { id: "kyc", label: t("lead.tabs.kyc"), href: "?tab=kyc" },
-              { id: "documents", label: t("lead.tabs.documents"), href: "?tab=documents", count: docs.files.length },
+              docs.required.length > 0
+                ? {
+                    id: "documents",
+                    label: t("lead.tabs.documentsProgress", { done: documentsDone, total: docs.required.length }),
+                    href: "?tab=documents",
+                  }
+                : {
+                    id: "documents",
+                    label: t("lead.tabs.documents"),
+                    href: "?tab=documents",
+                    count: docs.files.length,
+                  },
               { id: "policy", label: t("lead.tabs.policy"), href: "?tab=policy" },
             ]}
           />
           <Section leadId={leadId} />
         </Panel>
 
-        <div className="grid content-start gap-6">
-          <Panel title={t("lead.customerCard")}>
-            <div className="grid gap-4">
-              <DetailList
-                items={[
-                  {
-                    label: t("opportunities.email"),
-                    value: (
-                      <Link href={`mailto:${opportunity.email}`} className="text-brand hover:underline">
-                        {opportunity.email}
-                      </Link>
-                    ),
-                  },
-                  {
-                    label: t("opportunities.phone"),
-                    value: (
-                      <Link href={`tel:${opportunity.phone}`} className="text-brand hover:underline">
-                        {opportunity.phone}
-                      </Link>
-                    ),
-                  },
-                  {
-                    label: t("lead.cameFrom"),
-                    value:
-                      scopeOf(user, "opportunities") === "none" ? (
-                        t("lead.opportunityNumber", { id: opportunity.id })
-                      ) : (
-                        <Link href={`/opportunities/${opportunity.id}`} className="text-brand hover:underline">
-                          {t("lead.opportunityNumber", { id: opportunity.id })}
-                        </Link>
-                      ),
-                  },
-                ]}
-              />
-              {can(user, "leads:edit") && !closed && (
-                <InlineForm key={lead.stage} action={updateLeadStage}>
-                  <Hidden name="leadId" value={lead.id} />
-                  <Autocomplete
-                    name="stage"
-                    defaultValue={lead.stage}
-                    aria-label={t("leads.stage")}
-                    options={keyedOptions(t, "status", EDITABLE_LEAD_STAGES)}
-                  />
-                  <Button size="sm">{t("lead.setStage")}</Button>
-                </InlineForm>
-              )}
-              {advisors.length > 0 && (
-                <InlineForm key={`advisor-${lead.advisorId}`} action={reassignAdvisor}>
-                  <Hidden name="leadId" value={lead.id} />
-                  <Autocomplete
-                    name="advisorId"
-                    defaultValue={lead.advisorId ?? ""}
-                    aria-label={t("leads.advisor")}
-                    options={advisors.map((a) => ({ value: String(a.id), label: a.name }))}
-                  />
-                  <Button size="sm">{t("lead.reassign")}</Button>
-                </InlineForm>
-              )}
-            </div>
-          </Panel>
+        <DealCard leadId={leadId} className="self-start lg:col-start-2" />
 
-          <Panel title={t("lead.activity")} flush>
-            <ActivityFeed leadId={leadId} />
-          </Panel>
-        </div>
+        <Panel
+          id="activity"
+          title={t("lead.activity")}
+          summary={`· ${t("lead.activityCount", { count: timeline.length })}`}
+          collapsible
+          flush
+          className="self-start lg:col-start-2"
+        >
+          <ActivityFeed leadId={leadId} limit={allActivity ? undefined : LATEST_EVENTS} />
+          {timeline.length > LATEST_EVENTS && (
+            <div className="border-t border-line px-5 py-3">
+              <ButtonLink
+                href={allActivity ? `?tab=${tab}#activity` : `?tab=${tab}&activity=all#activity`}
+                variant="ghost"
+                size="sm"
+                scroll={false}
+              >
+                {allActivity ? t("lead.activityLatest") : t("lead.activityAll", { count: timeline.length })}
+              </ButtonLink>
+            </div>
+          )}
+        </Panel>
       </div>
     </>
   );

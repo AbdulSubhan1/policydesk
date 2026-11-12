@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Controller } from "react-hook-form";
 import { Button, DatePicker, Field, FormError, Input } from "@/components/ui";
 import { NATIONALITIES, OCCUPATIONS } from "@/constants/kyc";
+import type { KycPrefill } from "@/lib/kyc";
 import { SOURCES_OF_FUNDS, type SourceOfFunds } from "@/constants/statuses";
 import { keyedOptions, plainOptions } from "@/lib/options";
 import { kycSchema } from "@/schemas/kyc";
@@ -20,27 +21,43 @@ type Saved = {
   sourceOfFunds: SourceOfFunds | null;
 };
 
-/** Collects KYC; the server runs the screening and sends it to compliance. Prefilled after a rejection or renewal. */
-export function KycForm({ leadId, saved }: { leadId: number; saved: Saved }) {
+/**
+ * Collects KYC; the server runs the screening and sends it to compliance. Prefilled after a rejection or renewal, and
+ * from the website's answers (`prefill`), which carry a "From website" tag until the advisor changes them.
+ */
+export function KycForm({
+  leadId,
+  saved,
+  prefill = {},
+  fromWebsite = [],
+}: {
+  leadId: number;
+  saved: Saved;
+  prefill?: KycPrefill;
+  fromWebsite?: (keyof KycPrefill)[];
+}) {
   const t = useTranslations();
   const { form, pending, onSubmit, errorOf, rootError } = useActionForm(kycSchema, submitKyc, {
     defaultValues: {
       leadId,
       idNumber: saved.idNumber ?? "",
-      nationality: saved.nationality ?? undefined,
-      dateOfBirth: saved.dateOfBirth ?? "",
+      nationality: saved.nationality ?? prefill.nationality,
+      dateOfBirth: saved.dateOfBirth ?? prefill.dateOfBirth ?? "",
       idExpiry: saved.idExpiry ?? "",
       occupation: saved.occupation ?? undefined,
       sourceOfFunds: saved.sourceOfFunds ?? undefined,
     },
   });
+  // The tag stays while the value is still the website's
+  const tagged = (key: keyof KycPrefill) =>
+    fromWebsite.includes(key) && form.watch(key) === prefill[key] ? t("lead.kyc.fromWebsite") : undefined;
 
   return (
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate>
       <Field label={t("lead.kyc.idNumber")} error={errorOf("idNumber")}>
         <Input placeholder={t("placeholders.idNumber")} {...form.register("idNumber")} />
       </Field>
-      <Field label={t("lead.kyc.nationality")} error={errorOf("nationality")}>
+      <Field label={t("lead.kyc.nationality")} error={errorOf("nationality")} tag={tagged("nationality")}>
         <FormAutocomplete
           control={form.control}
           name="nationality"
@@ -48,7 +65,7 @@ export function KycForm({ leadId, saved }: { leadId: number; saved: Saved }) {
           placeholder={t("placeholders.nationality")}
         />
       </Field>
-      <Field label={t("lead.kyc.dateOfBirth")} error={errorOf("dateOfBirth")} group>
+      <Field label={t("lead.kyc.dateOfBirth")} error={errorOf("dateOfBirth")} tag={tagged("dateOfBirth")} group>
         <Controller
           control={form.control}
           name="dateOfBirth"

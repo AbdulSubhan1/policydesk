@@ -68,8 +68,11 @@ function sellablePlans(product: Product) {
   return and(eq(plans.product, product), eq(plans.active, true), eq(insurers.active, true));
 }
 
-/** A plan's price for this customer: rated from their answers for the website's products, as stored otherwise. */
-function premiumFor(product: Product, plan: { cover: string; basePremium: number }, details: Details) {
+/**
+ * A plan's price for this customer: rated from their answers for the website's products, as stored otherwise. The
+ * advisor's quote form prices plans the same way, so a lead gets one price whoever quotes it.
+ */
+export function premiumFor(product: Product, plan: { cover: string; basePremium: number }, details: Details) {
   return isWebsiteProduct(product) ? ratePremium(product, plan.cover, plan.basePremium, details) : plan.basePremium;
 }
 

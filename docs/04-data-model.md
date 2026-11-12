@@ -28,6 +28,7 @@ erDiagram
 
 ## Notes
 
+- **Quote snapshot:** a quote copies what it was priced with: insurer, plan name, cover, its add-ons (`add_ons`), the plan's price for this customer (`plan_premium`), the advisor's discount and whether the premium is the insurer's own price (`price_overridden`). Editing a plan or its add-ons later never changes a saved quote.
 - **Lead identifiers:** every lead has three. `id` is the internal number used by forms and foreign keys. `public_id` is a UUID used in every link (`/leads/3f9c2a1e-…`), so a URL can't be guessed by changing a number. `reference` is what people read and say: the product's short code and 7 random characters from an alphabet without 0, O, 1, I or L, e.g. `CAR-J2M3HX7`. Quotes get the lead's reference plus their number on it, e.g. `CAR-J2M3HX7-Q2`. A renewal is a new lead, so it gets a new reference. Short codes live in `PRODUCT_CODES` (`constants/products.ts`); the generator is `lib/reference.ts`.
 - **Opportunity identifiers:** opportunities also have a `public_id` UUID. The website API only ever sees that one. `details` holds the website form's product-specific answers (car make, model, year…) as `jsonb`, checked by `schemas/website.ts`.
 - **Automatic assignment:** `users.available` (switched on the Users page) and `users.last_assigned_at` drive how website opportunities pick a coordinator; `users.phone` is shown on the website's coordinator card. See [Website and online payments](/kb/website-and-online-payments).

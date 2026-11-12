@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { Icon } from "./icon";
 import { surface } from "./styles";
 
 type Props = {
@@ -12,11 +13,49 @@ type Props = {
   flush?: boolean;
   className?: string;
   id?: string;
+  /** On phones the panel folds to its title (and `summary`) and opens on tap; from lg up it is always open. */
+  collapsible?: boolean;
+  /** One line after the title while folded on a phone, e.g. "· $1,140 a year". */
+  summary?: React.ReactNode;
   children?: React.ReactNode;
 };
 
 /** A titled section of a page. The one building block for grouping content. */
-export function Panel({ title, description, actions, footer, flush, className, id, children }: Props) {
+export function Panel({
+  title,
+  description,
+  actions,
+  footer,
+  flush,
+  className,
+  id,
+  collapsible,
+  summary,
+  children,
+}: Props) {
+  if (collapsible) {
+    // A native <details>: from lg up its content is forced visible and the title stops toggling
+    return (
+      <details
+        data-ui="Panel"
+        id={id}
+        className={cn(surface, "group lg:[&::details-content]:[content-visibility:visible]", className)}
+      >
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 outline-none focus-visible:ring-3 focus-visible:ring-brand/25 lg:pointer-events-none lg:cursor-auto lg:border-b lg:border-line lg:py-4 [&::-webkit-details-marker]:hidden">
+          <h2 className="min-w-0 font-semibold text-ink">
+            {title}
+            {summary && <span className="ms-1 font-normal text-muted lg:hidden">{summary}</span>}
+          </h2>
+          <Icon
+            name="chevronDown"
+            size={16}
+            className="shrink-0 text-muted transition-transform group-open:rotate-180 lg:hidden"
+          />
+        </summary>
+        <div className={cn("border-t border-line lg:border-t-0", !flush && "px-5 py-4")}>{children}</div>
+      </details>
+    );
+  }
   return (
     <section data-ui="Panel" id={id} className={cn(surface, className)}>
       {(title || actions) && (

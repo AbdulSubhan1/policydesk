@@ -42,7 +42,8 @@
     "today": "اليوم",
     "saved": "تم الحفظ",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "optional": "اختياري"
   },
   "nav": {
     "main": "الرئيسية",
@@ -235,7 +236,8 @@
     "tripTooLong": "لا تتجاوز الرحلة الواحدة 180 يومًا",
     "annualNoEndDate": "الوثيقة السنوية ليس لها تاريخ انتهاء؛ اتركه فارغًا",
     "ownersOnly": "يؤمّن المالك فقط على المبنى؛ اتركه فارغًا للمستأجر",
-    "familyOnly": "يُغطى الأطفال في وثيقة العائلة فقط؛ اتركه فارغًا"
+    "familyOnly": "يُغطى الأطفال في وثيقة العائلة فقط؛ اتركه فارغًا",
+    "discountTooHigh": "يجب أن يكون الخصم أقل من السعر"
   },
   "errors": {
     "invalidLogin": "البريد الإلكتروني وكلمة المرور لا يطابقان أي مستخدم",
@@ -389,7 +391,7 @@
     "title": "الفرص",
     "description": "الاستفسارات الجديدة {scope}. أهّلها ثم حوّلها إلى عملاء محتملين لمستشار.",
     "new": "فرصة جديدة",
-    "newDescription": "تذهب إلى القسم الذي يبيع المنتج المختار.",
+    "newDescription": "تذهب إلى القسم الذي يبيع المنتج. يقوم المنسق بتأهيلها بعد ذلك.",
     "customer": "العميل",
     "product": "المنتج",
     "status": "الحالة",
@@ -505,7 +507,13 @@
       "revokeTitle": "إلغاء رابط الدفع هذا؟",
       "revokeBody": "لن يتمكن العميل من الدفع عبره بعد الآن. أنشئ رابطًا جديدًا لإرسال غيره.",
       "noLinks": "لا توجد روابط دفع بعد"
-    }
+    },
+    "customerSection": "العميل",
+    "needSection": "ما يحتاجونه",
+    "fullName": "الاسم الكامل",
+    "mobile": "الجوال",
+    "sourceQuestion": "كيف وصلوا إلينا؟",
+    "goesTo": "تذهب إلى {department}"
   },
   "leads": {
     "title": "العملاء المحتملون",
@@ -538,7 +546,6 @@
     }
   },
   "lead": {
-    "summary": "تأمين {product} في قسم {department}، يتولاه {advisor}.",
     "nobody": "لا أحد بعد",
     "renews": "يجدد الوثيقة {policy} التي تنتهي في {date}.",
     "steps": {
@@ -558,40 +565,56 @@
         "quotes": "التالي: قبول عرض سعر.",
         "kyc": "التالي: اعتماد اعرف عميلك.",
         "documents": "التالي: رفع المستندات المطلوبة.",
-        "policy": "التالي: حجز الوثيقة."
+        "policy": "التالي: حجز الوثيقة.",
+        "kycStart": "التالي: أجرِ اعرف عميلك، ثم اجمع المستندات واحجز الوثيقة."
       }
     },
     "tabs": {
       "quotes": "عروض الأسعار",
       "kyc": "اعرف عميلك",
       "documents": "المستندات",
-      "policy": "الوثيقة والدفع"
+      "policy": "الوثيقة",
+      "documentsProgress": "المستندات {done}/{total}"
     },
     "customerCard": "العميل",
-    "cameFrom": "المصدر",
     "opportunityNumber": "فرصة رقم {id}",
     "setStage": "تعيين المرحلة",
-    "reassign": "إعادة الإسناد",
     "activity": "النشاط",
     "noActivity": "لا يوجد نشاط بعد",
     "system": "النظام",
     "quotes": {
-      "insurerPlan": "شركة التأمين والخطة",
-      "premium": "القسط",
-      "status": "الحالة",
-      "decision": "قرار العميل",
-      "accepted": "قبِل",
-      "declined": "رفض",
       "empty": "لا توجد عروض أسعار بعد. اختر خطة أدناه لتسعير العميل.",
       "plan": "الخطة",
-      "premiumOffered": "القسط المعروض",
       "add": "إضافة عرض سعر",
       "adding": "جارٍ الإضافة…",
-      "excess": "التحمل {amount}",
       "noPlans": "لا توجد خطط فعالة لهذا المنتج. يمكن للمسؤول إضافتها من شركات التأمين والخطط.",
       "emptyTitle": "لا توجد عروض أسعار بعد",
       "included": "مشمولة",
-      "createdBy": "أنشأها"
+      "planLine": "الخطة، سنة واحدة",
+      "discount": "خصم المستشار",
+      "insurerPrice": "عُدّل إلى سعر شركة التأمين",
+      "totalYear": "الإجمالي سنويًا",
+      "customerTicked": "(اختاره العميل)",
+      "notChosen": "لم يُختر",
+      "paidOnline": "مدفوع عبر الإنترنت",
+      "madeByWebsite": "أنشأه الموقع · عرض السعر {reference} · {date}",
+      "madeBy": "أنشأه {name} · عرض السعر {reference} · {date}",
+      "markAccepted": "قبله العميل",
+      "markNotChosen": "لم يُختر",
+      "addTitle": "إضافة عرض سعر",
+      "addDescription": "اختر خطة. تُملأ إضافاتها وسعرها من شركات التأمين والخطط.",
+      "planHint": "{cover} · التحمل {excess} · سعر الخطة {price} سنويًا",
+      "addOnsLegend": "إضافات هذه الخطة",
+      "discountLabel": "الخصم",
+      "insurerGaveDifferent": "أعطت شركة التأمين سعرًا مختلفًا",
+      "useWorkedOut": "استخدام السعر المحسوب",
+      "insurerPriceLabel": "سعر شركة التأمين سنويًا",
+      "overrideHint": "يُحفظ كسعر شركة التأمين بدلًا من سعر الخطة.",
+      "breakdownCaption": "تفاصيل سعر {plan}",
+      "plusPrice": "+{amount}",
+      "pickPlanFirst": "اختر خطة لترى إضافاتها وسعرها.",
+      "excessShort": "التحمل {amount}",
+      "added": "أُضيف عرض السعر"
     },
     "kyc": {
       "none": "لا يوجد سجل اعرف عميلك",
@@ -609,7 +632,9 @@
       "submitting": "جارٍ الفحص…",
       "pep": "شخص معرض سياسيًا",
       "watchlist": "تطابق مع قائمة المراقبة",
-      "edd": "العناية الواجبة المعززة"
+      "edd": "العناية الواجبة المعززة",
+      "fromWebsite": "من الموقع",
+      "prefilled": "{count, plural, one {إجابة واحدة جاءت} two {إجابتان جاءتا} few {# إجابات جاءت} many {# إجابة جاءت} other {# إجابة جاءت}} من نموذج الموقع. راجعها ثم أكمل الباقي."
     },
     "documents": {
       "required": "مطلوب",
@@ -653,7 +678,46 @@
         "paymentId": "دفعة PaySandbox",
         "paidAt": "تاريخ الدفع"
       }
-    }
+    },
+    "headline": "{product} · {department} · {type} · المستشار {advisor}",
+    "changeStageOrAdvisor": "تغيير المرحلة أو المستشار",
+    "editDescription": "يظهر كلا التغييرين في نشاط العميل المحتمل.",
+    "saveChanges": "حفظ التغييرات",
+    "moreActions": "إجراءات أخرى",
+    "menu": {
+      "openOpportunity": "فتح الفرصة رقم {id}",
+      "allActivity": "كل النشاط"
+    },
+    "nextAction": {
+      "quotes": "فتح عروض الأسعار",
+      "kycStart": "بدء اعرف عميلك",
+      "kycOpen": "فتح اعرف عميلك",
+      "documents": "رفع المستندات",
+      "policy": "حجز الوثيقة"
+    },
+    "contact": {
+      "title": "التواصل",
+      "call": "اتصال",
+      "email": "بريد إلكتروني",
+      "whatsapp": "واتساب",
+      "cameFrom": "جاء من {source}"
+    },
+    "deal": {
+      "title": "الصفقة",
+      "plan": "الخطة",
+      "premium": "القسط",
+      "paid": "المدفوع",
+      "recorded": "سجّلته المالية",
+      "paidOnline": "{amount} عبر الإنترنت، {date}",
+      "paidOn": "{date}",
+      "notYet": "ليس بعد",
+      "notNeeded": "غير مطلوب، دُفع عبر الإنترنت",
+      "noPlan": "لا يوجد عرض سعر بعد"
+    },
+    "activityCount": "{count, plural, zero {لا أحداث} one {حدث واحد} two {حدثان} few {# أحداث} many {# حدثًا} other {# حدث}}",
+    "activityAll": "كل الأحداث ({count})",
+    "activityLatest": "عرض الأحدث فقط",
+    "summary": "تأمين {product} في قسم {department}، يتولاه {advisor}."
   },
   "activity": {
     "opportunity": {
@@ -662,7 +726,7 @@
     "quote": {
       "create": "أضاف عرض سعر",
       "accepted": "سجّل قبول عرض سعر",
-      "rejected": "سجّل رفض عرض سعر",
+      "rejected": "علّم عرض سعر بأنه لم يُختر",
       "select": "اختار خطة"
     },
     "kyc": {
@@ -739,7 +803,7 @@
   },
   "plans": {
     "title": "شركات التأمين والخطط",
-    "description": "خطط مقدمة من كل شركة تأمين. يسعّر المستشارون من الخطط الفعالة لمنتج العميل المحتمل.",
+    "description": "يقدّم المستشارون والموقع عروض الأسعار من الخطط النشطة. الأسعار والإضافات هنا هي ما يراه العملاء.",
     "insurers": "شركات التأمين",
     "planCount": "{count, plural, =0 {لا توجد خطط} one {خطة واحدة} two {خطتان} few {# خطط} many {# خطة} other {# خطة}}",
     "insurerName": "اسم شركة التأمين",
@@ -758,7 +822,47 @@
     "nameAr": "اسم الخطة (بالعربية)",
     "benefits": "المزايا، مفصولة بفواصل",
     "save": "إضافة الخطة",
-    "saving": "جارٍ الحفظ…"
+    "saving": "جارٍ الحفظ…",
+    "insurerPlans": "{count, plural, one {خطة {product} واحدة} two {خطتا {product}} few {# خطط {product}} many {# خطة {product}} other {# خطة {product}}}",
+    "noActivePlans": "لا توجد خطط نشطة",
+    "productCount": "{product} · {count, plural, zero {لا خطط} one {خطة واحدة} two {خطتان} few {# خطط} many {# خطة} other {# خطة}}",
+    "allInsurers": "كل شركات التأمين",
+    "showInactive": "إظهار غير النشطة",
+    "filters": "عوامل تصفية الخطط",
+    "planHeader": "الخطة",
+    "priceYear": "السعر سنويًا",
+    "addOns": "الإضافات",
+    "addOnSummary": {
+      "included": "{count} مشمولة",
+      "optional": "{count} اختيارية",
+      "preselected": "{count} مضافة افتراضيًا",
+      "none": "لا يوجد"
+    },
+    "edit": "تعديل",
+    "editPlan": "تعديل {plan}",
+    "editing": "قيد التعديل",
+    "editTitle": "تعديل {plan}",
+    "editDescription": "{insurer} · {cover}. تحتفظ عروض الأسعار السابقة بالسعر والإضافات التي أُنشئت بها.",
+    "benefitsLabel": "المزايا",
+    "addBenefit": "إضافة ميزة",
+    "removeBenefit": "إزالة {benefit}",
+    "addOnName": "الإضافة",
+    "howOffered": "طريقة العرض",
+    "howOfferedFor": "طريقة عرض {name}",
+    "priceFor": "سعر {name}",
+    "offer": {
+      "included": "مشمولة",
+      "optional": "اختيارية",
+      "preselected": "مضافة افتراضيًا",
+      "off": "غير معروضة"
+    },
+    "offersHint": "المشمولة مجانية. المضافة افتراضيًا تظهر محددة ويمكن للعميل إزالتها. غير المعروضة تختفي من عروض الأسعار الجديدة.",
+    "addAddOn": "إضافة إضافة",
+    "pickAddOn": "اختر إضافة لعرضها…",
+    "saveChanges": "حفظ التغييرات",
+    "deactivatePlan": "إيقاف الخطة",
+    "activatePlan": "تفعيل الخطة",
+    "inactiveInsurer": "شركة التأمين غير نشطة، لذا لا يمكن لأحد تقديم عرض سعر بها."
   },
   "documentSettings": {
     "title": "إعدادات المستندات",
@@ -923,7 +1027,8 @@
     "contentsValue": "مثال: 30000",
     "coverFor": "اختر من تشمله التغطية…",
     "children": "مثال: 2",
-    "preExisting": "نعم أو لا…"
+    "preExisting": "نعم أو لا…",
+    "benefit": "مثال: إلغاء مجاني خلال 14 يومًا"
   },
   "table": {
     "all": "الكل",

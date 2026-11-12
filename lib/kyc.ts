@@ -1,4 +1,10 @@
-import { HIGH_PREMIUM_THRESHOLD, HIGH_RISK_COUNTRIES, PEP_OCCUPATIONS, WATCHLIST } from "@/constants/kyc";
+import {
+  HIGH_PREMIUM_THRESHOLD,
+  HIGH_RISK_COUNTRIES,
+  NATIONALITIES,
+  PEP_OCCUPATIONS,
+  WATCHLIST,
+} from "@/constants/kyc";
 import type { RiskRating, SourceOfFunds } from "@/constants/statuses";
 
 export type ScreeningInput = {
@@ -62,4 +68,32 @@ export function screenCustomer(input: ScreeningInput, today = new Date()): Scree
     riskReasons: reasons,
     eddRequired: riskRating === "high" || watchlistMatch || idExpired,
   };
+}
+
+/** KYC fields the website form can already answer. */
+export type KycPrefill = { nationality?: string; dateOfBirth?: string };
+
+/**
+ * Starting values for the KYC form from the answers the website stored on the opportunity. What the advisor saved
+ * before (after a rejection or a renewal) wins; a website answer is used only where nothing was saved, and only when
+ * the form can take it: a nationality on the screening list and a real YYYY-MM-DD date of birth.
+ */
+export function kycPrefill(
+  details: Record<string, unknown>,
+  saved: { nationality: string | null; dateOfBirth: string | null },
+): { values: KycPrefill; fromWebsite: (keyof KycPrefill)[] } {
+  const values: KycPrefill = {};
+  const typed = typeof details.nationality === "string" ? details.nationality.trim().toLowerCase() : "";
+  const nationality = NATIONALITIES.find((n) => n.toLowerCase() === typed);
+  if (!saved.nationality && nationality) values.nationality = nationality;
+  const dob = details.dateOfBirth;
+  if (
+    !saved.dateOfBirth &&
+    typeof dob === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(dob) &&
+    !Number.isNaN(Date.parse(dob))
+  ) {
+    values.dateOfBirth = dob;
+  }
+  return { values, fromWebsite: Object.keys(values) as (keyof KycPrefill)[] };
 }

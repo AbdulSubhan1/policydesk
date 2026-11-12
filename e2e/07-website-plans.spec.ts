@@ -121,16 +121,20 @@ test.describe.serial("website plans and selection", () => {
     const plan = plans[0];
     await loginAs(page, "admin");
     await page.goto("/admin/plans?product=car");
-    const row = page.getByRole("row").filter({ hasText: plan.name });
-    await row.getByRole("button", { name: "Deactivate" }).click();
-    await expect(row.getByRole("button", { name: "Activate" })).toBeVisible();
+    const edit = page.getByRole("link", { name: `Edit ${plan.name}` });
+    await edit.click();
+    await page.getByRole("button", { name: "Deactivate plan" }).click();
+    // Inactive plans leave the list until "Show inactive" is ticked
+    await expect(edit).toHaveCount(0);
     try {
       const res = await select(request, publicId, plan.id, []);
       expect(res.status()).toBe(400);
       expect((await res.json()).error).toMatchObject({ field: "planId" });
     } finally {
-      await row.getByRole("button", { name: "Activate" }).click();
-      await expect(row.getByRole("button", { name: "Deactivate" })).toBeVisible();
+      await page.goto("/admin/plans?product=car&inactive=1");
+      await edit.click();
+      await page.getByRole("button", { name: "Activate plan" }).click();
+      await expect(page.getByRole("button", { name: "Deactivate plan" })).toBeVisible();
     }
   });
 
@@ -148,12 +152,12 @@ test.describe.serial("website plans and selection", () => {
     // The first visit compiles the lead page in dev mode, so allow time for it
     await expect(page).toHaveURL(/\/leads\//, { timeout: 30_000 });
 
-    const row = page.getByRole("row").filter({ hasText: quoteReference });
+    const card = page.getByRole("article").filter({ hasText: quoteReference });
     const optional = kind(comprehensive, "optional");
-    await expect(row).toContainText(kind(comprehensive, "included").name);
-    await expect(row).toContainText("Included");
-    await expect(row).toContainText(`${optional.name} · $${optional.price}`);
-    await expect(row).not.toContainText(kind(comprehensive, "preselected").name);
-    await expect(row).toContainText("Website");
+    await expect(card.getByRole("row", { name: kind(comprehensive, "included").name })).toContainText("Included");
+    await expect(card.getByRole("row", { name: optional.name })).toContainText(`$${optional.price}`);
+    await expect(card.getByRole("row", { name: optional.name })).toContainText("(customer ticked)");
+    await expect(card).not.toContainText(kind(comprehensive, "preselected").name);
+    await expect(card).toContainText("Made by the website");
   });
 });

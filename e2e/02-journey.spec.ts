@@ -34,9 +34,10 @@ test.describe.serial("opportunity to paid policy", () => {
     const plan = page.getByRole("combobox", { name: "Plan" });
     await plan.click();
     await page.getByRole("option").first().click();
-    await expect(page.getByLabel("Premium offered")).not.toHaveValue("");
+    // The total fills in from the plan's price
+    await expect(page.getByRole("row", { name: "Total a year" })).toContainText("$");
     await page.getByRole("button", { name: "Add quote" }).click();
-    await page.getByRole("button", { name: "Accepted" }).click();
+    await page.getByRole("button", { name: "Customer accepted" }).click();
     await expect(page.getByText("Accepted").first()).toBeVisible();
 
     await page.goto(`${leadUrl}?tab=kyc`);

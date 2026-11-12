@@ -1,80 +1,142 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { InsurerForm } from "@/components/forms/insurer-form";
+import { PlanEditForm } from "@/components/forms/plan-edit-form";
 import { PlanForm } from "@/components/forms/plan-form";
+import { PlanFilters } from "@/components/plans/plan-filters";
 import {
   Badge,
   Button,
+  ButtonLink,
   CellText,
   DataTable,
+  DropdownMenu,
   Forbidden,
   Hidden,
-  InlineForm,
-  Input,
-  ListRow,
+  Icon,
   PageHeader,
   Panel,
-  PillNav,
 } from "@/components/ui";
+import { WEBSITE_ADD_ONS } from "@/constants/add-ons";
 import { PRODUCTS, type Product } from "@/constants/products";
+import { isWebsiteProduct } from "@/constants/website";
 import { money } from "@/lib/format";
 import { localized } from "@/lib/i18n";
+import { addOnKinds } from "@/lib/plans";
 import { can } from "@/lib/rbac";
-import { toggleInsurer, updatePlan } from "@/server/actions/plans";
+import { withParams } from "@/lib/url";
+import { toggleInsurer, togglePlan } from "@/server/actions/plans";
 import { requireUser } from "@/server/auth";
-import { listInsurers, listPlans } from "@/server/queries/plans";
+import { countPlansByProduct, listInsurers, listPlans } from "@/server/queries/plans";
 
-export default async function PlansPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
+type Query = { product?: string; insurer?: string; inactive?: string; edit?: string };
+
+export default async function PlansPage({ searchParams }: { searchParams: Promise<Query> }) {
   const user = await requireUser();
   if (!can(user, "plans:manage")) return <Forbidden permission="plans:manage" />;
 
-  const requested = (await searchParams).product;
-  const product: Product = PRODUCTS.find((p) => p === requested) ?? "car";
-  const [insurers, plans, t, locale] = await Promise.all([
+  const query = await searchParams;
+  const product: Product = PRODUCTS.find((p) => p === query.product) ?? "car";
+  const withInactive = query.inactive === "1";
+  const insurerId = Number(query.insurer) || undefined;
+  const [insurers, plans, counts, t, locale] = await Promise.all([
     listInsurers(),
-    listPlans(product),
+    listPlans(product, { insurerId, withInactive }),
+    countPlansByProduct(withInactive),
     getTranslations(),
     getLocale(),
   ]);
+  const params = { product, insurer: query.insurer, inactive: query.inactive };
+  const editing = plans.find((p) => p.plan.id === Number(query.edit));
+  const editHref = (planId?: number) =>
+    `${withParams("/admin/plans", params, { edit: planId ? String(planId) : undefined })}${planId ? "#edit-plan" : ""}`;
+
+  const addOnSummary = (addOns: (typeof plans)[number]["addOns"]) => {
+    const kinds = addOnKinds(addOns);
+    const parts = (["included", "optional", "preselected"] as const)
+      .filter((k) => kinds[k] > 0)
+      .map((k) => t(`plans.addOnSummary.${k}`, { count: kinds[k] }));
+    return parts.length ? parts.join(" · ") : t("plans.addOnSummary.none");
+  };
 
   return (
     <>
-      <PageHeader title={t("plans.title")} description={t("plans.description")} />
-
-      <Panel title={t("plans.insurers")} flush footer={<InsurerForm />} className="mb-6">
-        <ul>
-          {insurers.map((i) => (
-            <ListRow
-              key={i.id}
-              muted={!i.active}
-              action={
-                <form action={toggleInsurer}>
-                  <Hidden name="insurerId" value={i.id} />
-                  <Button size="sm" variant={i.active ? "danger" : "secondary"}>
-                    {i.active ? t("common.deactivate") : t("common.activate")}
-                  </Button>
-                </form>
-              }
-            >
-              <CellText
-                primary={i.name}
-                secondary={[t("plans.planCount", { count: i.planCount }), i.contactEmail].filter(Boolean).join(", ")}
-              />
-            </ListRow>
-          ))}
-        </ul>
-      </Panel>
-
-      <PillNav
-        label={t("plans.product")}
-        items={PRODUCTS.map((p) => ({
-          href: `/admin/plans?product=${p}`,
-          label: t(`products.${p}`),
-          active: p === product,
-        }))}
+      <PageHeader
+        title={t("plans.title")}
+        description={t("plans.description")}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href="#add-insurer">{t("plans.addInsurer")}</ButtonLink>
+            <ButtonLink href="#add-plan" variant="primary">
+              {t("plans.addPlan")}
+            </ButtonLink>
+          </div>
+        }
       />
+
+      <ul aria-label={t("plans.insurers")} className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {insurers.map((i) => (
+          <li key={i.id} className="min-w-0">
+            <Panel>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <CellText
+                    primary={i.name}
+                    secondary={
+                      i.plans.length
+                        ? i.plans
+                            .map((p) =>
+                              t("plans.insurerPlans", { count: p.count, product: t(`products.${p.product}`) }),
+                            )
+                            .join(" · ")
+                        : t("plans.noActivePlans")
+                    }
+                  />
+                  {!i.active && (
+                    <span className="mt-1.5 inline-flex">
+                      <Badge tone="grey">{t("common.inactive")}</Badge>
+                    </span>
+                  )}
+                </div>
+                <form id={`insurer-${i.id}`} action={toggleInsurer}>
+                  <Hidden name="insurerId" value={i.id} />
+                </form>
+                <DropdownMenu
+                  label={i.name}
+                  align="end"
+                  items={[
+                    {
+                      label: i.active ? t("common.deactivate") : t("common.activate"),
+                      danger: i.active,
+                      form: `insurer-${i.id}`,
+                    },
+                  ]}
+                  trigger={
+                    <Button type="button" variant="ghost" size="sm" aria-label={i.name}>
+                      <Icon name="more" size={16} />
+                    </Button>
+                  }
+                />
+              </div>
+            </Panel>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mb-3">
+        <PlanFilters
+          params={params}
+          products={PRODUCTS.map((p) => ({
+            value: p,
+            label: t("plans.productCount", { product: t(`products.${p}`), count: counts.get(p) ?? 0 }),
+          }))}
+          insurers={insurers.map((i) => ({ value: String(i.id), label: i.name }))}
+        />
+      </div>
+
       <div className="mb-6">
         <DataTable
           path="/admin/plans"
+          params={params}
           rows={plans}
           rowKey={(r) => r.plan.id}
           minWidth="lg"
@@ -82,12 +144,9 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
           columns={[
             {
               key: "plan",
-              header: t("plans.plan", { product: t(`products.${product}`) }),
+              header: t("plans.planHeader"),
               cell: ({ plan, insurerName }) => (
-                <CellText
-                  primary={localized(plan.name, locale)}
-                  secondary={[insurerName, ...plan.benefits].join(", ")}
-                />
+                <CellText primary={localized(plan.name, locale)} secondary={insurerName} />
               ),
             },
             { key: "cover", header: t("plans.cover"), cell: ({ plan }) => t(`covers.${plan.cover}`) },
@@ -99,38 +158,33 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
               cell: ({ plan }) => money(plan.excess),
             },
             {
-              key: "premium",
-              header: t("plans.basePremium"),
-              cell: ({ plan }) => (
-                <InlineForm key={plan.basePremium} action={updatePlan} className="flex-nowrap">
-                  <Hidden name="planId" value={plan.id} />
-                  <Input
-                    name="basePremium"
-                    type="number"
-                    min={1}
-                    defaultValue={plan.basePremium}
-                    aria-label={t("plans.basePremium")}
-                    className="w-28"
-                  />
-                  <Button size="sm" name="intent" value="price">
-                    {t("common.save")}
-                  </Button>
-                </InlineForm>
-              ),
-            },
-            {
-              key: "state",
-              header: "",
+              key: "price",
+              header: t("plans.priceYear"),
               align: "end",
+              nowrap: true,
+              cell: ({ plan }) => <span className="font-semibold text-ink">{money(plan.basePremium)}</span>,
+            },
+            { key: "addOns", header: t("plans.addOns"), cell: ({ addOns }) => addOnSummary(addOns) },
+            {
+              key: "edit",
+              header: <span className="sr-only">{t("plans.edit")}</span>,
+              align: "end",
+              nowrap: true,
               cell: ({ plan, insurerActive }) => (
                 <span className="inline-flex items-center gap-2">
                   {!(plan.active && insurerActive) && <Badge tone="grey">{t("common.inactive")}</Badge>}
-                  <form action={updatePlan}>
-                    <Hidden name="planId" value={plan.id} />
-                    <Button size="sm" name="intent" value="toggle" variant={plan.active ? "danger" : "secondary"}>
-                      {plan.active ? t("common.deactivate") : t("common.activate")}
-                    </Button>
-                  </form>
+                  {editing?.plan.id === plan.id ? (
+                    <Badge tone="plum">{t("plans.editing")}</Badge>
+                  ) : (
+                    <ButtonLink
+                      href={editHref(plan.id)}
+                      size="sm"
+                      scroll={false}
+                      aria-label={t("plans.editPlan", { plan: localized(plan.name, locale) })}
+                    >
+                      {t("plans.edit")}
+                    </ButtonLink>
+                  )}
                 </span>
               ),
             },
@@ -138,8 +192,38 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         />
       </div>
 
-      <Panel title={t("plans.addPlan")} description={t("plans.addPlanHint")}>
+      {editing && (
+        <Panel
+          id="edit-plan"
+          title={t("plans.editTitle", { plan: localized(editing.plan.name, locale) })}
+          description={
+            <>
+              {t("plans.editDescription", { insurer: editing.insurerName, cover: t(`covers.${editing.plan.cover}`) })}
+              {!editing.insurerActive && ` ${t("plans.inactiveInsurer")}`}
+            </>
+          }
+          className="mb-6 scroll-mt-6"
+        >
+          <form id="plan-toggle" action={togglePlan}>
+            <Hidden name="planId" value={editing.plan.id} />
+          </form>
+          <PlanEditForm
+            key={editing.plan.id}
+            plan={editing.plan}
+            addOns={editing.addOns}
+            catalogue={isWebsiteProduct(product) ? [...WEBSITE_ADD_ONS[product]] : []}
+            toggleForm="plan-toggle"
+            active={editing.plan.active}
+            cancelHref={editHref()}
+          />
+        </Panel>
+      )}
+
+      <Panel id="add-plan" title={t("plans.addPlan")} description={t("plans.addPlanHint")} className="mb-6 scroll-mt-6">
         <PlanForm key={product} product={product} insurers={insurers.filter((i) => i.active)} />
+      </Panel>
+      <Panel id="add-insurer" title={t("plans.addInsurer")} className="scroll-mt-6">
+        <InsurerForm />
       </Panel>
     </>
   );

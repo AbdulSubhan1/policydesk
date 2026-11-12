@@ -89,9 +89,19 @@ Prices round to the nearest $5. The plans list only shows covers that suit the a
 
 **Benefits** come from `constants/plan-benefits.ts`: every plan of a product lists that product's core benefits (what the website's product page promises), then extras by cover level. No benefit repeats an add-on sold on the same plan. `npm run db:update-catalogue` (dry run; `-- --apply` to write) brings live plans in line.
 
-On the lead's **Quotes** tab, each quote lists its add-ons under the plan: "Included" or the price. Quotes made by the website show **Website** as their creator, and the timeline shows each choice as _Website picked a plan_ with the insurer, plan and total.
+### In the CRM
 
-Add-ons are seeded data for now (no editing screen; catalogue in `constants/add-ons.ts`, kinds in `server/website/catalogue.ts`). Each product's plans get a fixed set by cover (yearly USD):
+**Lead page.** The header has the customer's name, the stage and a _Paid online_ pill, and one line with product, department, lead type, advisor and reference. _Change stage or advisor_ opens one dialog (each field only for users allowed to change it); the More menu opens the opportunity and the full activity. A paid lead shows a green banner with the next step and a button that opens it (e.g. _Start KYC_). The progress rail links each step to its tab and scrolls sideways on a phone. Tabs are **Quotes · KYC · Documents 0/3 · Policy**. The side column has **Contact** (Call, Email, WhatsApp), **Deal** (plan, premium, paid online, recorded by finance; a website payment needs no finance step) and **Activity** (the latest 3 events and _All N events_). On a phone Deal and Activity fold to their title.
+
+**KYC from the website.** The form starts with the nationality and date of birth the website form collected (`kycPrefill` in `lib/kyc.ts`), each tagged _From website_ until the advisor changes it. A nationality outside the screening list is left empty; anything saved before (a rejection, a renewal) wins.
+
+**Quotes tab.** One card per quote: plan name, insurer · cover · excess, status pills (_Accepted_, _Paid online_, _Not chosen_, _Sent_), the price line by line (plan, each add-on, "Included" for included ones, "(customer ticked)" on website quotes, the advisor's discount) and _Total a year_, then who made it and when. **Add a quote**: pick a plan and its add-ons appear as checkboxes (included ones locked, preselected ones ticked). The plan price is rated from the customer's answers exactly like on the website (`premiumFor` in `server/website/plans.ts`; the base premium for products the website doesn't sell). An optional discount comes off the total; _The insurer gave a different price_ replaces the total with the insurer's figure, saved as an override (`priceOverridden`) and shown on the card as _Changed to the insurer's price_. The server prices the ids again (`lib/quote-price.ts`, `priceSelection`), and the quote keeps its add-ons, plan price and discount as a snapshot.
+
+**Insurers & plans** (admins only). Insurer cards count active plans per product ("3 Car plans · 2 Home plans"). A product select with counts, an insurer filter and _Show inactive_ narrow the read-only list: plan and insurer, cover, excess, price a year and an add-on summary ("1 included · 4 optional · 1 added by default"). _Edit_ opens the plan's panel under the list: price, excess, benefits as chips, and every add-on with _How it's offered_ (Included, Optional, Added by default or Not offered) and its price; add-ons from the product's catalogue can be added. _Deactivate plan_ sits in the same panel. Changing add-ons never touches existing quotes, because each quote keeps its own copy.
+
+Quotes made by the website show **Website** as their creator, and the timeline shows each choice as _Website picked a plan_ with the insurer, plan and total.
+
+The starting add-ons come from the catalogue in `constants/add-ons.ts` with kinds set in `server/website/catalogue.ts`; admins change them per plan under Insurers & plans. Each product's plans start with a fixed set by cover (yearly USD):
 
 - **Car, third party:** roadside assistance, driver accident and passenger accident, all optional.
 - **Car, comprehensive:** roadside assistance included; driver accident preselected; replacement car, windscreen and passenger accident optional; regional cover optional on some plans.
