@@ -99,6 +99,8 @@ test.describe.serial("website API", () => {
     await loginAs(page, "admin");
     await page.goto(`/opportunities?q=${encodeURIComponent(fullCustomer)}`);
     await page.getByRole("link", { name: fullCustomer }).click();
+    // The first visit compiles the opportunity page in dev mode, so allow time for it
+    await expect(page).toHaveURL(/\/opportunities\/\d+$/, { timeout: 30_000 });
 
     await expect(page.getByRole("heading", { name: fullCustomer })).toBeVisible();
     await expect(page.getByText("Car details")).toBeVisible();
