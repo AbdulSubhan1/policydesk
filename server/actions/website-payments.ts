@@ -37,7 +37,7 @@ export async function chooseOnlinePlan(input: OnlinePlanInput): Promise<ActionRe
   const { user, opportunity, lead } = await websiteLead(opportunityId);
   if (await paidOrderOf(lead.id)) return { ok: false, error: "errors.alreadyPaid" };
 
-  const saved = await saveOnlineSelection(lead, opportunity.product, selection, user.id);
+  const saved = await saveOnlineSelection(lead, opportunity, selection, user.id);
   if (!saved.ok)
     return { ok: false, error: saved.field === "planId" ? "errors.planUnavailable" : "errors.addOnUnavailable" };
   revalidatePath(`/opportunities/${opportunity.id}`);

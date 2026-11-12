@@ -129,7 +129,12 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
           )}
 
           {!open && website && row.leadId && can(user, "opportunities:convert") && (
-            <OnlinePaymentPanel opportunityId={opp.id} leadId={row.leadId} product={opp.product} />
+            <OnlinePaymentPanel
+              opportunityId={opp.id}
+              leadId={row.leadId}
+              product={opp.product}
+              details={opp.details}
+            />
           )}
 
           {open && can(user, "opportunities:edit") && (

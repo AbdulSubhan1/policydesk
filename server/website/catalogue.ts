@@ -33,7 +33,7 @@ const ADD_ON_KINDS: { [P in WebsiteProduct]: (plan: Plan) => Partial<Record<AddO
     accidental_damage: "optional",
     valuables_away: "optional",
     alternative_accommodation: plan.cover === "building_contents" ? "included" : "optional",
-    domestic_helper: "preselected",
+    domestic_helper: "optional",
   }),
   health: () => ({ dental: "optional", optical: "optional", maternity: "optional", wellness_checkup: "included" }),
 };

@@ -6,10 +6,17 @@ import { getWebsiteSelection, loadSellablePlans } from "@/server/website/plans";
 
 const { paymentLinks, users } = schema;
 
-/** What the Online payment panel shows for a converted website opportunity: plans, the saved choice and the links. */
-export async function getOnlinePayment(leadId: number, product: Product) {
+/**
+ * What the Online payment panel shows for a converted website opportunity: plans priced for its answers, the saved
+ * choice and the links.
+ */
+export async function getOnlinePayment(
+  leadId: number,
+  product: Product,
+  details: Parameters<typeof loadSellablePlans>[1],
+) {
   const [plans, selection, links, paid] = await Promise.all([
-    loadSellablePlans(product),
+    loadSellablePlans(product, details),
     getWebsiteSelection(leadId),
     db
       .select({ link: paymentLinks, creatorName: users.name })
