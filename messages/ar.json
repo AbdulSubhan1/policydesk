@@ -312,17 +312,80 @@
     "greeting": "أهلًا بك، {name}",
     "scopeNote": "الأرقام أدناه تخص العمل {scope}.",
     "roleNote": "أنت مسجل الدخول بصفة {role}.",
-    "opportunities": "الفرص",
     "openLeads": "عملاء محتملون مفتوحون",
     "winRate": "نسبة الفوز",
-    "kycToReview": "اعرف عميلك للمراجعة",
     "activePolicies": "الوثائق السارية",
     "annualPremium": "الأقساط السنوية",
     "pipeline": "مسار العملاء المحتملين",
-    "inTotal": "{count} في المجموع",
-    "renewals": "التجديدات القادمة",
     "renewalsHint": "وثائق سارية تنتهي خلال {days} يومًا",
-    "noRenewals": "لا توجد تجديدات حاليًا"
+    "noRenewals": "لا توجد تجديدات حاليًا",
+    "today": "مطلوب منك اليوم",
+    "cards": {
+      "kycReview": {
+        "label": "تحققات اعرف عميلك بالانتظار",
+        "action": "راجع الآن",
+        "oldest": "{days, plural, =0 {الأقدم اليوم} one {الأقدم منذ يوم} two {الأقدم منذ يومين} few {الأقدم منذ # أيام} many {الأقدم منذ # يومًا} other {الأقدم منذ # يوم}}"
+      },
+      "kycToSend": {
+        "label": "اعرف عميلك للإرسال",
+        "action": "افتح العملاء المحتملين"
+      },
+      "paymentsToRecord": {
+        "label": "مدفوعات للتسجيل",
+        "action": "افتح المدفوعات"
+      },
+      "paidToBook": {
+        "label": "مدفوع عبر الإنترنت، للحجز",
+        "action": "افتح العملاء المحتملين"
+      },
+      "unassigned": {
+        "label": "عملاء محتملون للإسناد",
+        "action": "أسند",
+        "badge": "بدون مستشار"
+      },
+      "toQuote": {
+        "label": "عملاء محتملون للتسعير",
+        "action": "ابدأ التسعير"
+      },
+      "renewals": {
+        "label": "التجديدات القادمة",
+        "action": "اعرض التجديدات",
+        "badge": "خلال {days} يومًا"
+      }
+    },
+    "period": {
+      "label": "الفترة",
+      "month": "هذا الشهر",
+      "quarter": "الربع",
+      "year": "السنة"
+    },
+    "periodTitle": {
+      "month": "{month} حتى الآن",
+      "quarter": "الربع {quarter} من {year} حتى الآن",
+      "year": "{year} حتى الآن"
+    },
+    "quarterName": "الربع {quarter}",
+    "vsPrevious": "مقارنة بالفترة نفسها من {previous}",
+    "nothingBefore": "لا شيء في {previous} للمقارنة",
+    "premiumWritten": "الأقساط المكتتبة",
+    "newInPeriod": {
+      "month": "{count} جديد هذا الشهر",
+      "quarter": "{count} جديد هذا الربع",
+      "year": "{count} جديد هذه السنة"
+    },
+    "wonOfClosed": "فوز في {won} من {closed} مغلق",
+    "notEnoughData": "لا توجد بيانات كافية بعد",
+    "closedSoFar": "{closed} مغلق؛ تظهر النسبة من {min}",
+    "bookedWaiting": "{count} محجوزة بانتظار الدفع",
+    "allLeads": "كل العملاء المحتملين",
+    "sources": "من أين تأتي الفرص",
+    "allOpportunities": "كل الفرص",
+    "becameLeads": "أصبحت {converted} من {total} عملاء محتملين ({percent}%)",
+    "noSources": "لا توجد فرص في هذه الفترة",
+    "renewalsTitle": "التجديدات خلال {days} يومًا القادمة",
+    "allPolicies": "كل الوثائق",
+    "inDays": "{days, plural, =0 {اليوم} one {خلال يوم} two {خلال يومين} few {خلال # أيام} many {خلال # يومًا} other {خلال # يوم}}",
+    "renewAria": "جدّد وثيقة {name}"
   },
   "opportunities": {
     "title": "الفرص",
@@ -463,9 +526,23 @@
     "advisor": "المستشار",
     "updated": "آخر تحديث",
     "empty": "لا يوجد عملاء محتملون يطابقون هذا الفلتر.",
-    "search": "ابحث بالاسم أو المرجع، مثل CAR-J2M3HX7",
+    "search": "ابحث بالاسم أو CAR-…",
     "bulk": {
-      "setStage": "نقل إلى مرحلة"
+      "setStage": "نقل إلى مرحلة",
+      "assign": "إسناد إلى مستشار"
+    },
+    "premium": "القسط",
+    "notQuoted": "بدون تسعير",
+    "noAdvisor": "بدون مستشار",
+    "anyAdvisor": "أي مستشار",
+    "department": "القسم",
+    "allDepartments": "كل الأقسام",
+    "paidOnlineOnly": "المدفوع عبر الإنترنت فقط",
+    "kycState": {
+      "pending": "اعرف عميلك: قيد الانتظار",
+      "submitted": "اعرف عميلك: مُقدَّم",
+      "approved": "اعرف عميلك: معتمد",
+      "rejected": "اعرف عميلك: مرفوض"
     }
   },
   "lead": {
@@ -720,7 +797,9 @@
     "renew": "تجديد",
     "renewal": "التجديد",
     "noAdvisor": "بدون مستشار",
-    "search": "ابحث بالعميل أو رقم الوثيقة أو المرجع"
+    "search": "ابحث بالاسم أو الوثيقة أو CAR-…",
+    "dueSoon": "مستحقة قريبًا",
+    "advisor": "المستشار"
   },
   "plans": {
     "title": "شركات التأمين والخطط",

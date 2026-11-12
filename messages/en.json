@@ -312,17 +312,80 @@
     "greeting": "Good to see you, {name}",
     "scopeNote": "Numbers below cover work {scope}.",
     "roleNote": "You are signed in as {role}.",
-    "opportunities": "Opportunities",
     "openLeads": "Open leads",
     "winRate": "Win rate",
-    "kycToReview": "KYC to review",
     "activePolicies": "Active policies",
     "annualPremium": "Annual premium",
     "pipeline": "Lead pipeline",
-    "inTotal": "{count} in total",
-    "renewals": "Renewals coming up",
     "renewalsHint": "Active policies ending in the next {days} days",
-    "noRenewals": "Nothing to renew right now"
+    "noRenewals": "Nothing to renew right now",
+    "today": "Needs you today",
+    "cards": {
+      "kycReview": {
+        "label": "KYC checks waiting",
+        "action": "Review now",
+        "oldest": "{days, plural, =0 {Oldest today} one {Oldest # day} other {Oldest # days}}"
+      },
+      "kycToSend": {
+        "label": "KYC to send",
+        "action": "Open leads"
+      },
+      "paymentsToRecord": {
+        "label": "Payments to record",
+        "action": "Open payments"
+      },
+      "paidToBook": {
+        "label": "Paid online, to book",
+        "action": "Open leads"
+      },
+      "unassigned": {
+        "label": "Leads to assign",
+        "action": "Assign",
+        "badge": "No advisor"
+      },
+      "toQuote": {
+        "label": "Leads to quote",
+        "action": "Start quoting"
+      },
+      "renewals": {
+        "label": "Renewals coming up",
+        "action": "See renewals",
+        "badge": "Next {days} days"
+      }
+    },
+    "period": {
+      "label": "Period",
+      "month": "This month",
+      "quarter": "Quarter",
+      "year": "Year"
+    },
+    "periodTitle": {
+      "month": "{month} so far",
+      "quarter": "Q{quarter} {year} so far",
+      "year": "{year} so far"
+    },
+    "quarterName": "Q{quarter}",
+    "vsPrevious": "vs same point in {previous}",
+    "nothingBefore": "Nothing in {previous} to compare",
+    "premiumWritten": "Premium written",
+    "newInPeriod": {
+      "month": "{count} new this month",
+      "quarter": "{count} new this quarter",
+      "year": "{count} new this year"
+    },
+    "wonOfClosed": "{won} won of {closed} closed",
+    "notEnoughData": "Not enough data yet",
+    "closedSoFar": "{closed} closed; the rate shows from {min}",
+    "bookedWaiting": "{count} booked, waiting for payment",
+    "allLeads": "All leads",
+    "sources": "Where opportunities come from",
+    "allOpportunities": "All opportunities",
+    "becameLeads": "{converted} of {total} became leads ({percent}%)",
+    "noSources": "No opportunities in this period",
+    "renewalsTitle": "Renewals in the next {days} days",
+    "allPolicies": "All policies",
+    "inDays": "{days, plural, =0 {today} one {in # day} other {in # days}}",
+    "renewAria": "Renew {name}'s policy"
   },
   "opportunities": {
     "title": "Opportunities",
@@ -463,9 +526,23 @@
     "advisor": "Advisor",
     "updated": "Updated",
     "empty": "No leads match this filter.",
-    "search": "Search by name or reference, e.g. CAR-J2M3HX7",
+    "search": "Search name or CAR-…",
     "bulk": {
-      "setStage": "Move to stage"
+      "setStage": "Move to stage",
+      "assign": "Assign advisor"
+    },
+    "premium": "Premium",
+    "notQuoted": "Not quoted",
+    "noAdvisor": "No advisor",
+    "anyAdvisor": "Any advisor",
+    "department": "Department",
+    "allDepartments": "All departments",
+    "paidOnlineOnly": "Paid online only",
+    "kycState": {
+      "pending": "KYC pending",
+      "submitted": "KYC submitted",
+      "approved": "KYC approved",
+      "rejected": "KYC rejected"
     }
   },
   "lead": {
@@ -720,7 +797,9 @@
     "renew": "Renew",
     "renewal": "Renewal",
     "noAdvisor": "No advisor",
-    "search": "Search by customer, policy number or reference"
+    "search": "Search name, policy or CAR-…",
+    "dueSoon": "Due soon",
+    "advisor": "Advisor"
   },
   "plans": {
     "title": "Insurers & plans",

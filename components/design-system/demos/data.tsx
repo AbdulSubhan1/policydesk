@@ -14,6 +14,7 @@ import {
   Panel,
   PriceBreakdown,
   Stat,
+  TableFilters,
   Timeline,
 } from "@/components/ui";
 import { LEAD_STAGES } from "@/constants/statuses";
@@ -46,53 +47,100 @@ export function DataDemos({ name, path, params }: DemoProps) {
       );
       const page = Math.max(1, Number(params.page) || 1);
       return (
+        <>
+          <Demo
+            title="Search, filters, pages and selection"
+            description="All state lives in the URL. Tick rows to see the ActionBar. Product has priority 2, so it gives way first when the table is narrow."
+          >
+            <form id="demo-table" action={path}>
+              <ActionBar form="demo-table" name="ids">
+                <Button type="button" size="sm" variant="ghost">
+                  <Icon name="send" size={15} />
+                  {t("leads.bulk.setStage")}
+                </Button>
+              </ActionBar>
+            </form>
+            <DataTable
+              path={path}
+              params={params}
+              rows={rows.slice((page - 1) * PAGE, page * PAGE)}
+              rowKey={(r) => r.id}
+              minWidth="sm"
+              select={{ form: "demo-table", name: "ids", label: (r) => r.customer }}
+              search={{ placeholder: t("leads.search") }}
+              filters={{ label: t("leads.stage"), options: keyedOptions(t, "status", LEAD_STAGES.slice(0, 3)) }}
+              pagination={{ page, pageSize: PAGE, total: rows.length }}
+              empty={{
+                title: t("leads.empty"),
+                icon: "search",
+                action: <ButtonLink href={path}>{t("common.all")}</ButtonLink>,
+              }}
+              columns={[
+                {
+                  key: "customer",
+                  header: t("leads.customer"),
+                  cell: (r) => <CellText primary={r.customer} secondary={r.reference} />,
+                },
+                { key: "product", header: t("leads.product"), priority: 2, cell: (r) => t(`products.${r.product}`) },
+                { key: "stage", header: t("leads.stage"), cell: (r) => <Badge status={r.stage} /> },
+                {
+                  key: "premium",
+                  header: t("policies.premium"),
+                  numeric: true,
+                  cell: (r) => money(r.premium),
+                },
+              ]}
+            />
+          </Demo>
+          <Demo
+            title="Rows on phones"
+            description='With mobile="rows", a table narrower than 42rem shows each row as a stacked card from summary. This box is that narrow.'
+          >
+            <div className="max-w-sm">
+              <DataTable
+                path={path}
+                rows={SAMPLE.filter((r) => r.stage === "needs_analysis").slice(0, 3)}
+                rowKey={(r) => r.id}
+                rowHref={() => path}
+                empty={{ title: t("leads.empty") }}
+                mobile="rows"
+                summary={(r) => ({
+                  title: r.customer,
+                  amount: money(r.premium),
+                  meta: [r.reference, t(`products.${r.product}`)],
+                  badges: <Badge status={r.stage} />,
+                })}
+                columns={[
+                  { key: "customer", header: t("leads.customer"), cell: (r) => r.customer },
+                  { key: "premium", header: t("policies.premium"), numeric: true, cell: (r) => money(r.premium) },
+                ]}
+              />
+            </div>
+          </Demo>
+        </>
+      );
+    }
+    case "TableFilters":
+      return (
         <Demo
-          title="Search, filters, pages and selection"
-          description="All state lives in the URL. Tick rows to see the ActionBar."
+          title="Dropdown and on/off"
+          description="Each change is a URL parameter; DataTable shows these from refine."
         >
-          <form id="demo-table" action={path}>
-            <ActionBar form="demo-table" name="ids">
-              <Button type="button" size="sm" variant="ghost">
-                <Icon name="send" size={15} />
-                {t("leads.bulk.setStage")}
-              </Button>
-            </ActionBar>
-          </form>
-          <DataTable
+          <TableFilters
             path={path}
             params={params}
-            rows={rows.slice((page - 1) * PAGE, page * PAGE)}
-            rowKey={(r) => r.id}
-            minWidth="sm"
-            select={{ form: "demo-table", name: "ids", label: (r) => r.customer }}
-            search={{ placeholder: t("leads.search") }}
-            filters={{ label: t("leads.stage"), options: keyedOptions(t, "status", LEAD_STAGES.slice(0, 3)) }}
-            pagination={{ page, pageSize: PAGE, total: rows.length }}
-            empty={{
-              title: t("leads.empty"),
-              icon: "search",
-              action: <ButtonLink href={path}>{t("common.all")}</ButtonLink>,
-            }}
-            columns={[
+            selects={[
               {
-                key: "customer",
-                header: t("leads.customer"),
-                cell: (r) => <CellText primary={r.customer} secondary={r.reference} />,
-              },
-              { key: "product", header: t("leads.product"), cell: (r) => t(`products.${r.product}`) },
-              { key: "stage", header: t("leads.stage"), cell: (r) => <Badge status={r.stage} /> },
-              {
-                key: "premium",
-                header: t("policies.premium"),
-                align: "end",
-                nowrap: true,
-                cell: (r) => money(r.premium),
+                name: "advisor",
+                label: t("leads.advisor"),
+                placeholder: t("leads.anyAdvisor"),
+                options: [{ value: "none", label: t("leads.noAdvisor") }, ...TEAM.map((n) => ({ value: n, label: n }))],
               },
             ]}
+            toggles={[{ name: "paid", label: t("leads.paidOnlineOnly") }]}
           />
         </Demo>
       );
-    }
     case "CellText":
       return (
         <Demo title="Truncates long text" description="Two lines that never overflow their cell.">
@@ -107,18 +155,32 @@ export function DataDemos({ name, path, params }: DemoProps) {
       );
     case "ListRow":
       return (
-        <Demo title="With actions">
-          <Panel flush>
-            <ul>
-              <ListRow action={<Button size="sm">{t("common.disable")}</Button>}>
-                <CellText primary="Northwind Assurance" secondary={t("plans.planCount", { count: 12 })} />
-              </ListRow>
-              <ListRow muted action={<Button size="sm">{t("common.enable")}</Button>}>
-                <CellText primary="Crescent Cover" secondary={t("common.inactive")} />
-              </ListRow>
-            </ul>
-          </Panel>
-        </Demo>
+        <>
+          <Demo title="With actions">
+            <Panel flush>
+              <ul>
+                <ListRow action={<Button size="sm">{t("common.disable")}</Button>}>
+                  <CellText primary="Northwind Assurance" secondary={t("plans.planCount", { count: 12 })} />
+                </ListRow>
+                <ListRow muted action={<Button size="sm">{t("common.enable")}</Button>}>
+                  <CellText primary="Crescent Cover" secondary={t("common.inactive")} />
+                </ListRow>
+              </ul>
+            </Panel>
+          </Demo>
+          <Demo
+            title="As a link"
+            description="With href the whole row opens the record, as DataTable rows do on phones."
+          >
+            <Panel flush>
+              <ul>
+                <ListRow href={path}>
+                  <CellText primary="Ahmed Rahman" secondary="CAR-J2M3HX7" />
+                </ListRow>
+              </ul>
+            </Panel>
+          </Demo>
+        </>
       );
     case "Badge":
       return (
@@ -140,12 +202,31 @@ export function DataDemos({ name, path, params }: DemoProps) {
       );
     case "Stat":
       return (
-        <Demo title="Plain and linked">
-          <div className="grid grid-cols-2 gap-3">
-            <Stat label={t("dashboard.openLeads")} value="12" href={path} />
-            <Stat label={t("dashboard.winRate")} value="67%" />
-          </div>
-        </Demo>
+        <>
+          <Demo title="Plain and linked">
+            <div className="grid grid-cols-2 gap-3">
+              <Stat label={t("dashboard.openLeads")} value="12" href={path} />
+              <Stat label={t("dashboard.winRate")} value="67%" />
+            </div>
+          </Demo>
+          <Demo title="Comparison, hint, badge and action" description="The dashboard's KPIs and task cards.">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Stat
+                label={t("dashboard.premiumWritten")}
+                value={money(21105)}
+                delta={{ value: 12, label: t("dashboard.vsPrevious", { previous: "October" }) }}
+              />
+              <Stat
+                label={t("dashboard.cards.kycReview.label")}
+                value="8"
+                href={path}
+                badge={<Badge tone="amber">{t("dashboard.cards.kycReview.oldest", { days: 3 })}</Badge>}
+                hint={t("dashboard.wonOfClosed", { won: 10, closed: 12 })}
+                action={t("dashboard.cards.kycReview.action")}
+              />
+            </div>
+          </Demo>
+        </>
       );
     case "Timeline":
       return (

@@ -64,7 +64,7 @@ export const UI_REGISTRY: RegistryEntry[] = [
     group: "Forms",
     description: "A choice and a button on one line for one-click server actions.",
     props: "action: server action; ...form attributes",
-    example: "<InlineForm action={updateLeadStage}>…</InlineForm>",
+    example: "<InlineForm action={updateLead}>…</InlineForm>",
   },
   {
     name: "FormError",
@@ -341,7 +341,8 @@ export const UI_REGISTRY: RegistryEntry[] = [
     name: "Tabs",
     file: "tabs.tsx",
     group: "Navigation",
-    description: "Underlined tabs for sections of one record, driven by the URL.",
+    description:
+      "Underlined tabs for sections of one record or a list's filter, driven by the URL. Counts show as chips.",
     props: "tabs: { id; label; href; count? }[]; current; label",
     example: '<Tabs current={tab} label="Sections" tabs={…} />',
   },
@@ -349,8 +350,9 @@ export const UI_REGISTRY: RegistryEntry[] = [
     name: "PillNav",
     file: "pill-nav.tsx",
     group: "Navigation",
-    description: "Pick one of a few views, e.g. a product. DataTable uses it for its filters.",
-    props: "items: { href; label; active }[]; label",
+    description:
+      "Pick one of a few views, e.g. a product. DataTable uses it for its filters; segment is a compact switch (the dashboard period).",
+    props: 'items: { href; label; active }[]; label; variant?: "pills" | "segment"',
     example: '<PillNav label="Product" items={PRODUCTS.map(…)} />',
   },
 
@@ -402,7 +404,7 @@ export const UI_REGISTRY: RegistryEntry[] = [
     group: "Feedback",
     description:
       "A share of a total on the native <progress>. With label it shows the percentage; without, it is a plain bar.",
-    props: "value; max?: 100; label?",
+    props: 'value; max?: 100; label?; tone?: "brand" | "neutral" | "risk" | "info"',
     example: '<Progress label="Documents collected" value={3} max={5} />',
   },
   {
@@ -454,11 +456,20 @@ export const UI_REGISTRY: RegistryEntry[] = [
     file: "data-table.tsx",
     group: "Data",
     description:
-      "Every list: columns, search (?q=), pill filters (?filter=), pagination (?page=) and an empty state, all server-side.",
+      "Every list: columns, search (?q=), filters as pills or counted tabs (?filter=), dropdown and on/off filters, pagination (?page=) and an empty state, all server-side. Rows can be links; columns give way by priority; on phones rows become stacked cards.",
     props:
-      "rows; columns: Column[]; rowKey; path; params?; search?; filters?; pagination?; empty; minWidth?; embedded?",
+      'rows; columns: Column[] (key; header; cell; align?; nowrap?; numeric?: end-aligned tabular amounts; priority?: 1 | 2 | 3); rowKey; path; params?; search?; filters?: { label; options: { value; label; count? }[]; variant?: "pills" | "tabs"; total? }; refine?: { selects?; toggles? }; pagination?; empty; minWidth?; embedded?; select?; rowHref?: (row) => string; mobile?: "rows" with summary: (row) => { title; amount?; meta?; badges?; date? }',
     example:
       '<DataTable path="/leads" params={params} rows={rows} columns={[…]} pagination={{ page, pageSize, total }} />',
+  },
+  {
+    name: "TableFilters",
+    file: "table-filters.tsx",
+    group: "Data",
+    description:
+      "Dropdown and on/off filters that go straight to the URL. DataTable renders it from its refine prop; use that.",
+    props: "path; params; selects?: { name; label; placeholder; options }[]; toggles?: { name; label }[]",
+    example: '<DataTable refine={{ toggles: [{ name: "paid", label: "Paid online only" }] }} … />',
   },
   {
     name: "CellText",
@@ -472,8 +483,9 @@ export const UI_REGISTRY: RegistryEntry[] = [
     name: "ListRow",
     file: "list-row.tsx",
     group: "Data",
-    description: "One row of a simple list inside a flush Panel, with an action at the end.",
-    props: "children; action?; muted?",
+    description:
+      "One row of a simple list inside a flush Panel, with an action at the end. With href the row is a link.",
+    props: "children; action?; muted?; href?",
     example: '<ListRow action={<Button size="sm">Disable</Button>}>…</ListRow>',
   },
   {
@@ -498,9 +510,11 @@ export const UI_REGISTRY: RegistryEntry[] = [
     name: "Stat",
     file: "stat.tsx",
     group: "Data",
-    description: "A headline number with its label, optionally a link.",
-    props: "label; value; href?",
-    example: '<Stat label="Open leads" value="12" href="/leads" />',
+    description:
+      "A headline number with its label, optionally a link. Can carry a comparison line, a hint, a badge and an action.",
+    props: "label; value; href?; hint?; delta?: { value: percent; label }; badge?; action?: link text",
+    example:
+      '<Stat label="Premium written" value="$21,105" delta={{ value: 12, label: "vs same point in October" }} />',
   },
   {
     name: "Timeline",

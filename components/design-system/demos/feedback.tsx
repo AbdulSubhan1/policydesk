@@ -107,6 +107,13 @@ export function FeedbackDemos({ name, path }: DemoProps) {
               <Progress value={7} max={10} />
             </div>
           </Demo>
+          <Demo title="Tones" description="Neutral for plain counts, risk for losses, info for a breakdown.">
+            <div className="grid max-w-md gap-2">
+              <Progress value={6} max={10} tone="neutral" />
+              <Progress value={2} max={10} tone="risk" />
+              <Progress value={8} max={10} tone="info" />
+            </div>
+          </Demo>
         </>
       );
     case "Forbidden":
