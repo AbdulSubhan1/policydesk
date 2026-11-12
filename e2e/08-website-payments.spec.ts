@@ -271,6 +271,9 @@ test.describe.serial("website payments", () => {
     const leadUrl = new URL(page.url()).pathname;
     // One advisor assignment, however many times the payment was reported
     await expect(page.getByText("assigned the advisor", { exact: true })).toHaveCount(1);
+    // Paid but not booked yet: the progress rail's Paid step shows the online payment, not "Not yet"
+    const paidStep = page.getByText(`Paid online, $${main.selection.total.toLocaleString("en-US")}`, { exact: true });
+    await expect(paidStep).toBeVisible();
 
     await page.goto(`${leadUrl}?tab=kyc`);
     await page.getByLabel("ID or passport number").fill("ID-778899");
@@ -316,5 +319,7 @@ test.describe.serial("website payments", () => {
     await expect(page.getByText("Active").first()).toBeVisible();
     await expect(page.getByText("Online (PaySandbox)", { exact: true })).toBeVisible();
     await expect(page.getByText(paymentId).first()).toBeVisible();
+    // Booked: the Paid step shows the policy's payment status again
+    await expect(paidStep).toHaveCount(0);
   });
 });

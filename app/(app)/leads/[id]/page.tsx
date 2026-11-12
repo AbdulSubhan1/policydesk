@@ -19,7 +19,7 @@ import {
   Tabs,
 } from "@/components/ui";
 import { EDITABLE_LEAD_STAGES } from "@/constants/statuses";
-import { shortDate } from "@/lib/format";
+import { money, shortDate } from "@/lib/format";
 import { keyedOptions } from "@/lib/options";
 import { can, scopeOf } from "@/lib/rbac";
 import { reassignAdvisor, updateLeadStage } from "@/server/actions/leads";
@@ -28,6 +28,7 @@ import {
   getDocuments,
   getKyc,
   getLeadContext,
+  getOrder,
   getPolicy,
   getPolicyById,
   getQuotes,
@@ -49,17 +50,20 @@ export default async function LeadPage({
 
   const { lead, opportunity, departmentKey, advisorName, closed } = await getLeadContext((await params).id);
   const leadId = lead.id;
-  const [quotes, kyc, docs, policy, previous, t] = await Promise.all([
+  const [quotes, kyc, docs, policy, order, previous, t] = await Promise.all([
     getQuotes(leadId),
     getKyc(leadId),
     getDocuments(leadId),
     getPolicy(leadId),
+    getOrder(leadId),
     lead.previousPolicyId ? getPolicyById(lead.previousPolicyId) : undefined,
     getTranslations(),
   ]);
 
   const accepted = quotes.find((q) => q.status === "accepted");
   const kycStatus = kyc?.record.status ?? "pending";
+  // Paid on the website but not booked yet: the money is in, so the step says so instead of "Not yet"
+  const paidOnline = !policy && order?.status === "paid";
   const steps = [
     {
       tab: "quotes",
@@ -86,8 +90,12 @@ export default async function LeadPage({
     {
       tab: "policy",
       label: t("lead.steps.paid"),
-      detail: policy ? t(`status.${policy.paymentStatus}`) : t("lead.steps.notYet"),
-      done: policy?.paymentStatus === "paid",
+      detail: policy
+        ? t(`status.${policy.paymentStatus}`)
+        : paidOnline
+          ? t("lead.steps.paidOnline", { amount: money(order.amount) })
+          : t("lead.steps.notYet"),
+      done: policy ? policy.paymentStatus === "paid" : paidOnline,
     },
   ];
 

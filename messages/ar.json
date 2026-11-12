@@ -471,7 +471,8 @@
       "paid": "الدفع",
       "quotesSent": "{count, plural, =0 {لم يُرسل أي عرض} one {عرض واحد مُرسل} two {عرضان مُرسلان} few {# عروض مُرسلة} many {# عرضًا مُرسلًا} other {# عرض مُرسل}}",
       "documentsCount": "{done} من {total} مطلوبة",
-      "notYet": "ليس بعد"
+      "notYet": "ليس بعد",
+      "paidOnline": "مدفوع عبر الإنترنت، {amount}"
     },
     "tabs": {
       "quotes": "عروض الأسعار",
