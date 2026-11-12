@@ -87,7 +87,16 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
               />
             ),
           },
-          { key: "stage", header: t("leads.stage"), cell: (l) => <Badge status={l.stage} /> },
+          {
+            key: "stage",
+            header: t("leads.stage"),
+            cell: (l) => (
+              <span className="flex flex-wrap gap-1.5">
+                <Badge status={l.stage} />
+                {l.paidOnline && <Badge tone="green">{t("leads.paidOnline")}</Badge>}
+              </span>
+            ),
+          },
           { key: "kyc", header: t("leads.kyc"), cell: (l) => l.kycStatus && <Badge status={l.kycStatus} /> },
           {
             key: "advisor",

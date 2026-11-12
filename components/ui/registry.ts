@@ -358,7 +358,7 @@ export const UI_REGISTRY: RegistryEntry[] = [
     file: "alert.tsx",
     group: "Feedback",
     description: "A message inside the page that stays: a warning on a record, a tip, a failed check.",
-    props: 'tone?: "info" | "success" | "warning" | "danger"; title; children?; action?',
+    props: 'tone?: "info" | "success" | "warning" | "danger"; title; children?; action?; className? (layout only)',
     example: '<Alert tone="warning" title="KYC expires in 5 days" />',
   },
   {

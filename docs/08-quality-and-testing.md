@@ -37,7 +37,4 @@ They can also run from GitHub: **Actions → E2E tests → Run workflow**.
 
 ## Pull requests
 
-Every PR runs two jobs:
-
-1. **Checks:** `npm run check` and `npm run build`. The PR cannot merge if they fail.
-2. **Review:** an AI reviewer reads the diff against `AGENTS.md` and comments on any rule it breaks. It needs the `ANTHROPIC_API_KEY` repository secret.
+Every PR runs `npm run check` and `npm run build`. The PR cannot merge if they fail.

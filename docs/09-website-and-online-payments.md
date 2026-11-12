@@ -140,6 +140,8 @@ sequenceDiagram
 
 The advisor then does KYC and documents as usual and books the policy. **Booking sees the paid order** (same quote and amount) and creates the policy already **Active** and **Paid**, method **Online (PaySandbox)**, reference `pay_…`, paid on the order's date. Finance has nothing to record. The lead's **Policy** tab shows an **Online payment** panel (status, amount, PaySandbox payment id, paid on) whenever the lead has an order.
 
+Until the policy is booked, the paid order also shows across the lead: the progress rail's **Paid** step is done with _Paid online · $1,140_, a green banner under the header says _Customer paid $1,140 online on 12 Nov 2026_ and names the next step (approve KYC, upload the required documents or book the policy), and the leads list shows a **Paid online** badge next to the stage. Once booked, the rail follows the policy's payment status.
+
 **Webhook.** `POST /api/paysandbox/webhook`, called by PaySandbox only. It is signed the [Standard Webhooks](https://www.standardwebhooks.com/) way: headers `webhook-id` (the event id), `webhook-timestamp` and `webhook-signature`, made with the endpoint's `whsec_…` secret over the raw body. PolicyDesk checks it with the `standardwebhooks` library before reading the body as JSON.
 
 | Case                                                          | Answer                                                                    |
@@ -219,7 +221,7 @@ The view shows only public ids, never internal numbers:
 {
   "opportunity": { "publicId": "3f9c2a1e-…", "status": "converted", "product": "car" },
   "lead": { "reference": "CAR-J2M3HX7" },
-  "contact": { "role": "coordinator", "name": "Hina Coordinator", "email": "…", "phone": "+923001110001" }
+  "contact": { "role": "coordinator", "name": "Hina Malik", "email": "…", "phone": "+923001110001" }
 }
 ```
 

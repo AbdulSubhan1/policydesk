@@ -169,7 +169,9 @@
     "app/(app)/kb/[[...slug]]/page.tsx",
     "app/(app)/kyc/page.tsx"
   ],
-  "Alert": [],
+  "Alert": [
+    "app/(app)/leads/[id]/page.tsx"
+  ],
   "Toast": [
     "components/opportunities/pay-link-creator.tsx"
   ],

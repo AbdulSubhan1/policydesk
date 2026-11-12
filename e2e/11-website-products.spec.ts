@@ -23,7 +23,7 @@ type Plan = { id: number; cover: string; basePremium: number; addOns: AddOn[] };
 
 /** Who coordinates (and advises) each product's department in the seed. */
 const PEOPLE = {
-  car: { coordinators: ["Hina Coordinator", "Saad Coordinator"], code: "CAR" },
+  car: { coordinators: ["Hina Malik", "Saad Raza"], code: "CAR" },
   travel: { coordinators: ["Mehwish Iqbal"], code: "TRV" },
   home: { coordinators: ["Mehwish Iqbal"], code: "HOM" },
   health: { coordinators: ["Kamran Ali"], code: "HLT" },

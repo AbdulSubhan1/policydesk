@@ -14,17 +14,20 @@ export function Alert({
   title,
   children,
   action,
+  className,
 }: {
   tone?: keyof typeof TONES;
   title: string;
   children?: React.ReactNode;
   action?: React.ReactNode;
+  /** Layout only, e.g. margin. */
+  className?: string;
 }) {
   return (
     <div
       data-ui="Alert"
       role={tone === "danger" ? "alert" : "status"}
-      className={cn("flex items-start gap-3 rounded-lg border px-4 py-3 text-sm", TONES[tone].className)}
+      className={cn("flex items-start gap-3 rounded-lg border px-4 py-3 text-sm", TONES[tone].className, className)}
     >
       <Icon name={TONES[tone].icon} size={18} className="mt-0.5 shrink-0" />
       <div className="min-w-0 flex-1">
