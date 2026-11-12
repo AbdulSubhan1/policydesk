@@ -20,11 +20,13 @@ import {
   type Product,
 } from "@/constants/products";
 import { OPPORTUNITY_SOURCES, type LeadStage, type OpportunityStatus, type SourceOfFunds } from "@/constants/statuses";
+import { isWebsiteProduct } from "@/constants/website";
 import { screenCustomer } from "@/lib/kyc";
 import { leadReference, quoteReference } from "@/lib/reference";
 import { ALL_PERMISSIONS, type Permission } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
-import { ensureAddOns } from "@/server/website/catalogue";
+import { pickBenefits } from "@/server/website/benefits";
+import { ensureAddOns, ensurePlanBenefits } from "@/server/website/catalogue";
 
 const ROLE_SEED: { name: string; description: string; isSystem?: boolean; permissions: Permission[] }[] = [
   {
@@ -238,6 +240,7 @@ const PLAN_TIERS: Localized[] = [
   { en: "Max", ar: "ماكس" },
   { en: "Pro", ar: "برو" },
 ];
+/** Benefits of products the website doesn't sell; website products pick from constants/benefits.ts. */
 const BENEFITS = [
   "24/7 claims helpline",
   "Cashless network",
@@ -435,7 +438,9 @@ async function seed() {
           cover,
           basePremium: premium,
           excess: product === "life" || product === "savings" || product === "travel" ? 0 : Math.round(premium * 0.1),
-          benefits: BENEFITS.filter((_, b) => (b + p + n + c) % 3 === 0).slice(0, 2 + c),
+          benefits: isWebsiteProduct(product)
+            ? pickBenefits(product, 2 + c, p + n + c)
+            : BENEFITS.filter((_, b) => (b + p + n + c) % 3 === 0).slice(0, 2 + c),
         });
       });
     });
@@ -698,8 +703,9 @@ async function main() {
   } else {
     console.log("Database already has data. Use --reset to wipe and reseed.");
   }
-  // Runs on existing databases too: this is how the live plans get their add-ons
+  // Run on existing databases too: this is how the live plans get their add-ons and their own benefits
   console.log(`Add-ons added: ${await ensureAddOns()}`);
+  console.log(`Plan benefits fixed: ${await ensurePlanBenefits()}`);
   process.exit(0);
 }
 

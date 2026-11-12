@@ -76,6 +76,9 @@ flowchart LR
 ## Delivery
 
 - Additive migrations, run before each merge, so live code never meets a missing column.
+- Data fixes run in `db:setup` and are idempotent: they pick out only the wrong rows (e.g. plans that
+  list another product's benefits) and fix them the same way every time, so running it twice is safe
+  (unit tests in `server/website/benefits.test.ts`).
 - Preview deployments share the production database, so no migration runs during a build.
 - A fake PaySandbox (`e2e/fake-paysandbox.mjs`) lets the full payment flow, including a webhook that
   never arrives, run in tests without the live gateway.

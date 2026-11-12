@@ -2,6 +2,7 @@ import { and, eq, inArray, notExists } from "drizzle-orm";
 import { WEBSITE_ADD_ONS, type AddOnKey, type AddOnKind } from "@/constants/add-ons";
 import { WEBSITE_PRODUCTS, type WebsiteProduct } from "@/constants/website";
 import { db, schema } from "@/server/db";
+import { needsBenefitFix, pickBenefits } from "./benefits";
 
 const { plans, planAddOns } = schema;
 
@@ -68,4 +69,23 @@ export async function ensureAddOns(): Promise<number> {
 
   const inserted = await db.insert(planAddOns).values(rows).onConflictDoNothing().returning({ id: planAddOns.id });
   return inserted.length;
+}
+
+/**
+ * Gives every plan of a website product that lists another product's benefit (the seed once shared one list) the
+ * same number of benefits from its own product's list, picked by plan id. Returns the plans fixed. Safe to run
+ * again: plans whose benefits are all their product's are never touched.
+ */
+export async function ensurePlanBenefits(): Promise<number> {
+  const rows = await db
+    .select({ id: plans.id, product: plans.product, benefits: plans.benefits })
+    .from(plans)
+    .where(inArray(plans.product, [...WEBSITE_PRODUCTS]));
+
+  const wrong = rows.filter((plan) => needsBenefitFix(plan.product as WebsiteProduct, plan.benefits));
+  for (const plan of wrong) {
+    const benefits = pickBenefits(plan.product as WebsiteProduct, plan.benefits.length, plan.id);
+    await db.update(plans).set({ benefits }).where(eq(plans.id, plan.id));
+  }
+  return wrong.length;
 }

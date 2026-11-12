@@ -78,6 +78,8 @@ The website shows every active plan of the lead's product from an active insurer
 
 On the lead's **Quotes** tab, each quote lists its add-ons under the plan: "Included" or the price. Quotes made by the website show **Website** as their creator, and the timeline shows each choice as _Website picked a plan_ with the insurer, plan and total.
 
+Each plan lists a few **benefits** from its own product's list (`constants/benefits.ts`), so a travel plan says "Emergency medical cover", never "Roadside assistance". `db:setup` checks this on every run (`ensurePlanBenefits` in `server/website/catalogue.ts`): a website plan that lists a benefit of another product gets the same number from its own list, picked by plan id, and the script prints `Plan benefits fixed: N`. Plans that are already right are never touched.
+
 Add-ons are seeded data for now (no editing screen; catalogue in `constants/add-ons.ts`, kinds in `server/website/catalogue.ts`). Each product's plans get a fixed set by cover (yearly USD):
 
 - **Car, third party:** roadside assistance, driver accident and passenger accident, all optional.
