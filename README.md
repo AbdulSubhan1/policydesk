@@ -4,6 +4,8 @@ An insurance CRM for a brokerage. Opportunities come in and coordinators qualify
 
 **Live demo:** https://policydesk-opal.vercel.app/login. Sign in with one click as any role; every demo user's password is `demo1234`. New here? Start with the training guide at `/kb` in the app ([docs/00-start-here.md](docs/00-start-here.md)).
 
+**Owner tasks** (switching demo mode and other app settings in the database): [RUNBOOK.md](RUNBOOK.md).
+
 ## Highlights
 
 - **Opportunity → lead flow** across five departments and 11 insurance products, each with its own covers.

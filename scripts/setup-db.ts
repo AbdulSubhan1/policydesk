@@ -23,6 +23,7 @@ import {
 import { OPPORTUNITY_SOURCES, type LeadStage, type OpportunityStatus, type SourceOfFunds } from "@/constants/statuses";
 import { screenCustomer } from "@/lib/kyc";
 import { leadReference, quoteReference } from "@/lib/reference";
+import { defaultSettingRows } from "@/lib/settings";
 import { ALL_PERMISSIONS, type Permission } from "@/lib/rbac";
 import { db, schema } from "@/server/db";
 import { ensureAddOns } from "@/server/website/catalogue";
@@ -691,6 +692,8 @@ async function main() {
   }
   // Runs on existing databases too: this is how the live plans get their add-ons
   console.log(`Add-ons added: ${await ensureAddOns()}`);
+  // Adds missing app settings at their defaults; a value set in the SQL editor is never overwritten
+  await db.insert(schema.appSettings).values(defaultSettingRows()).onConflictDoNothing();
   process.exit(0);
 }
 

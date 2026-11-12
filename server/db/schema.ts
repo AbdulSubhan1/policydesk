@@ -343,3 +343,15 @@ export const rateLimits = pgTable(
   },
   (t) => [primaryKey({ columns: [t.key, t.windowStart] })],
 );
+
+/**
+ * App-wide switches, one row per setting (`value` is JSON, so a setting can be a flag, a number or a list). They are
+ * changed only in the database (Neon's SQL editor, behind the owner's Vercel login), never from inside the app, so no
+ * PolicyDesk account can flip them. Known keys and their defaults live in `server/settings.ts`.
+ */
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  description: text("description").notNull().default(""),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
